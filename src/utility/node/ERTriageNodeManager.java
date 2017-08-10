@@ -48,14 +48,25 @@ public class ERTriageNodeManager
 		this.nodes = this.loadFile(file);
 	}
 
-	/** 生成と同時にノードを設定するコンストラクタ */
+	/**
+	 * <PRE>
+	 *    生成と同時にノードを設定するコンストラクタ
+	 * </PRE>
+	 * @param nodes 登録ノードリスト
+	 */
 	public ERTriageNodeManager(Collection<ERTriageNode> nodes)
 	{
 		//this.nodes=new LinkedList<ERTriageNode>(nodes);
 		this.nodes = new ArrayList<ERTriageNode>(nodes);
 	}
 
-	/** ファイルからノードデータを読み込むメソッドです */
+	/**
+	 * <PRE>
+	 *    ファイルからノードデータを読み込むメソッドです
+	 * </PRE>
+	 * @param file ファイルクラスのインスタンス
+	 * @return 読み込んだノードリスト
+	 */
 	public List<ERTriageNode> loadFile( File file )
 	{
 
@@ -130,10 +141,16 @@ public class ERTriageNodeManager
 		return tempNodes;
 	}
 
-    /** Node全体を返すメソッド<br>
-     * 返り値のリスト自体はコピーなのでエレメントの削除や追加をしても問題ないですが、参照しているエレメントは原本なので<br>
-     * それを操作すると値が変わってしまいます。 */
-    public List<ERTriageNode> getAll() {
+    /**
+     * <PRE>
+     *    Node全体を返すメソッド
+     *    返り値のリスト自体はコピーなのでエレメントの削除や追加をしても問題ないですが、参照しているエレメントは原本なので
+     *    それを操作すると値が変わってしまいます。
+     * </PRE>
+     * @return ノードマネージャクラスに登録された全ノード
+     */
+    public List<ERTriageNode> getAll()
+    {
         return new ArrayList<ERTriageNode>(this.nodes);
     }
 

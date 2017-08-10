@@ -110,7 +110,7 @@ public class MessageFromEngToDoc implements Savable
 	 * <PRE>
 	 *    医師が依頼する検査を設定します。
 	 * </PRE>
-	 * @param iRequestExaminationData
+	 * @param iRequestExaminationData 依頼する検査方法
 	 * @author kobayashi
 	 * @since 2015/07/29
 	 * @version 0.1

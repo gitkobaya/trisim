@@ -15,6 +15,7 @@ public class CustomLogFormatter extends SimpleFormatter
 	 *    ユーザ指定のログフォーマットを記述します。
 	 * </PRE>
 	 * @param logRecord ログ出力のフォーマットが記載されたLogRecordクラス
+	 * @return 実際のログ出力結果（文字列）
 	 */
 	public String format( LogRecord logRecord)
 	{

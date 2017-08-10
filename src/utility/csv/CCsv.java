@@ -38,7 +38,7 @@ public class CCsv
 	 * </PRE>
 	 * @param strFileNameData	ファイル名
 	 * @param strFileModeData	ファイルオープンモード(read：読み込み,write：書き込み)
-	 * @throws IOException
+	 * @throws IOException		ファイル操作エラー例外
 	 */
 	public void vOpen( String strFileNameData, String strFileModeData ) throws IOException
 	{

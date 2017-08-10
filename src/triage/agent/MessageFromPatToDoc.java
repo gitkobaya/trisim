@@ -377,7 +377,9 @@ public class MessageFromPatToDoc implements Savable{
 	 * <PRE>
 	 *    患者が生存しているか否かを表すフラグを設定します。
 	 * </PRE>
-	 * @param iSurvivalFlagData
+	 * @param iSurvivalFlagData 患者生存フラグ
+	 *                          0 死亡
+	 *                          1 生存
 	 * @author kobayashi
 	 * @since 2015/07/29
 	 * @version 0.1
@@ -696,6 +698,9 @@ public class MessageFromPatToDoc implements Savable{
 	 * <PRE>
 	 *    患者が生存しているか否かを表すフラグを取得します。
 	 * </PRE>
+	 * @return 患者生存フラグ
+	 *         0 死亡
+	 *         1 生存
 	 * @author kobayashi
 	 * @since 2015/10/20
 	 * @version 0.1

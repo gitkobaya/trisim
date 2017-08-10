@@ -676,7 +676,7 @@ public class ERDoctorAgent extends Agent{
 	 *    全身性炎症症候群（SIRS）を判定してCTAS判定を実施します。
 	 * </PRE>
 	 * @param erPAgent 患者エージェント
-	 * @return
+	 * @return 患者の緊急度
 	 */
 	private int iJudgeBodyTemperature( ERPatientAgent erPAgent )
 	{
@@ -744,8 +744,8 @@ public class ERDoctorAgent extends Agent{
 	 * <PRE>
 	 *   出血のCTAS判定を実施します。
 	 * </PRE>
-	 * @param erPAgent
-	 * @return
+	 * @param erPAgent 受診対象患者エージェント
+	 * @return 患者エージェントの緊急度
 	 */
 	private int iJudgeBloodIssue( ERPatientAgent erPAgent )
 	{
@@ -760,8 +760,8 @@ public class ERDoctorAgent extends Agent{
 	 * <PRE>
 	 *    循環動態のCTAS判定を実施します。
 	 * </PRE>
-	 * @param erPAgent
-	 * @return
+	 * @param erPAgent 対象患者エージェント
+	 * @return 患者エージェントの緊急度
 	 */
 	private int iJudgeCirculatoryDynamics( ERPatientAgent erPAgent )
 	{
@@ -820,7 +820,7 @@ public class ERDoctorAgent extends Agent{
 	 *    5項目を判定し、3項目以上正常値ならば正常と判定します。
 	 * </PRE>
 	 * @param erPAgent 患者エージェント
-	 * @return
+	 * @return 患者エージェントの緊急度
 	 */
 	private boolean isJudgeVitalSign( ERPatientAgent erPAgent )
 	{
@@ -1235,7 +1235,7 @@ public class ERDoctorAgent extends Agent{
 	 *     患者エージェントの状況を判断します。
 	 * </PRE>
 	 * @param erPAgent 患者エージェントインスタンス
-	 * @return
+	 * @return 患者エージェントの緊急度
 	 * @throws ERDoctorAgentException	医師エージェント例外
 	 * @author kobayashi
 	 * @since 2015/07/21
@@ -1495,6 +1495,7 @@ public class ERDoctorAgent extends Agent{
 	 *   患者から頭部状態をメッセージで受信し、状態を把握します。
 	 * </PRE>
 	 * @param strCurrentInjuryHeadStatus 患者が訴える頭部のAIS値
+	 * @throws ERDoctorAgentException 医師エージェント例外クラス
 	 * @author kobayashi
 	 * @since 2015/07/21
 	 */
@@ -1572,6 +1573,7 @@ public class ERDoctorAgent extends Agent{
 	 *   患者から顔面部状態をメッセージで受信し、状態を把握します。
 	 * </PRE>
 	 * @param strCurrentInjuryFaceStatus 患者が訴える顔面のAIS値
+	 * @throws ERDoctorAgentException 医師エージェント例外クラス
 	 * @author kobayashi
 	 * @since 2015/07/21
 	 */
@@ -1650,6 +1652,7 @@ public class ERDoctorAgent extends Agent{
 	 *   患者から頸部状態をメッセージで受信し、状態を把握します。
 	 * </PRE>
 	 * @param strCurrentInjuryNeckStatus 患者が訴える頸部のAIS値
+	 * @throws ERDoctorAgentException 医師エージェント例外クラス
 	 * @author kobayashi
 	 * @since 2015/07/21
 	 */
@@ -1891,6 +1894,7 @@ public class ERDoctorAgent extends Agent{
 	 *   患者から腹部状態をメッセージで受信し、状態を把握します。
 	 * </PRE>
 	 * @param strCurrentInjurySpineStatus 患者が訴える脊椎のAIS値
+	 * @throws ERDoctorAgentException 医師エージェント例外クラス
 	 * @author kobayashi
 	 * @since 2015/07/21
 	 */
@@ -1969,6 +1973,7 @@ public class ERDoctorAgent extends Agent{
 	 *   患者から腹部状態をメッセージで受信し、状態を把握します。
 	 * </PRE>
 	 * @param strCurrentInjuryUpperExtremityStatus 患者が訴える上肢のAIS値
+	 * @throws ERDoctorAgentException 医師エージェント例外クラス
 	 * @author kobayashi
 	 * @since 2015/07/21
 	 */
@@ -2062,6 +2067,7 @@ public class ERDoctorAgent extends Agent{
 	 *   患者から腹部状態をメッセージで受信し、状態を把握します。
 	 * </PRE>
 	 * @param strCurrentInjuryLowerExtremityStatus 患者が訴える下肢のAIS値
+	 * @throws ERDoctorAgentException 医師エージェント例外クラス
 	 * @author kobayashi
 	 * @since 2015/07/21
 	 */
@@ -2155,6 +2161,7 @@ public class ERDoctorAgent extends Agent{
 	 *   患者から腹部状態をメッセージで受信し、状態を把握します。
 	 * </PRE>
 	 * @param strCurrentInjuryUnspecifiedStatus 患者が訴える表面、熱傷、その他外傷のAIS値
+	 * @throws ERDoctorAgentException 医師エージェント例外クラス
 	 * @author kobayashi
 	 * @since 2015/07/21
 	 */
@@ -2243,6 +2250,7 @@ public class ERDoctorAgent extends Agent{
 	 *   患者から呼吸状態をメッセージで受信し、状態を把握します。
 	 * </PRE>
 	 * @param strCurrentRespirationStatus 患者の呼吸状態
+	 * @throws ERDoctorAgentException 医師エージェント例外クラス
 	 * @author kobayashi
 	 * @since 2015/07/21
 	 */
@@ -2308,7 +2316,8 @@ public class ERDoctorAgent extends Agent{
 	 * <PRE>
 	 *   酸素飽和度から患者の緊急度を判定します。
 	 * </PRE>
-	 * @return
+	 * @param erPAgent 対象となる患者エージェント
+	 * @return 患者エージェントの緊急度
 	 */
 	private int iJudgeSpO2( ERPatientAgent erPAgent )
 	{
@@ -2811,8 +2820,9 @@ public class ERDoctorAgent extends Agent{
 	 * <PRE>
 	 *    患者エージェントの集中治療室判定を行います。
 	 * </PRE>
-	 * @param erPatientAgent
-	 * @return
+	 * @param erPatientAgent 対象となる患者エージェント
+	 * @return true  集中治療室へ移動
+	 *         false 集中治療室へは行かない
 	 */
 	public boolean isJudgeIntensiveCareUnit( ERPatientAgent erPatientAgent )
 	{
@@ -2883,8 +2893,9 @@ public class ERDoctorAgent extends Agent{
 	 * <PRE>
 	 *    患者エージェントの一般病棟判定を行います。
 	 * </PRE>
-	 * @param erPatientAgent
-	 * @return
+	 * @param erPatientAgent 対象となる患者エージェント
+	 * @return true 一般病棟へ移動可能
+	 *         false 一般病棟へ移動不可
 	 */
 	public boolean isJudgeGeneralWard( ERPatientAgent erPatientAgent )
 	{
@@ -3032,6 +3043,7 @@ public class ERDoctorAgent extends Agent{
 	 * </PRE>
 	 * @param  erPatientAgent 患者エージェント
 	 * @return 手術時間
+	 * @throws ERDoctorAgentException 医師エージェント例外クラス
 	 */
 	public int isJudgeOeprationTime( ERPatientAgent erPatientAgent ) throws ERDoctorAgentException
 	{
@@ -3086,10 +3098,10 @@ public class ERDoctorAgent extends Agent{
 	 * <PRE>
 	 *	ワイブル分布に当て込んで手術時間を算出する。
 	 * </PRE>
-	 * @param lfData
+	 * @param lfData  ワイブル分布データ
 	 * @param lfK     形状パラメータ
 	 * @param lfM     尺度パラメータ
-	 * @return
+	 * @return 手術時間
 	 */
 	private double lfCalcOperationTime( double lfData, double lfK, double lfM )
 	{
@@ -3289,6 +3301,7 @@ public class ERDoctorAgent extends Agent{
 	 *    連携度を設定します。
 	 *    看護師エージェントが複数人いる場合、徐々に診察の効率が増します。
 	 * </PRE>
+	 * @param ArrayListNurseAgents 医師が所属する室に所属している全看護師エージェント
 	 * @return 積算する重み。
 	 * @author kobayashi
 	 * @since 2015/10/11
@@ -3520,9 +3533,9 @@ public class ERDoctorAgent extends Agent{
 
 	/**
 	 * <PRE>
-	 *    経験値による重みづけ計算に使用するパラメータです。
+	 *    経験値による重みづけ計算に使用するパラメータ(その1)です。
 	 * </PRE>
-	 * @param lfData
+	 * @param lfData 経験値による重みづけパラメータ(その1)
 	 */
 	public void vSetExperienceRate1( double lfData )
 	{
@@ -3531,9 +3544,9 @@ public class ERDoctorAgent extends Agent{
 
 	/**
 	 * <PRE>
-	 *    経験値による重みづけ計算に使用するパラメータです。
+	 *    経験値による重みづけ計算に使用するパラメータ(その2)です。
 	 * </PRE>
-	 * @param lfData
+	 * @param lfData 経験値による重みづけパラメータ(その2)
 	 */
 	public void vSetExperienceRate2( double lfData )
 	{
@@ -3542,9 +3555,9 @@ public class ERDoctorAgent extends Agent{
 
 	/**
 	 * <PRE>
-	 *    経験値による重みづけ計算に使用するパラメータです。
+	 *    経験値(AIS重症度)による重みづけ計算に使用するパラメータです。
 	 * </PRE>
-	 * @param lfData
+	 * @param lfData 経験値による重みづけパラメータ(AIS重症度)
 	 */
 	public void vSetConExperienceAIS( double lfData )
 	{
@@ -3553,9 +3566,9 @@ public class ERDoctorAgent extends Agent{
 
 	/**
 	 * <PRE>
-	 *    経験値(AIS重症度)による重みづけ計算に使用するパラメータです。
+	 *    経験値(AIS重症度)による重みづけ計算に使用するパラメータ(その1)です。
 	 * </PRE>
-	 * @param lfData
+	 * @param lfData 経験値(AIS重症度)による重みづけパラメータ(その1)
 	 */
 	public void vSetExperienceRateAIS1( double lfData )
 	{
@@ -3564,9 +3577,9 @@ public class ERDoctorAgent extends Agent{
 
 	/**
 	 * <PRE>
-	 *    経験値(AIS重症度)による重みづけ計算に使用するパラメータです。
+	 *    経験値(AIS重症度)による重みづけ計算に使用するパラメータ(その2)です。
 	 * </PRE>
-	 * @param lfData
+	 * @param lfData 経験値(AIS重症度)による重みづけパラメータ(その2)
 	 */
 	public void vSetExperienceRateAIS2( double lfData )
 	{
@@ -4125,10 +4138,10 @@ public class ERDoctorAgent extends Agent{
 	 * <PRE>
 	 *    weibull分布関数の逆関数。
 	 * </PRE>
-	 * @param lfAlpha
-	 * @param lfBeta
-	 * @param lfRand
-	 * @return
+	 * @param lfAlpha 調整パラメータ1
+	 * @param lfBeta  調整パラメータ2
+	 * @param lfRand  入力値
+	 * @return 逆関数値
 	 */
 	private double InvWeibull( double lfAlpha, double lfBeta, double lfRand )
 	{
@@ -4142,9 +4155,9 @@ public class ERDoctorAgent extends Agent{
 	 *    weibull分布乱数を発生させます。-1.0以下、1.0以上が乱数を発生させた結果出力された場合、
 	 *    再度乱数を発生させます。乱数発生回数の繰り返し回数は100回とします。
 	 * </PRE>
-	 * @param lfBeta
-	 * @param lfAlpha
-	 * @return
+	 * @param lfAlpha 調整パラメータ1
+	 * @param lfBeta  調整パラメータ2
+	 * @return  ワイブル分布乱数
 	 */
 	public double weibullRand( double lfAlpha, double lfBeta )
 	{
@@ -4173,9 +4186,9 @@ public class ERDoctorAgent extends Agent{
 	 * <PRE>
 	 *    ファイルの書き込みを行います。
 	 * </PRE>
-	 * @param iFlag
-	 * @param lfTime
-	 * @throws IOException
+	 * @param iFlag			ファイル書き込みモード
+	 * @param lfTime		ファイル書き込み時間
+	 * @throws IOException	ファイル処理エラー
 	 */
 	public void vWriteFile( int iFlag, double lfTime ) throws IOException
 	{
@@ -4200,6 +4213,13 @@ public class ERDoctorAgent extends Agent{
 			}
 		}
 	}
+
+	/**
+	 * <PRE>
+	 *    メルセンヌツイスターインスタンスを設定します。
+	 * </PRE>
+	 * @param sfmtRandom メルセンヌツイスターインスタンス
+	 */
 	public void vSetRandom(utility.sfmt.Rand sfmtRandom )
 	{
 		// TODO 自動生成されたメソッド・スタブ

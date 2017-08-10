@@ -1795,7 +1795,7 @@ public class ERDepartment extends Agent
 	 * @throws IOException			java標準のIO例外クラス
 	 * @since 2015/08/05
 	 */
-	public void vSetConsultationRooms(int iConsultationRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException
+	private void vSetConsultationRooms(int iConsultationRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException
 	{
 		int i,j;
 		int iCurrentNurseNum = 0;
@@ -2112,7 +2112,7 @@ public class ERDepartment extends Agent
 	 * @throws IOException			ファイル処理中の例外
 	 * @since 2015/08/05
 	 */
-	public void vSetOperationRooms(int iOperationRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException
+	private void vSetOperationRooms(int iOperationRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException
 	{
 		int i,j;
 		int iCurrentDoctorNum = 0;
@@ -2511,7 +2511,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @since 2015/08/05
 	 */
-	public void vSetEmergencyRooms(int iEmergencyRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException, ERClinicalEngineerAgentException
+	private void vSetEmergencyRooms(int iEmergencyRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException, ERClinicalEngineerAgentException
 	{
 		int i,j;
 		int iCurrentDoctorNum = 0;
@@ -3055,7 +3055,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @since 2015/08/05
 	 */
-	public void vSetObservationRooms(int iObservationRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException
+	private void vSetObservationRooms(int iObservationRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException
 	{
 		int i,j;
 		int iCurrentNurseNum = 0;
@@ -3321,7 +3321,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @since 2015/08/05
 	 */
-	public void vSetSereveInjuryObservationRooms(int iSereveInjuryObservationRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException
+	private void vSetSereveInjuryObservationRooms(int iSereveInjuryObservationRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException
 	{
 		int i,j;
 		int iCurrentNurseNum = 0;
@@ -3589,7 +3589,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @since 2015/08/05
 	 */
-	public void vSetIntensiveCareUnitRooms(int iIntensiveCareUnitRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException
+	private void vSetIntensiveCareUnitRooms(int iIntensiveCareUnitRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException
 	{
 		int i,j;
 		int iCurrentDoctorNum = 0;
@@ -3991,7 +3991,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @since 2015/08/05
 	 */
-	public void vSetHighCareUnitRooms(int iHighCareUnitRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException
+	private void vSetHighCareUnitRooms(int iHighCareUnitRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException
 	{
 		int i,j;
 		int iCurrentDoctorNum = 0;
@@ -4405,7 +4405,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @since 2015/08/05
 	 */
-	public void vSetGeneralWardRooms(int iGeneralWardRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException
+	private void vSetGeneralWardRooms(int iGeneralWardRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException
 	{
 		int i,j;
 		int iCurrentNurseNum = 0;
@@ -4748,7 +4748,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @since 2015/08/05
 	 */
-	public void vSetExaminationXRayRooms(int iExaminationRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws ERClinicalEngineerAgentException, IOException
+	private void vSetExaminationXRayRooms(int iExaminationRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws ERClinicalEngineerAgentException, IOException
 	{
 		int i,j;
 		int iCurrentClinicalEngineerNum = 0;
@@ -4974,7 +4974,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @since 2015/08/05
 	 */
-	public void vSetExaminationCTRooms(int iExaminationRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws ERClinicalEngineerAgentException, IOException
+	private void vSetExaminationCTRooms(int iExaminationRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws ERClinicalEngineerAgentException, IOException
 	{
 		int i,j;
 		int iCurrentClinicalEngineerNum = 0;
@@ -5200,7 +5200,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @since 2015/08/05
 	 */
-	public void vSetExaminationMRIRooms(int iExaminationRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws ERClinicalEngineerAgentException, IOException
+	private void vSetExaminationMRIRooms(int iExaminationRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws ERClinicalEngineerAgentException, IOException
 	{
 		int i,j;
 		int iCurrentClinicalEngineerNum = 0;
@@ -5426,7 +5426,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @since 2015/08/05
 	 */
-	public void vSetExaminationAngiographyRooms(int iExaminationRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws ERClinicalEngineerAgentException, IOException
+	private void vSetExaminationAngiographyRooms(int iExaminationRoomNum, String strPath, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws ERClinicalEngineerAgentException, IOException
 	{
 		int i,j;
 		int iCurrentClinicalEngineerNum = 0;
@@ -5652,7 +5652,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @since 2015/08/05
 	 */
-	public void vSetExaminationFastRooms(int iExaminationRoomNum, String strPath, SimulationEngine engine, Rand sfmtRandom ) throws ERClinicalEngineerAgentException, IOException
+	private void vSetExaminationFastRooms(int iExaminationRoomNum, String strPath, SimulationEngine engine, Rand sfmtRandom ) throws ERClinicalEngineerAgentException, IOException
 	{
 		int i,j;
 		int iCurrentClinicalEngineerNum = 0;
@@ -5867,7 +5867,7 @@ public class ERDepartment extends Agent
 	 * @since 2015/08/05
 	 * @version 0.1
 	 */
-	public void vSetWaitingRooms(int iWaitingRoomNum, double lfArrivalPatientPepoleData, String strPath, SimulationEngine engine, Rand sfmtRandom ) throws IOException
+	private void vSetWaitingRooms(int iWaitingRoomNum, double lfArrivalPatientPepoleData, String strPath, SimulationEngine engine, Rand sfmtRandom ) throws IOException
 	{
 		int i,j;
 		int iCurrentNurseNum = 0;
@@ -6142,208 +6142,6 @@ public class ERDepartment extends Agent
 	{
 	}
 
-	/**
-	 * <PRE>
-	 *    各室に所属しているエージェントにER部門全エージェントIDを設定します。
-	 * </PRE>
-	 * @author kobayashi
-	 * @since 2015/08/05
-	 * @version 0.1
-	 */
-	public void vSetConsultationRoomsAgentIds()
-	{
-		int i,j;
-		for( i = 0;i < ArrayListConsultationRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListConsultationRooms.get(i).iGetNurseAgentsNum(); j++ )
-			{
-				ArrayListConsultationRooms.get(i).cGetNurseAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-			ArrayListConsultationRooms.get(i).cGetDoctorAgent().vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-		}
-	}
-
-	/**
-	 * <PRE>
-	 *    各室に所属しているエージェントにER部門全エージェントIDを設定します。
-	 * </PRE>
-	 * @author kobayashi
-	 * @since 2015/08/05
-	 * @version 0.1
-	 */
-	public void vSetEmergencyRoomsAgentIds()
-	{
-		int i,j;
-		for( i = 0;i < ArrayListEmergencyRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListEmergencyRooms.get(i).iGetNurseAgentsNum(); j++ )
-			{
-				ArrayListEmergencyRooms.get(i).cGetNurseAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-			for( j = 0;j < ArrayListEmergencyRooms.get(i).iGetDoctorAgentsNum(); j++ )
-			{
-				ArrayListEmergencyRooms.get(i).cGetDoctorAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-			for( j = 0;j < ArrayListEmergencyRooms.get(i).iGetClinicalEngineerAgentsNum(); j++ )
-			{
-				ArrayListEmergencyRooms.get(i).cGetClinicalEngineerAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-		}
-	}
-
-	/**
-	 * <PRE>
-	 *    各室に所属しているエージェントにER部門全エージェントIDを設定します。
-	 * </PRE>
-	 * @author kobayashi
-	 * @since 2015/08/05
-	 * @version 0.1
-	 */
-	public void vSetOperationRoomsAgentIds()
-	{
-		int i,j;
-		for( i = 0;i < ArrayListOperationRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListOperationRooms.get(i).iGetNurseAgentsNum(); j++ )
-			{
-				ArrayListOperationRooms.get(i).cGetNurseAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-			for( j = 0;j < ArrayListOperationRooms.get(i).iGetDoctorAgentsNum(); j++ )
-			{
-				ArrayListOperationRooms.get(i).cGetDoctorAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-		}
-	}
-
-	public void vSetExaminationXRayRoomsAgentIds()
-	{
-		int i,j;
-		for( i = 0;i < ArrayListExaminationXRayRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListExaminationXRayRooms.get(i).iGetClinicalEngineerAgentsNum(); j++ )
-			{
-				ArrayListExaminationXRayRooms.get(i).cGetClinicalEngineerAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-		}
-	}
-
-	public void vSetExaminationCTRoomsAgentIds()
-	{
-		int i,j;
-		for( i = 0;i < ArrayListExaminationCTRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListExaminationCTRooms.get(i).iGetClinicalEngineerAgentsNum(); j++ )
-			{
-				ArrayListExaminationCTRooms.get(i).cGetClinicalEngineerAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-		}
-	}
-
-	public void vSetExaminationMRIRoomsAgentIds()
-	{
-		int i,j;
-		for( i = 0;i < ArrayListExaminationMRIRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListExaminationMRIRooms.get(i).iGetClinicalEngineerAgentsNum(); j++ )
-			{
-				ArrayListExaminationMRIRooms.get(i).cGetClinicalEngineerAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-		}
-	}
-
-	public void vSetExaminationAngiographyRoomsAgentIds()
-	{
-		int i,j;
-		for( i = 0;i < ArrayListExaminationAngiographyRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListExaminationAngiographyRooms.get(i).iGetClinicalEngineerAgentsNum(); j++ )
-			{
-				ArrayListExaminationAngiographyRooms.get(i).cGetClinicalEngineerAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-		}
-	}
-
-	public void vSetGeneralWardRoomsAgentIds()
-	{
-		int i,j;
-		for( i = 0;i < ArrayListGeneralWardRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListGeneralWardRooms.get(i).iGetNurseAgentsNum(); j++ )
-			{
-				ArrayListGeneralWardRooms.get(i).cGetNurseAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-			for( j = 0;j < ArrayListGeneralWardRooms.get(i).iGetDoctorAgentsNum(); j++ )
-			{
-				ArrayListGeneralWardRooms.get(i).cGetDoctorAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-		}
-	}
-
-	public void vSetHighCareUnitRoomsAgentIds()
-	{
-		int i,j;
-		for( i = 0;i < ArrayListHighCareUnitRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListHighCareUnitRooms.get(i).iGetNurseAgentsNum(); j++ )
-			{
-				ArrayListHighCareUnitRooms.get(i).cGetNurseAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-			for( j = 0;j < ArrayListHighCareUnitRooms.get(i).iGetDoctorAgentsNum(); j++ )
-			{
-				ArrayListHighCareUnitRooms.get(i).cGetDoctorAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-		}
-	}
-
-	public void vSetIntensiveCareUnitRoomsAgentIds()
-	{
-		int i,j;
-		for( i = 0;i < ArrayListIntensiveCareUnitRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListIntensiveCareUnitRooms.get(i).iGetNurseAgentsNum(); j++ )
-			{
-				ArrayListIntensiveCareUnitRooms.get(i).cGetNurseAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-			for( j = 0;j < ArrayListIntensiveCareUnitRooms.get(i).iGetDoctorAgentsNum(); j++ )
-			{
-				ArrayListIntensiveCareUnitRooms.get(i).cGetDoctorAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-		}
-	}
-
-	public void vSetObservationRoomsAgentIds()
-	{
-		int i,j;
-		for( i = 0;i < ArrayListObservationRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListObservationRooms.get(i).iGetNurseAgentsNum(); j++ )
-			{
-				ArrayListObservationRooms.get(i).erGetNurseAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-		}
-	}
-
-	public void vSetSereveInjuryObservationRoomsAgentIds()
-	{
-		int i,j;
-		for( i = 0;i < ArrayListSevereInjuryObservationRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListSevereInjuryObservationRooms.get(i).iGetNurseAgentsNum(); j++ )
-			{
-				ArrayListSevereInjuryObservationRooms.get(i).erGetNurseAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-			}
-		}
-	}
-
-	public void vSetWaitingRoomsAgentIds()
-	{
-		int j;
-		for( j = 0;j < erWaitingRoom.iGetNurseAgentsNum(); j++ )
-		{
-			erWaitingRoom.erGetNurseAgent(j).vSetAgentIds( ArrayListNurseAgentIds, ArrayListDoctorAgentIds, ArrayListClinicalEngineerAgentIds );
-		}
-	}
-
 	public ERWaitingRoom erGetWaitingRoom()
 	{
 		return erWaitingRoom;
@@ -6378,7 +6176,7 @@ public class ERDepartment extends Agent
 	 * @since 2015/08/05
 	 * @version 0.1
 	 */
-	public void vCurrentProcessStatus()
+	private void vCurrentProcessStatus()
 	{
 		double lfCurrentTime;
 		double lfCompleteRate;
@@ -6454,7 +6252,7 @@ public class ERDepartment extends Agent
 	 * @since 2015/08/05
 	 * @version 0.1
 	 */
-	public void vReadERDepartmentEachRoom( String strFileName, int iLoc ) throws IOException
+	private void vReadERDepartmentEachRoom( String strFileName, int iLoc ) throws IOException
 	{
 		int i;
 		CCsv csv;
@@ -6761,7 +6559,7 @@ public class ERDepartment extends Agent
 	 * @since 2015/08/05
 	 * @version 0.1
 	 */
-	public void vReadERDepartment( String strFileName ) throws IOException
+	private void vReadERDepartment( String strFileName ) throws IOException
 	{
 		int i,j;
 		CCsv csv;
@@ -7323,94 +7121,170 @@ public class ERDepartment extends Agent
 		}
 	}
 
+	/**
+	 * <PRE>
+	 *   診察室の部屋数を設定します。
+	 * </PRE>
+	 * @param iRoomNum 診察室の部屋数
+	 */
 	public void vSetConsultationRoomNum( int iRoomNum )
 	{
-		// TODO 自動生成されたメソッド・スタブ
 		// 部屋数を設定します。
 		iConsultationRoomNum = iRoomNum;
 	}
 
+	/**
+	 * <PRE>
+	 *   診察室の部屋数を取得します。
+	 * </PRE>
+	 * @return  診察室の部屋数
+	 */
 	public double iGetConsultationRoomNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iConsultationRoomNum;
 	}
 
+	/**
+	 * <PRE>
+	 *   手術室の部屋数を取得します。
+	 * </PRE>
+	 * @return 手術室の部屋数
+	 */
 	public double iGetOperationRoomNum()
 	{
-		// TODO 自動生成されたメソッド・スタブ
 		return iOperationRoomNum;
 	}
 
+	/**
+	 * <PRE>
+	 *   初療室の部屋数を取得します。
+	 * </PRE>
+	 * @return 初療室の部屋数
+	 */
 	public double iGetEmergencyRoomNum()
 	{
-		// TODO 自動生成されたメソッド・スタブ
 		return iEmergencyRoomNum;
 	}
 
+	/**
+	 * <PRE>
+	 *   観察室の部屋数を取得します。
+	 * </PRE>
+	 * @return  観察室の部屋数
+	 */
 	public double iGetObservationRoomNum()
 	{
-		// TODO 自動生成されたメソッド・スタブ
 		return iObservationRoomNum;
 	}
 
+	/**
+	 * <PRE>
+	 *   重症観察室の部屋数を取得します。
+	 * </PRE>
+	 * @return 重症観察室の部屋数
+	 */
 	public double iGetInjurySevereObservationRoomNum()
 	{
-		// TODO 自動生成されたメソッド・スタブ
 		return iSevereInjuryObservationRoomNum;
 	}
 
+	/**
+	 * <PRE>
+	 *   集中治療室の部屋数を取得します。
+	 * </PRE>
+	 * @return 集中治療室の部屋数
+	 */
 	public double iGetIntensiveCareUnitRoomNum()
 	{
-		// TODO 自動生成されたメソッド・スタブ
 		return iIntensiveCareUnitRoomNum;
 	}
 
+	/**
+	 * <PRE>
+	 *   高度治療室の部屋数を取得します。
+	 * </PRE>
+	 * @return 高度治療室の部屋数
+	 */
 	public double iGetHighCareUnitRoomNum()
 	{
-		// TODO 自動生成されたメソッド・スタブ
 		return iHighCareUnitRoomNum;
 	}
 
-	public double iGetExaminationXRayRoomNum()
-	{
-		// TODO 自動生成されたメソッド・スタブ
-		return iXRayRoomNum;
-	}
-
+	/**
+	 * <PRE>
+	 *   待合室の部屋数を取得します。
+	 * </PRE>
+	 * @return 待合室の部屋数
+	 */
 	public double iGetWaitingRoomNum()
 	{
-		// TODO 自動生成されたメソッド・スタブ
 		return iWaitingRoomNum;
 	}
 
+	/**
+	 * <PRE>
+	 *   一般病棟室の部屋数を取得します。
+	 * </PRE>
+	 * @return 一般病棟室の部屋数
+	 */
 	public double iGetGeneralWardRoomNum()
 	{
-		// TODO 自動生成されたメソッド・スタブ
 		return iGeneralWardRoomNum;
 	}
 
+	/**
+	 * <PRE>
+	 *   Ｘ線室の部屋数を取得します。
+	 * </PRE>
+	 * @return X線室の部屋数
+	 */
+	public double iGetExaminationXRayRoomNum()
+	{
+		return iXRayRoomNum;
+	}
+
+	/**
+	 * <PRE>
+	 *   CT線室の部屋数を取得します。
+	 * </PRE>
+	 * @return CT線室の部屋数
+	 */
 	public double iGetExaminationCTRoomNum()
 	{
-		// TODO 自動生成されたメソッド・スタブ
 		return iCTRoomNum;
 	}
 
+	/**
+	 * <PRE>
+	 *   血管造影室の部屋数を取得します。
+	 * </PRE>
+	 * @return 血管造影室の部屋数
+	 */
 	public double iGetExaminationAngiographyRoomNum()
 	{
-		// TODO 自動生成されたメソッド・スタブ
 		return iAngiographyRoomNum;
 	}
 
+	/**
+	 * <PRE>
+	 *   MRI室の部屋数を取得します。
+	 * </PRE>
+	 * @return MRI室の部屋数
+	 */
 	public double iGetExaminationMRIRoomNum()
 	{
-		// TODO 自動生成されたメソッド・スタブ
 		return iMRIRoomNum;
 	}
 
+	/**
+	 * <PRE>
+	 *   超音波室線室の部屋数を取得します。
+	 * </PRE>
+	 * @return 超音波室の部屋数
+	 */
 	public double iGetExaminationFastRoomNum()
 	{
-		// TODO 自動生成されたメソッド・スタブ
 		return iFastRoomNum;
 	}
 
@@ -7671,7 +7545,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @version 0.1
 	 */
-	public void vEdAdmittedPatientNum() throws ERNurseAgentException, ERDoctorAgentException, ERClinicalEngineerAgentException
+	private void vEdAdmittedPatientNum() throws ERNurseAgentException, ERDoctorAgentException, ERClinicalEngineerAgentException
 	{
 		int i;
 
@@ -7708,7 +7582,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @version 0.1
 	 */
-	public void vEdVentilatorsNum() throws ERNurseAgentException, ERDoctorAgentException, ERClinicalEngineerAgentException
+	private void vEdVentilatorsNum() throws ERNurseAgentException, ERDoctorAgentException, ERClinicalEngineerAgentException
 	{
 		int i;
 
@@ -7744,7 +7618,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @version 0.1
 	 */
-	public void vEdTotalAdmittedPatientNum() throws ERNurseAgentException, ERDoctorAgentException, ERClinicalEngineerAgentException
+	private void vEdTotalAdmittedPatientNum() throws ERNurseAgentException, ERDoctorAgentException, ERClinicalEngineerAgentException
 	{
 		int i;
 
@@ -7793,7 +7667,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @version 0.1
 	 */
-	public void vEdTotalPatientNum() throws ERNurseAgentException, ERDoctorAgentException, ERClinicalEngineerAgentException
+	private void vEdTotalPatientNum() throws ERNurseAgentException, ERDoctorAgentException, ERClinicalEngineerAgentException
 	{
 		int i;
 
@@ -7894,7 +7768,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @version 0.1
 	 */
-	public void vEdAdmittedPatientTriageCategoryNum() throws ERNurseAgentException, ERDoctorAgentException, ERClinicalEngineerAgentException
+	private void vEdAdmittedPatientTriageCategoryNum() throws ERNurseAgentException, ERDoctorAgentException, ERClinicalEngineerAgentException
 	{
 		int i,j;
 
@@ -8028,7 +7902,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @version 0.1
 	 */
-	public void vWaitingRoomPatientNum() throws ERNurseAgentException, ERDoctorAgentException, ERClinicalEngineerAgentException
+	private void vWaitingRoomPatientNum() throws ERNurseAgentException, ERDoctorAgentException, ERClinicalEngineerAgentException
 	{
 		iCurrentWaitingRoomPatientNum = erWaitingRoom.iGetTotalPatientNum();
 		iWaitingRoomPatientNum += iCurrentWaitingRoomPatientNum;
@@ -8042,7 +7916,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @version 0.1
 	 */
-	public void vLongestAdmittedTime()
+	private void vLongestAdmittedTime()
 	{
 		int i;
 		double lfLongestTime = 0.0;
@@ -8193,7 +8067,7 @@ public class ERDepartment extends Agent
 	 * @author kobayashi
 	 * @version 0.1
 	 */
-	public void vLastBedTime()
+	private void vLastBedTime()
 	{
 		int i;
 		double lfLastTime = 0.0;
@@ -8877,7 +8751,7 @@ public class ERDepartment extends Agent
 	 * @version 0.2
 	 * @since 2016/08/12
 	 */
-	public void vMaxGetEvaluationIndex( double lfTime )
+	private void vMaxGetEvaluationIndex( double lfTime )
 	{
 		int i;
 		double lfCount;
@@ -9678,6 +9552,8 @@ public class ERDepartment extends Agent
 	 *   ファイルの書き込みを行います。
 	 * </PRE>
 	 * @param iFlag			ファイル書き込みフラグ
+	 *                      0 シミュレーションステップ毎に書き込み
+	 *                      1 最初と最後の100秒分のデータを書き込み
 	 * @param lfTime		タイムステップ
 	 * @throws IOException	ファイル書き込みエラー
 	 * @author kobayashi

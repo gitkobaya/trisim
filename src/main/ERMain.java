@@ -969,7 +969,10 @@ public class ERMain
 	 * <PRE>
 	 *    制約条件の動作確認を行います。(JUNITを使用していないため、手打ち・・・申し訳ない。)
 	 * </PRE>
-	 * @param window シミュレーション実行画面のオブジェクト（３次元）
+	 * @param initInvSimParam		初期設定ファイル操作クラス
+	 * @param cmd					コマンドオプション操作クラス
+	 * @param cTRISimLogger			ロガークラスインスタンス
+	 * @param strNodeLinkFileName	ノードリンク情報のファイル名
 	 */
 	private static void vTestConstraintCondition( InitInverseSimParam initInvSimParam, CCmdCheck cmd, Logger cTRISimLogger, String strNodeLinkFileName )
 	{

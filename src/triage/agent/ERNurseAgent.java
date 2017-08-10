@@ -330,8 +330,12 @@ public class ERNurseAgent extends Agent
 	 *    ナースの患者観察プロセスを実行します。
 	 *    観察プロセスか、トリアージプロセスを実行します。
 	 * </PRE>
-	 * @param iTriageProcessFlagData
-	 * @throws ERNurseAgentException
+	 * @param iTriageProcessFlagData トリアージプロセス番号
+	 *                               0 非トリアージ
+	 *                               1 トリアージ
+	 *                               それ以外　エラー
+	 * @param erPAgent				 対象となる患者エージェント
+	 * @throws ERNurseAgentException 看護師エージェント例外
 	 * @author kobayashi
 	 * @since 2015/08/04
 	 */
@@ -369,8 +373,9 @@ public class ERNurseAgent extends Agent
 	 *     看護師エージェントが通常プロセスに基づいて
 	 *     患者エージェントの状況を判断します。
 	 * </PRE>
-	 * @return
-	 * @throws ERNurseAgentException
+	 * @param erPAgent 対象となる患者エージェント
+	 * @return 患者エージェントの緊急度
+	 * @throws ERNurseAgentException 看護師エージェント例外
 	 * @author kobayashi
 	 * @since 2015/08/04
 	 */
@@ -523,6 +528,7 @@ public class ERNurseAgent extends Agent
 	 *   患者から頭部状態をメッセージで受信し、状態を把握します。
 	 * </PRE>
 	 * @param strCurrentInjuryHeadStatus 患者が訴える頭部のAIS値
+	 * @throws ERNurseAgentException 看護師エージェント例外
 	 * @author kobayashi
 	 * @since 2015/08/04
 	 */
@@ -600,6 +606,7 @@ public class ERNurseAgent extends Agent
 	 *   患者から顔面部状態をメッセージで受信し、状態を把握します。
 	 * </PRE>
 	 * @param strCurrentInjuryFaceStatus 患者が訴える顔面のAIS値
+	 * @throws ERNurseAgentException 看護師エージェント例外
 	 * @author kobayashi
 	 * @since 2015/08/04
 	 */
@@ -678,6 +685,7 @@ public class ERNurseAgent extends Agent
 	 *   患者から頸部状態をメッセージで受信し、状態を把握します。
 	 * </PRE>
 	 * @param strCurrentInjuryNeckStatus 患者が訴える頸部のAIS値
+	 * @throws ERNurseAgentException 看護師エージェント例外
 	 * @since 2015/08/04
 	 */
 	private void vJudgeAISNeckStatus( String strCurrentInjuryNeckStatus ) throws ERNurseAgentException
@@ -1315,6 +1323,7 @@ public class ERNurseAgent extends Agent
 	 *                     		  5 ・・・
 	 * @param iProtocolLevelData トリアージのプロトコルレベル(緊急度基準は3段階、4段階、5段階が設定可能。)
 	 * @param erPAgent			担当する患者エージェント
+	 * @return 患者エージェントの緊急度
 	 * @throws ERNurseAgentException 看護師エージェント例外
 	 * @author kobayashi
 	 * @since 2015/07/17
@@ -1371,8 +1380,8 @@ public class ERNurseAgent extends Agent
 	 * </PRE>
 	 * @param iProtocolLevelData	トリアージのレベル
 	 * @param erPAgent				患者エージェント
-	 * @return
-	 * @throws ERNurseAgentException
+	 * @return 患者エージェントの緊急度
+	 * @throws ERNurseAgentException 看護師エージェント例外
 	 */
 	private int iJtasProtocol( int iProtocolLevelData, ERPatientAgent erPAgent ) throws ERNurseAgentException
 	{
@@ -1553,9 +1562,10 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    CTASプロトコルを実施します。
 	 * </PRE>
-	 * @param iProtocolLevelData
-	 * @param erPAgent
-	 * @return
+	 * @param iProtocolLevelData 緊急度基準
+	 * @param erPAgent			 対象となる患者エージェント
+	 * @return トリアージ緊急度
+	 * @throws ERNurseAgentException 看護師エージェント例外
 	 */
 	private int iCtasProtocol( int iProtocolLevelData, ERPatientAgent erPAgent ) throws ERNurseAgentException
 	{
@@ -1701,10 +1711,10 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    アメリカのトリアージプロトコルのESIを適用します。
 	 * </PRE>
-	 * @param iProtocolLevelData
-	 * @param erPAgent
-	 * @return
-	 * @throws ERNurseAgentException
+	 * @param iProtocolLevelData 緊急度基準
+	 * @param erPAgent			  対象となる患者エージェント
+	 * @return					  トリアージ緊急度
+	 * @throws ERNurseAgentException 看護師エージェント例ギア
 	 */
 	private int iEsiProtocol( int iProtocolLevelData, ERPatientAgent erPAgent ) throws ERNurseAgentException
 	{
@@ -1930,8 +1940,8 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    患者の意識レベルを取得します。
 	 * </PRE>
-	 * @param strConsciousnessStatus
-	 * @throws ERNurseAgentException
+	 * @param strConsciousnessStatus 患者の意識の状態
+	 * @throws ERNurseAgentException 看護師エージェント例外
 	 */
 	private void vJudgeConsciousnessStatus(String strConsciousnessStatus) throws ERNurseAgentException
 	{
@@ -1962,8 +1972,9 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    疼痛のCTASプロセスを判定します。
 	 * </PRE>
-	 * @param erPAgent
-	 * @return
+	 * @param erPAgent 対応している患者エージェント
+	 * @return		   トリアージ緊急度
+	 * @throws ERNurseAgentException 看護師エージェント例外
 	 */
 	private int iJudgePainStatus(ERPatientAgent erPAgent) throws ERNurseAgentException
 	{
@@ -2207,7 +2218,7 @@ public class ERNurseAgent extends Agent
 	 *    全身性炎症症候群（SIRS）を判定してCTAS判定を実施します。
 	 * </PRE>
 	 * @param erPAgent 患者エージェント
-	 * @return
+	 * @return トリアージ緊急度
 	 */
 	private int iJudgeBodyTemperature( ERPatientAgent erPAgent )
 	{
@@ -2275,8 +2286,8 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   出血のCTAS判定を実施します。
 	 * </PRE>
-	 * @param erPAgent
-	 * @return
+	 * @param erPAgent 対応する患者エージェント
+	 * @return トリアージ緊急度
 	 */
 	private int iJudgeBloodIssue( ERPatientAgent erPAgent )
 	{
@@ -2291,8 +2302,8 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    循環動態のCTAS判定を実施します。
 	 * </PRE>
-	 * @param erPAgent
-	 * @return
+	 * @param erPAgent トリアージを受ける患者エージェント
+	 * @return トリアージ緊急度
 	 */
 	private int iJudgeCirculatoryDynamics( ERPatientAgent erPAgent )
 	{
@@ -2348,8 +2359,8 @@ public class ERNurseAgent extends Agent
 	 *    バイタルサインが正常かどうかを判定します。
 	 *    5項目を判定し、3項目以上正常値ならば正常と判定します。
 	 * </PRE>
-	 * @param erPAgent 患者エージェント
-	 * @return
+	 * @param erPAgent バイタル判定を受ける患者エージェント
+	 * @return 緊急度
 	 */
 	private boolean isJudgeVitalSign( ERPatientAgent erPAgent )
 	{
@@ -2393,7 +2404,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   患者の酸素飽和度を判定します。
 	 * </PRE>
-	 * @return
+	 * @return トリアージ緊急度
 	 */
 	private int iJudgeSpO2()
 	{
@@ -2423,7 +2434,8 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   患者の意識レベルを判定します。
 	 * </PRE>
-	 * @return
+	 * @param erPAgent 意識レベルの判定を受ける患者エージェント
+	 * @return トリアージ緊急度
 	 */
 	public int iJudgeConsciousness( ERPatientAgent erPAgent )
 	{
@@ -2457,7 +2469,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    看護師が観察した結果の患者に対する緊急度の結果を取得します。
 	 * </PRE>
-	 * @return
+	 * @return トリアージ緊急度
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -2473,7 +2485,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    定期観察時間を取得します。
 	 * </PRE>
-	 * @return
+	 * @return 定期観察時間
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -2486,7 +2498,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    定期トリアージ時間を取得します。
 	 * </PRE>
-	 * @return
+	 * @return 定期トリアージ実施時間
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -2499,7 +2511,8 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   患者対応中か否かのフラグを取得します。
 	 * </PRE>
-	 * @return
+	 * @return true 対応中。
+	 * 		   false 未対応中。
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -2512,7 +2525,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   看護師が医師から受け取った診察時間を取得します。
 	 * </PRE>
-	 * @return
+	 * @return 医師の診察時間
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -2525,7 +2538,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   対応した患者の待合室での待ち時間を取得します。
 	 * </PRE>
-	 * @return
+	 * @return 対応した患者の待ち時間
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -2538,7 +2551,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   看護師が現在対応している患者の総経過時間を取得します。
 	 * </PRE>
-	 * @return
+	 * @return 現在の総対応時間
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -2551,7 +2564,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    看護師が今まで稼働した総経過時間を取得します。
 	 * </PRE>
-	 * @return
+	 * @return 総観察時間
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -2564,7 +2577,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   看護師が観察に要する時間を取得します。
 	 * </PRE>
-	 * @return
+	 * @return 観察時間
 	 */
 	public double lfGetObservationProcessTime()
 	{
@@ -2575,7 +2588,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   看護師が現在対応中の患者エージェントデータを取得します。
 	 * </PRE>
-	 * @return
+	 * @return 看護師が対応している患者エージェント
 	 */
 	public ERPatientAgent cGetERPatientAgent()
 	{
@@ -2587,7 +2600,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   看護師が応対する患者エージェントを設定します。
 	 * </PRE>
-	 * @param erPAgent
+	 * @param erPAgent 看護師が対応している患者エージェント
 	 */
 	public void vSetERPatientAgent( ERPatientAgent erPAgent )
 	{
@@ -2611,7 +2624,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   看護師の所属部門を設定します。
 	 * </PRE>
-	 * @param iDepartment
+	 * @param iDepartment 所属部門
 	 */
 	public void vSetNurseDepartment( int iDepartment )
 	{
@@ -2622,7 +2635,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   看護師のトリアージプロトコルを設定します。
 	 * </PRE>
-	 * @param iProtocol
+	 * @param iProtocol 看護師のトリアージプロトコル
 	 */
 	public void vSetTriageProtocol( int iProtocol )
 	{
@@ -2633,7 +2646,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   看護師のトリアージプロトコルレベルを設定します。
 	 * </PRE>
-	 * @param iLevel
+	 * @param iLevel トリアージ緊急度基準
 	 */
 	public void vSetTriageProtocolLevel( int iLevel )
 	{
@@ -2644,7 +2657,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   看護師のトリアージ経験年数を設定します。
 	 * </PRE>
-	 * @param alfNurseTriageYearExperience
+	 * @param alfNurseTriageYearExperience トリアージ経験年数
 	 */
 	public void vSetTriageYearExperience( double alfNurseTriageYearExperience )
 	{
@@ -2685,7 +2698,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    緊急度に従った再トリアージ時間を設定します。
 	 * </PRE>
-	 * @param lfTriageTime
+	 * @param lfTriageTime 再トリアージまでの時間
 	 */
 	public void vSetTriageProtocolTime(double lfTriageTime )
 	{
@@ -2765,7 +2778,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   看護師が観察に要する時間を設定します。
 	 * </PRE>
-	 * @param lfData
+	 * @param lfData 観察時間
 	 */
 	public void vSetObservationProcessTime( double lfData )
 	{
@@ -2790,9 +2803,9 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    救急部門に登録されている全エージェントのIDを設定します。
 	 * </PRE>
-	 * @param ArrayListNurseAgentIdsData
-	 * @param ArrayListDoctorAgentIdsData
-	 * @param ArrayListClinicalEngineerAgentIdsData
+	 * @param ArrayListNurseAgentIdsData			全看護師エージェントID
+	 * @param ArrayListDoctorAgentIdsData			全医師エージェントID
+	 * @param ArrayListClinicalEngineerAgentIdsData	全医療技師エージェントID
 	 */
 	public void vSetAgentIds(ArrayList<Long> ArrayListNurseAgentIdsData, ArrayList<Long> ArrayListDoctorAgentIdsData, ArrayList<Long> ArrayListClinicalEngineerAgentIdsData)
 	{
@@ -2816,7 +2829,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    患者が移動するまでの待ちを表すフラグです。
 	 * </PRE>
-	 * @param iData
+	 * @param iData 移動待ちフラグ 1：移動待ち中。 0:移動待ちはしていない。
 	 */
 	public void vSetPatientMoveWaitFlag(int iData )
 	{
@@ -2827,7 +2840,9 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    トリアージナースか否かを取得します。
 	 * </PRE>
-	 * @return
+	 * @return トリアージナースフラグ
+	 *         0 通常の看護師
+	 *         1 トリアージナース
 	 */
 	public int iGetNurseCategory()
 	{
@@ -2838,7 +2853,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   トリアージナースか否かの設定をします。
 	 * </PRE>
-	 * @param iNurseCategoryData
+	 * @param iNurseCategoryData トリアージナースの設定。 0：通常の看護師、1：トリアージナース
 	 */
 	public void vSetNurseCategory(int iNurseCategoryData )
 	{
@@ -2850,7 +2865,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    経験値による重みづけ計算に使用するパラメータです。
 	 * </PRE>
-	 * @param lfData
+	 * @param lfData 経験年数重みづけパラメータ1
 	 */
 	public void vSetExperienceRate1( double lfData )
 	{
@@ -2861,7 +2876,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    経験値による重みづけ計算に使用するパラメータです。
 	 * </PRE>
-	 * @param lfData
+	 * @param lfData 経験年数重みづけパラメータ2
 	 */
 	public void vSetExperienceRate2( double lfData )
 	{
@@ -2872,7 +2887,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    経験値による重みづけ計算に使用するパラメータです。
 	 * </PRE>
-	 * @param lfData	経験値重み
+	 * @param lfData	重症度の経験値重み
 	 */
 	public void vSetConExperienceAIS( double lfData )
 	{
@@ -3054,6 +3069,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントへ観察結果を送信します。
 	 * </PRE>
+	 * @param erPAgent				看護師が担当している患者エージェント
 	 * @param iFromAgentId  		送信先のエージェント（ここでは患者エージェント）
 	 * @param iToAgentId			送信元のエージェント（ここでは看護師エージェント）
 	 * @author kobayashi
@@ -3087,6 +3103,7 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *   看護師エージェントへ観察結果を送信します。
 	 * </PRE>
+	 * @param erPAgent 				看護師が対応している患者エージェント
 	 * @param iFromAgentId  		送信先のエージェント（ここでは患者エージェント）
 	 * @param iToAgentId			送信元のエージェント（ここでは看護師エージェント）
 	 * @author kobayashi
@@ -3525,10 +3542,10 @@ public class ERNurseAgent extends Agent
 	 * <PRE>
 	 *    weibull分布関数の逆関数。
 	 * </PRE>
-	 * @param lfBeta
-	 * @param lfAlpha
-	 * @param lfRand
-	 * @return
+	 * @param lfAlpha 調整パラメータ1
+	 * @param lfBeta  調整パラメータ2
+	 * @param lfRand  入力値
+	 * @return 逆関数値
 	 */
 	private double InvWeibull( double lfAlpha, double lfBeta, double lfRand )
 	{
@@ -3542,8 +3559,8 @@ public class ERNurseAgent extends Agent
 	 *    weibull分布乱数を発生させます。-1.0以下、1.0以上が乱数を発生させた結果出力された場合、
 	 *    再度乱数を発生させます。乱数発生回数の繰り返し回数は100回とします。
 	 * </PRE>
-	 * @param lfBeta  ワイブル分布用パラメータ1
 	 * @param lfAlpha ワイブル分布用パラメータ2
+	 * @param lfBeta  ワイブル分布用パラメータ1
 	 * @return ワイブル分布確率
 	 */
 	public double weibullRand( double lfAlpha, double lfBeta )

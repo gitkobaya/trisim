@@ -106,7 +106,7 @@ public class MessageFromDocToPat implements Savable{
 	 * <PRE>
 	 *    緊急度を設定します。
 	 * </PRE>
-	 * @param iEmergency
+	 * @param iEmergency 緊急度
 	 * @author kobayashi
 	 * @since 2015/07/29
 	 * @version 0.1

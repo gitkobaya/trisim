@@ -95,7 +95,7 @@ public class MessageFromDocToEng implements Savable{
 	 * <PRE>
 	 *    医師が依頼する検査を設定します。
 	 * </PRE>
-	 * @param iRequestExaminationData
+	 * @param iRequestExaminationData 依頼する検査内容
 	 * @author kobayashi
 	 * @since 2015/07/29
 	 * @version 0.1
@@ -145,7 +145,7 @@ public class MessageFromDocToEng implements Savable{
 	 * <PRE>
 	 *    医師からの患者の緊急度情報を設定します。
 	 * </PRE>
-	 * @param iEmergencyLevelData
+	 * @param iEmergencyLevelData 緊急度
 	 * @author kobayashi
 	 * @since 2015/08/05
 	 * @version 0.1
@@ -257,7 +257,7 @@ public class MessageFromDocToEng implements Savable{
 	 * <PRE>
 	 *    医師から得た緊急度情報を取得します。
 	 * </PRE>
-	 * @return
+	 * @return 緊急度
 	 */
 	public int iGetEmergencyLevel()
 	{

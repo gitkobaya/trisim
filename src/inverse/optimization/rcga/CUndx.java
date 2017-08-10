@@ -45,6 +45,15 @@ public class CUndx extends CRealCodedGa
 		i2ndLoc = 0;
 	}
 
+	/**
+	 * <PRE>
+	 *   MGG+UNDXの初期化を行います。
+	 * </PRE>
+	 * @param iGenerationNum    世代数
+	 * @param iGenNum           遺伝子数
+	 * @param iGenVectorData    次元数
+	 * @param iCrossOverNumData 交叉回数
+	 */
 	public void vInitialize( int iGenerationNum, int iGenNum, int iGenVectorData, int iCrossOverNumData )
 	{
 		int i,j;
@@ -84,6 +93,11 @@ public class CUndx extends CRealCodedGa
 		rnd = new Sfmt( (int)seed );
 	}
 
+	/**
+	 * <PRE>
+	 *   終了処理を行います。
+	 * </PRE>
+	 */
 	public void vTerminate()
 	{
 		int i;
@@ -98,6 +112,11 @@ public class CUndx extends CRealCodedGa
 		piParentLoc = null;
 	}
 
+	/**
+	 * <PRE>
+	 *   MGG+UNDXを実行します。
+	 * </PRE>
+	 */
 	public void vImplement()
 	{
 		int i,j;
@@ -172,7 +191,18 @@ public class CUndx extends CRealCodedGa
 		}
 	}
 
-	public void vSelectParent( double[][] pplfParent1, double[][] pplfParent2, double[][] pplfParent3, int[] piLoc1, int[] piLoc2, int[] piLoc3 )
+	/**
+	 * <PRE>
+	 *    UNDX用の親を選択します。3体選択します。
+	 * </PRE>
+	 * @param pplfParent1	第一親
+	 * @param pplfParent2	第二親
+	 * @param pplfParent3	第三親
+	 * @param piLoc1		全遺伝子の中での第一親の番号
+	 * @param piLoc2		全遺伝子の中での第二親の番号
+	 * @param piLoc3		全遺伝子の中での第三親の番号
+	 */
+	private void vSelectParent( double[][] pplfParent1, double[][] pplfParent2, double[][] pplfParent3, int[] piLoc1, int[] piLoc2, int[] piLoc3 )
 	{
 		int i,j;
 		double lfSumAbs1, lfSumAbs2, lfSumAbs3;
@@ -244,71 +274,18 @@ public class CUndx extends CRealCodedGa
 		}
 	}
 
-	void vSelectParent(int iLoc1, int iLoc2)
-	{
-		int i, j;
-		double lfSumAbs1, lfSumAbs2, lfSumAbs3;
-		int i1, i2, i3;
-		int iLoc;
-		int iTemp;
-		int iFlag = 0;
-		// UNDXを行う親を2つ決定します。
-		// 親をランダムにNp個選択します。
-		for (i = iGenNumber - 1; i > 0; i--)
-		{
-			iLoc = (int)((i + 1)*rnd.NextUnif());
-			iTemp = piParentLoc[i];
-			piParentLoc[i] = piParentLoc[iLoc];
-			piParentLoc[iLoc] = iTemp;
-		}
-		i1 = iLoc1;
-		if (iLoc2 == -1)
-		{
-			i2 = piParentLoc[0];
-			i3 = piParentLoc[1];
-		}
-		else
-		{
-			i2 = iLoc2;
-			i3 = piParentLoc[0];
-		}
-		lfSumAbs1 = lfSumAbs2 = lfSumAbs3 = 0.0;
-		for (i = 1; i < iGenNumber - 1; i++)
-		{
-			lfSumAbs1 = lfSumAbs2 = lfSumAbs3 = 0.0;
-			if (iFlag == 1)
-			{
-				i2 = piParentLoc[i - 1];
-				i3 = piParentLoc[i];
-			}
-			else if (iFlag == 2) i2 = piParentLoc[i];
-			else if (iFlag == 3) i3 = piParentLoc[i];
-			else if (iFlag == 4) i3 = piParentLoc[i];
-			else if (iFlag == 5) break;
-
-			for (j = 0; j < iGenVector; j++)
-			{
-				lfSumAbs1 += Math.abs(pplfGens[i1][j] - pplfGens[i2][j]);
-				lfSumAbs2 += Math.abs(pplfGens[i1][j] - pplfGens[i3][j]);
-				lfSumAbs3 += Math.abs(pplfGens[i2][j] - pplfGens[i3][j]);
-			}
-			// i1 = i2 = i3の場合（親がすべて等しい場合）
-			if (lfSumAbs1 <= 0.000000000001 && lfSumAbs2 <= 0.000000000001) iFlag = 1;
-			// i1 = i2の場合（1つ目と2つ目の親が等しい場合）
-			else if (lfSumAbs1 <= 0.000000000001) iFlag = 2;
-			// i1 = i3の場合（1つ目と3つ目の親が等しい場合）
-			else if (lfSumAbs2 <= 0.000000000001) iFlag = 3;
-			// i2 = i3の場合（2つ目と3つ目の親が等しい場合）
-			else if (lfSumAbs3 <= 0.000000000001) iFlag = 4;
-			else iFlag = 5;
-		}
-		iParent1Loc = i1;
-		iParent2Loc = i2;
-		iParent3Loc = i3;
-		iSelectParentFlag = 1;
-	}
-
-
+	/**
+	 * <PRE>
+	 *   UNDXを実行します。
+	 * </PRE>
+	 * @param plfParent1	第一親
+	 * @param plfParent2	第二親
+	 * @param plfParent3	第三親
+	 * @param lfAlpha		制御パラメータα
+	 * @param lfBeta		制御パラメータβ
+	 * @param plfChild1		生成した第一子供
+	 * @param plfChild2		生成した第二子供
+	 */
 	private void vUndx( double[] plfParent1, double[] plfParent2, double[] plfParent3, double lfAlpha, double lfBeta, double[] plfChild1, double[] plfChild2 )
 	{
 		int i;
@@ -380,6 +357,14 @@ public class CUndx extends CRealCodedGa
 		}
 	}
 
+	/**
+	 * <PRE>
+	 *    現在世代の中で1番目によい個体と2番目によい個体を取得します。
+	 * </PRE>
+	 * @param pplfChildren	現在世代の個体
+	 * @param pi1stGenLoc	1番目によい個体
+	 * @param pi2ndGenLoc	2番目によい個体
+	 */
 	private void vSelectGens( double[][] pplfChildren, int[] pi1stGenLoc, int[] pi2ndGenLoc )
 	{
 		int i;
@@ -577,21 +562,45 @@ public class CUndx extends CRealCodedGa
 		}
 	}
 
+	/**
+	 * <PRE>
+	 *   最良の個体の番号を取得します。
+	 * </PRE>
+	 * @return 最良個体の番号
+	 */
 	public int iGet1stLoc()
 	{
 		return i1stLoc;
 	}
 
+	/**
+	 * <PRE>
+	 *   2番目によい個体の番号を取得します。
+	 * </PRE>
+	 * @return 2番目によい個体の番号
+	 */
 	public int iGet2ndLoc()
 	{
 		return i2ndLoc;
 	}
 
+	/**
+	 * <PRE>
+	 *   制御用パラメータβを設定します。
+	 * </PRE>
+	 * @param lfBetaData 制御用パラメータβ
+	 */
 	public void vSetBeta( double lfBetaData )
 	{
 		lfBeta = lfBetaData;
 	}
 
+	/**
+	 * <PRE>
+	 *   制御用パラメータαを設定します。
+	 * </PRE>
+	 * @param lfAlphaData 制御用パラメータα
+	 */
 	public void vSetAlpha( double lfAlphaData )
 	{
 		lfAlpha = lfAlphaData;

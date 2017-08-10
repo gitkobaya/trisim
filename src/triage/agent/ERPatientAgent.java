@@ -508,6 +508,8 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントの行動実行します。
 	 * </PRE>
+	 * @throws ERPatientAgentException	患者エージェント例外
+	 * @throws IOException				ファイル処理例外
 	 */
 	public void vImplementPatientAgent() throws ERPatientAgentException, IOException
 	{
@@ -636,6 +638,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   現時点でのTRISSによる生存率を算出します。
 	 * </PRE>
+	 * @param lfData TRISS値
 	 * @return 生存率
 	 * @author kobayashi
 	 * @since 2015/07/17
@@ -801,7 +804,7 @@ public class ERPatientAgent extends Agent
 	 *   The Journal of TRAUMA Injury, Infection, and Critical Care Volume 54 より。
 	 * </PRE>
 	 * @param bAgeFlag 成人か幼児か
-	 * @return
+	 * @return GCS値
 	 */
 	double lfCalcGcs( boolean bAgeFlag )
 	{
@@ -2990,7 +2993,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者から皮膚の血色状態を文字列で取得します。
 	 * </PRE>
-	 * @return
+	 * @return　皮膚の血色状態
 	 * @author kobayashi
 	 * @since 2015/08/12
 	 */
@@ -3003,7 +3006,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者から心肺の状態を文字列で取得します。
 	 * </PRE>
-	 * @return
+	 * @return 心配の状態
 	 * @author kobayashi
 	 * @since 2015/08/12
 	 */
@@ -3016,7 +3019,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者から意識状態を文字列で取得します。
 	 * </PRE>
-	 * @return
+	 * @return 意識状態
 	 * @author kobayashi
 	 * @since 2015/08/12
 	 */
@@ -3030,7 +3033,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者から呼吸状態を文字列で取得します。
 	 * </PRE>
-	 * @return
+	 * @return 呼吸状態
 	 * @author kobayashi
 	 * @since 2015/08/12
 	 */
@@ -3040,6 +3043,14 @@ public class ERPatientAgent extends Agent
 		return strRespirationSignStatus;
 	}
 
+	/**
+	 * <PRE>
+	 *   患者からSpO2の状態を取得します。
+	 * </PRE>
+	 * @return SpO2の状態
+	 * @author kobayashi
+	 * @since 2015/08/12
+	 */
 	public String strGetSpO2Status()
 	{
 		return strSpO2SignStatus;
@@ -3049,7 +3060,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    患者から顔面の血色を取得します。
 	 * </PRE>
-	 * @return
+	 * @return　顔面の血色
 	 * @author kobayashi
 	 * @since 2015/08/12
 	 */
@@ -3081,6 +3092,8 @@ public class ERPatientAgent extends Agent
 	 *   患者エージェントが保持している顔面のAISを取得します。
 	 * </PRE>
 	 * @return 顔面AISを返却。
+	 * @author kobayashi
+	 * @since 2015/07/17
 	 */
 	public double lfGetInternalAISFace()
 	{
@@ -3300,7 +3313,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが診察待ちをしているかのフラグを取得します。
 	 * </PRE>
-	 * @return
+	 * @return 診察待ちフラグ
+	 *         0 診察待ちしていない
+	 *         1 診察待ちしている
 	 * @author kobayashi
 	 * @since 2015/07/30
 	 */
@@ -3313,7 +3328,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが検査室待ちをしているかのフラグを取得します。
 	 * </PRE>
-	 * @return
+	 * @return X線室待ちフラグ
+	 *         0 待っていない
+	 *         1 待っている
 	 * @author kobayashi
 	 * @since 2015/07/30
 	 */
@@ -3326,7 +3343,8 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが検査室待ちをしているかのフラグを取得します。
 	 * </PRE>
-	 * @return
+	 * @return 0 CT検査待ちせず。
+	 *         1 CT検査待ち中
 	 * @author kobayashi
 	 * @since 2015/07/30
 	 */
@@ -3339,7 +3357,8 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが検査室待ちをしているかのフラグを取得します。
 	 * </PRE>
-	 * @return
+	 * @return 0 MRI検査待ちせず。
+	 *         1 MRI検査待ち中
 	 * @author kobayashi
 	 * @since 2015/07/30
 	 */
@@ -3352,7 +3371,8 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが検査室待ちをしているかのフラグを取得します。
 	 * </PRE>
-	 * @return
+	 * @return 0 血管造影検査待ちせず。
+	 *         1 血管造影検査待ち中
 	 * @author kobayashi
 	 * @since 2015/07/30
 	 */
@@ -3365,7 +3385,8 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが検査室待ちをしているかのフラグを取得します。
 	 * </PRE>
-	 * @return
+	 * @return 0 超音波検査待ちせず。
+	 *         1 超音波検査待ち中
 	 * @author kobayashi
 	 * @since 2015/07/30
 	 */
@@ -3378,7 +3399,8 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが初療室待ちをしているかのフラグを取得します。
 	 * </PRE>
-	 * @return
+	 * @return 0 初療室待ちせず。
+	 *         1 初療室待ち中
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -3391,7 +3413,8 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが観察室待ちをしているかのフラグを取得します。
 	 * </PRE>
-	 * @return
+	 * @return 0 観察室待ちせず。
+	 *         1 観察室待ち中
 	 * @author kobayashi
 	 * @since 2015/07/30
 	 */
@@ -3404,7 +3427,8 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが手術室待ちをしているかのフラグを取得します。
 	 * </PRE>
-	 * @return
+	 * @return 0 手術室待ちせず。
+	 *         1 手術室待ち中
 	 * @author kobayashi
 	 * @since 2015/07/30
 	 */
@@ -3417,7 +3441,8 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが重症観察室待ちをしているかのフラグを取得します。
 	 * </PRE>
-	 * @return
+	 * @return 0 重症観察室待ちせず。
+	 *         1 重症観察室待ち中
 	 * @author kobayashi
 	 * @since 2015/07/30
 	 */
@@ -3430,7 +3455,8 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが集中治療室待ちをしているかのフラグを取得します。
 	 * </PRE>
-	 * @return
+	 * @return 0 集中治療室待ちせず。
+	 *         1 集中治療室待ち中
 	 * @author kobayashi
 	 * @since 2015/07/30
 	 */
@@ -3443,7 +3469,8 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが高度治療室待ちをしているかのフラグを取得します。
 	 * </PRE>
-	 * @return
+	 * @return 0 高度治療室待ちせず。
+	 *         1 高度治療室待ち中
 	 * @author kobayashi
 	 * @since 2015/07/30
 	 */
@@ -3456,7 +3483,8 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが一般病棟待ちをしているかのフラグを取得します。
 	 * </PRE>
-	 * @return
+	 * @return 0 一般病棟待ちせず。
+	 *         1 一般病棟待ち中
 	 * @author kobayashi
 	 * @since 2015/07/30
 	 */
@@ -3469,7 +3497,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが診察待ちをしているかのフラグを設定します。
 	 * </PRE>
-	 * @param iConsultationRoomWaitFlagData
+	 * @param iConsultationRoomWaitFlagData 診察室待ちフラグ
+	 *                                           0 待っていない
+	 *                                           1 待っている
 	 * @author kobayashi
 	 * @since 2015/07/30
 	 */
@@ -3482,7 +3512,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが検査待ちをしているかのフラグを設定します。
 	 * </PRE>
-	 * @param iExaminationRoomWaitFlagData
+	 * @param iExaminationRoomWaitFlagData X線室待ちフラグ
+	 *                                           0 待っていない
+	 *                                           1 待っている
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -3495,7 +3527,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが検査待ちをしているかのフラグを設定します。
 	 * </PRE>
-	 * @param iExaminationRoomWaitFlagData
+	 * @param iExaminationRoomWaitFlagData CT室待ちフラグ
+	 *                                           0 待っていない
+	 *                                           1 待っている
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -3508,7 +3542,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが検査待ちをしているかのフラグを設定します。
 	 * </PRE>
-	 * @param iExaminationRoomWaitFlagData
+	 * @param iExaminationRoomWaitFlagData MRI室待ちフラグ
+	 *                                           0 待っていない
+	 *                                           1 待っている
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -3521,7 +3557,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが検査待ちをしているかのフラグを設定します。
 	 * </PRE>
-	 * @param iExaminationRoomWaitFlagData
+	 * @param iExaminationRoomWaitFlagData 血管造影室待ちフラグ
+	 *                                           0 待っていない
+	 *                                           1 待っている
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -3534,7 +3572,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが検査待ちをしているかのフラグを設定します。
 	 * </PRE>
-	 * @param iExaminationRoomWaitFlagData
+	 * @param iExaminationRoomWaitFlagData 超音波室待ちフラグ
+	 *                                           0 待っていない
+	 *                                           1 待っている
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -3547,7 +3587,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが初療室待ちをしているかのフラグを設定します。
 	 * </PRE>
-	 * @param iEmergencyRoomWaitFlagData
+	 * @param iEmergencyRoomWaitFlagData 初療室待ちフラグ
+	 *                                   0 待っていない
+	 *                                   1 待っている
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -3560,7 +3602,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが観察室待ちをしているかのフラグを設定します。
 	 * </PRE>
-	 * @param iObservationRoomWaitFlagData
+	 * @param iObservationRoomWaitFlagData  観察室待ちフラグ
+	 *                                      0 待っていない
+	 *                                      1 待っている
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -3573,7 +3617,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが手術室待ちをしているかのフラグを設定します。
 	 * </PRE>
-	 * @param iOperationRoomWaitFlagData
+	 * @param iOperationRoomWaitFlagData 手術室待ちフラグ
+	 *                                   0 待っていない
+	 *                                   1 待っている
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -3586,7 +3632,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが重症観察室待ちをしているかのフラグを設定します。
 	 * </PRE>
-	 * @param iSereveInjuryObservationRoomWaitFlagData
+	 * @param iSereveInjuryObservationRoomWaitFlagData   重症観察室待ちフラグ
+	 *                                                   0 待っていない
+	 *                                                   1 待っている
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -3599,7 +3647,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが集中治療室待ちをしているかのフラグを設定します。
 	 * </PRE>
-	 * @param iIntensiveCareUnitRoomWaitFlagData
+	 * @param iIntensiveCareUnitRoomWaitFlagData   集中治療室待ちフラグ
+	 *                                             0 待っていない
+	 *                                             1 待っている
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -3612,7 +3662,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが高度治療室待ちをしているかのフラグを設定します。
 	 * </PRE>
-	 * @param iHighCareUnitRoomWaitFlagData
+	 * @param iHighCareUnitRoomWaitFlagData      高度治療室待ちフラグ
+	 *                                           0 待っていない
+	 *                                           1 待っている
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -3625,7 +3677,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   患者エージェントが一般病棟待ちをしているかのフラグを設定します。
 	 * </PRE>
-	 * @param iGeneralWardRoomWaitFlagData
+	 * @param iGeneralWardRoomWaitFlagData       一般病棟待ちフラグ
+	 *                                           0 待っていない
+	 *                                           1 待っている
 	 * @author kobayashi
 	 * @since 2015/08/03
 	 */
@@ -3634,7 +3688,17 @@ public class ERPatientAgent extends Agent
 		iGeneralWardRoomWaitFlag = iGeneralWardRoomWaitFlagData;
 	}
 
-	public void vSetObservedFlag(int iObservedFlagData )
+	/**
+	 * <PRE>
+	 *   患者エージェントが観察されたか否かのフラグを設定します。
+	 * </PRE>
+	 * @param iObservedFlagData       観察されたかどうかフラグ
+	 *                                 0 されていない
+	 *                                 1 された
+	 * @author kobayashi
+	 * @since 2015/08/03
+	 */
+	public void  vSetObservedFlag(int iObservedFlagData )
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		iObservedFlag = iObservedFlagData;
@@ -3837,7 +3901,7 @@ public class ERPatientAgent extends Agent
 	 *    収縮期血圧（最大血圧）を返却します。
 	 *    単位はmmHgです。
 	 * </PRE>
-	 * @return
+	 * @return 収縮期血圧
 	 */
 	public double lfGetSbp()
 	{
@@ -3849,7 +3913,7 @@ public class ERPatientAgent extends Agent
 	 *    拡張期血圧（最小血圧）を返却します。
 	 *    単位はmmHgです。
 	 * </PRE>
-	 * @return
+	 * @return 拡張期血圧
 	 */
 	public double lfGetDbp()
 	{
@@ -3860,7 +3924,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    年齢を返却します。
 	 * </PRE>
-	 * @return
+	 * @return 年齢
 	 */
 	public double lfGetAge()
 	{
@@ -3871,7 +3935,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    患者の性別を返却します。
 	 * </PRE>
-	 * @return
+	 * @return 性別
 	 */
 	public int iGetSex()
 	{
@@ -3882,7 +3946,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    外傷ヶ所の数を取得します。
 	 * </PRE>
-	 * @return
+	 * @return 外傷の個所数
 	 */
 	public int iGetNumberOfTrauma()
 	{
@@ -3894,7 +3958,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    白血球数を取得します。
 	 * </PRE>
-	 * @return
+	 * @return 白血球の数
 	 */
 	public double lfGetLeucocyte()
 	{
@@ -3906,7 +3970,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    患者エージェントのGCSを取得します。
 	 * </PRE>
-	 * @return
+	 * @return GCS値
 	 */
 	public double lfGetGcs()
 	{
@@ -3918,7 +3982,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    看護師に対応してもらっているかどうかを表すフラグを返却します。
 	 * </PRE>
-	 * @return
+	 * @return 看護師に対応して
 	 */
 	public int iGetNurseAttended()
 	{
@@ -3964,7 +4028,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    患者エージェントが現在どの部屋にいるのかを取得します。
 	 * </PRE>
-	 * @return
+	 * @return 患者の位置(部屋番号)
 	 */
 	public int iGetLocation()
 	{
@@ -3995,6 +4059,12 @@ public class ERPatientAgent extends Agent
 		return iExaminationFinishFlag;
 	}
 
+	/**
+	 * <PRE>
+	 *   患者が移動中かどうかを表すフラグを取得します。
+	 * </PRE>
+	 * @return 患者移動中か否かのフラグ
+	 */
 	public double lfGetMoveWaitingTime()
 	{
 		return lfMoveWaitingTime;
@@ -4028,13 +4098,21 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    患者エージェントが退院可能かどうかのフラグを設定します。
 	 * </PRE>
-	 * @param iFlag
+	 * @param iFlag 0 まだ退院できない
+	 *              1 退院可能
 	 */
 	public void vSetDisChargeFlag( int iFlag )
 	{
 		iDisChargeFlag = iFlag;
 	}
 
+	/**
+	 * <PRE>
+	 *    患者エージェントが他室へ移動できるかどうかのフラグを設定します。
+	 * </PRE>
+	 * @param iData 0 まだ移動できない、あるいは処置中
+	 *              1 移動可能
+	 */
 	public void vSetMoveWaitFlag(int iData)
 	{
 		iMoveWaitFlag = iData;
@@ -4066,7 +4144,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    患者の部屋を移動する際に待ちます。
 	 * </PRE>
-	 * @return
+	 * @return 移動時の待機フラグ
+	 *         rue 待っている
+	 *         false 待っていない
 	 */
 	public boolean isMoveWaitingTime()
 	{
@@ -4077,11 +4157,25 @@ public class ERPatientAgent extends Agent
 		return false;
 	}
 
+	/**
+	 * <PRE>
+	 *    患者の部屋を移動する際に待つフラグを設定します。
+	 * </PRE>
+	 * @param iData  移動時の待機フラグ
+	 * 				 true 待っている
+	 *      		 false 待っていない
+	 */
 	public void vSetMoveRoomFlag( int iData )
 	{
 		iMoveRoomFlag = iData;
 	}
 
+	/**
+	 * <PRE>
+	 *    患者の部屋を移動する際に待つ時間を設定します。
+	 * </PRE>
+	 * @param lfData  移動時の待機時間
+	 */
 	public void vSetMoveWaitingTime(double lfData )
 	{
 		// TODO 自動生成されたメソッド・スタブ
@@ -4256,7 +4350,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    医師エージェントIDを設定します。
 	 * </PRE>
-	 * @param iDoctorAgentId
+	 * @param iDoctorAgentId 医師エージェントのID
 	 * @author kobayashi
 	 * @since 2015/11/12
 	 */
@@ -4266,47 +4360,98 @@ public class ERPatientAgent extends Agent
 		iDoctorId = (int)iDoctorAgentId;
 	}
 
+	/**
+	 * <PRE>
+	 *    高度治療室に入室したか否かのフラグです。
+	 * </PRE>
+	 * @return 高度治療室入室フラグ
+	 */
 	public int iGetEnterHighCareUnitFlag()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iEnterHighCareUnitFlag;
 	}
 
+	/**
+	 * <PRE>
+	 *    高度治療室に入室したか否かのフラグを設定します。
+	 * </PRE>
+	 * @param iSetData フラグ値 0 入室していない
+	 *                          1 入室している
+	 */
 	public void vSetEnterHighCareUnitFlag( int iSetData )
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		iEnterHighCareUnitFlag = iSetData;
 	}
 
+	/**
+	 * <PRE>
+	 *    集中治療室に入室したか否かのフラグです。
+	 * </PRE>
+	 * @return 集中治療室入室フラグ
+	 */
 	public int iGetEnterIntensiveCareUnitFlag()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iEnterIntensiveCareUnitFlag;
 	}
 
+	/**
+	 * <PRE>
+	 *    集中治療室に入室したか否かのフラグを設定します。
+	 * </PRE>
+	 * @param iSetData フラグ値 0 入室していない
+	 *                          1 入室している
+	 */
 	public void vSetEnterIntensiveCareUnitFlag( int iSetData )
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		iEnterIntensiveCareUnitFlag = iSetData;
 	}
 
+	/**
+	 * <PRE>
+	 *    一般病棟に入室したか否かのフラグです。
+	 * </PRE>
+	 * @return 一般病棟入室フラグ
+	 */
 	public int iGetEnterGeneralWardFlag()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iEnterGeneralWardFlag;
 	}
 
+	/**
+	 * <PRE>
+	 *    一般病棟に入室したか否かのフラグを設定します。
+	 * </PRE>
+	 * @param iSetData フラグ値 0 入室していない
+	 *                          1 入室している
+	 */
 	public void vSetEnterGeneralWardFlag( int iSetData )
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		iEnterGeneralWardFlag = iSetData;
 	}
 
+	/**
+	 * <PRE>
+	 *    患者の緊急度を設定します。
+	 * </PRE>
+	 * @param iEmergency 緊急度
+	 */
 	public void vSetEmergencyLevel( int iEmergency )
 	{
 		iEmergencyLevel = iEmergency;
 	}
 
+	/**
+	 * <PRE>
+	 *    患者の緊急度を取得します。
+	 * </PRE>
+	 * @return 緊急度
+	 */
 	public int iGetEmergencyLevel()
 	{
 		return iEmergencyLevel;
@@ -4329,7 +4474,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    到着時間を取得します。
 	 * </PRE>
-	 * @return
+	 * @return 到達時間
 	 * @author kobayashi
 	 * @since 2015/11/12
 	 */
@@ -4342,7 +4487,8 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    到着時間に達したかどうかを判定します。
 	 * </PRE>
-	 * @return
+	 * @return true 到達時間に達した。
+	 *         false 到達時間に達していない
 	 * @author kobayashi
 	 * @since 2015/11/12
 	 */
@@ -4355,7 +4501,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    外傷部位の中で最も最大のものを取得します。
 	 * </PRE>
-	 * @return
+	 * @return AIS重症度最大値
 	 * @author kobayashi
 	 * @since 2015/11/12
 	 */
@@ -4388,7 +4534,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    外傷部位の中で最も最小のものを取得します。
 	 * </PRE>
-	 * @return
+	 * @return AIS重症度最小値
 	 * @author kobayashi
 	 * @since 2015/11/12
 	 */
@@ -4421,7 +4567,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   経過時間を取得します。
 	 * </PRE>
-	 * @return
+	 * @return 病院到着後経過時間
 	 * @author kobayashi
 	 * @since 2015/11/12
 	 */
@@ -4434,7 +4580,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    待ち時間を取得します。
 	 * </PRE>
-	 * @return
+	 * @return 総待ち時間
 	 * @author kobayashi
 	 * @since 2015/11/12
 	 */
@@ -4513,6 +4659,12 @@ public class ERPatientAgent extends Agent
 		erNurseAgent.vSendMessage( mesSend );
 	}
 
+	/**
+	 * <PRE>
+	 *   メッセージを送信します。
+	 * </PRE>
+	 * @param mess メッセージデータ
+	 */
 	public void vSendMessage( Message mess )
 	{
 		if( mesQueueData != null )
@@ -4521,6 +4673,12 @@ public class ERPatientAgent extends Agent
 		}
 	}
 
+	/**
+	 * <PRE>
+	 *   メッセージを受診します。
+	 * </PRE>
+	 * @return メッセージデータ
+	 */
 	public Message messGetMessage()
 	{
 		Message mes = null;
@@ -4802,6 +4960,12 @@ public class ERPatientAgent extends Agent
 		}
 	}
 
+	/**
+	 * <PRE>
+	 *    患者の観察を受けるまでの時間を返します。
+	 * </PRE>
+	 * @return 観察待ち時間
+	 */
 	public double lfGetObservationTime()
 	{
 		// TODO 自動生成されたメソッド・スタブ
@@ -4812,7 +4976,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    患者エージェントのログ出力を設定します。
 	 * </PRE>
-	 * @param log
+	 * @param log java標準のログ―クラスのインスタンス
 	 */
 	public void vSetLog(Logger log)
 	{
@@ -4820,6 +4984,12 @@ public class ERPatientAgent extends Agent
 		cPatientAgentLog = log;
 	}
 
+	/**
+	 * <PRE>
+	 *    シミュレーション終了時間を設定します。
+	 * </PRE>
+	 * @param lfEndTime シミュレーション終了時間
+	 */
 	public void vSetSimulationEndTime( double lfEndTime )
 	{
 		lfSimulationEndTime = lfEndTime;
@@ -4829,7 +4999,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    逆シミュレーションモードを設定します。
 	 * </PRE>
-	 * @param iMode
+	 * @param iMode 0 通常シミュレーション
+	 *              1 GUIモード
+	 *              2 逆シミュレーション
 	 */
 	public void vSetInverseSimMode( int iMode )
 	{
@@ -4885,6 +5057,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    目的地へ移動します。
 	 * </PRE>
+	 * @return 目的地への
 	 */
 	private int iMoveRoute()
 	{
@@ -4956,7 +5129,10 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    患者の傷病状態を発生させる頻度を取得します。
 	 * </PRE>
-	 * @param iData
+	 * @param iData 傷病状態発生乱数モード
+	 *              0 一様乱数
+	 *              1 正規乱数
+	 *              2 ワイブル分布乱数
 	 */
 	public void vSetPatientRandomMode( int iData )
 	{
@@ -4967,7 +5143,9 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    部屋間を移動中であることを表すフラグを取得します。
 	 * </PRE>
-	 * @return
+	 * @return 部屋移動中フラグ
+	 *         0 移動していない
+	 *         1 移動している
 	 */
 	public int iGetMoveRoomFlag()
 	{
@@ -4978,7 +5156,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    部屋間を移動するのに要する時間を取得します。
 	 * </PRE>
-	 * @return
+	 * @return 部屋間移動時間
 	 */
 	public double lfGetMoveTime()
 	{
@@ -4989,7 +5167,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    シミュレーションが開始してからの総時間を取得します。
 	 * </PRE>
-	 * @return
+	 * @return シミュレーションの総経過時間
 	 */
 	public double lfGetTotalTime()
 	{
@@ -5004,7 +5182,7 @@ public class ERPatientAgent extends Agent
 	 * @param lfBeta	ワイブル分布用パラメータ1
 	 * @param lfAlpha	ワイブル分布用パラメータ2
 	 * @param lfRand	乱数値
-	 * @return
+	 * @return ワイブル分布関数の逆関数値
 	 */
 	private double InvWeibull( double lfAlpha, double lfBeta, double lfRand )
 	{
@@ -5020,7 +5198,7 @@ public class ERPatientAgent extends Agent
 	 * </PRE>
 	 * @param lfBeta	ワイブル分布用パラメータ1
 	 * @param lfAlpha	ワイブル分布用パラメータ2
-	 * @return
+	 * @return ワイブル乱数[-1.0～1.0]
 	 */
 	public double weibullRand( double lfAlpha, double lfBeta )
 	{
@@ -5087,7 +5265,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *    診察してくれる医者を設定します。
 	 * </PRE>
-	 * @param erDAgent
+	 * @param erDAgent 担当医エージェント
 	 */
 	public void vSetConsultationDoctorAgent( ERDoctorAgent erDAgent )
 	{
@@ -5098,7 +5276,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   現在のなくなられた数を出力します。
 	 * </PRE>
-	 * @return
+	 * @return 亡くなられた患者の数
 	 */
 	public int iGetDeathNum()
 	{
