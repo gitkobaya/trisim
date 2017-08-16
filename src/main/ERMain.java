@@ -155,11 +155,6 @@ public class ERMain
 			// コマンドライン解析クラスのインスタンスを作成します。
 			cmd = new CCmdCheck();
 
-			// TRISim実行クラスのインスタンスを作成します。
-			erDepartment = new ERDepartment();
-			// ログ出力を登録します。
-			erDepartment.vSetLog( cTRISimLogger );
-
 			// コマンドラインの解析を実行します。
 			lRet = cmd.lCommandCheck(args);
 
@@ -169,12 +164,16 @@ public class ERMain
 				if( lRet == 0 )
 				{
 /*------------------------------初期化部-------------------------------------------------*/
+					// TRISim実行クラスのインスタンスを作成します。
+					erDepartment = new ERDepartment();
+					// ログ出力を登録します。
+					erDepartment.vSetLog( cTRISimLogger );
 
 					// 初期化を実行します。
 					vInitialize( cmd, erDepartment, cTRISimLogger, strNodeLinkFileName, csCriticalSection );
 
 					// 患者エージェントを別スレッドから登場させるようにします。
-//					vThreadInvoke( engine, erDepartment );
+//					vThreadInvoke( cmd, engine, erDepartment );
 
 					// シミュレーションを開始します。
 					vStart( cmd.iGetSimulationTimeStep(), engine );
@@ -217,7 +216,7 @@ public class ERMain
 //					invSimEngine.vInstallCallbackFunction(interfaceObjFunc);
 
 					// 患者エージェントを別スレッドから登場させるようにします。
-//					vThreadInvoke( engine, erDepartment );
+//					vThreadInvoke( cmd, engine, invSimEngine.erGetERDepartments );
 
 					// シミュレーションを開始します。
 					vStartInvSim( cmd.iGetSimulationTimeStep(), cmd.iGetInverseSimulationIntervalNumber() );
@@ -236,6 +235,11 @@ public class ERMain
 			// GUIモードであれば、画面を表示させてシミュレーションを実行します。
 			else if( cmd.iGetExecMode() == 1 )
 			{
+				// TRISim実行クラスのインスタンスを作成します。
+				erDepartment = new ERDepartment();
+				// ログ出力を登録します。
+				erDepartment.vSetLog( cTRISimLogger );
+
 				// デフォルト設定を行います。
 				initGuiSimParam.vSetDefaultValue();
 				// 初期設定ファイルを読み込みます。
@@ -722,17 +726,47 @@ public class ERMain
 	/**
 	 * <PRE>
 	 *    患者発生を別スレッドに立ち上げて実行します。
+	 *    通常シミュレーション用
 	 * </PRE>
+	 * @param cmd						コマンドライン解析クラス
 	 * @param engine					FUSEシミュレーションエンジン
 	 * @param erDepartment				救急部門インスタンス
 	 * @param erThreadArrivalPatient	患者到達分布生成用スレッド
 	 */
-	private static void vThreadInvoke( SimulationEngine engine, ERDepartment erDepartment, ERDepartmentArrivalPatient erThreadArrivalPatient )
+	private static void vThreadInvoke( CCmdCheck cmd, SimulationEngine engine, ERDepartment erDepartment, ERDepartmentArrivalPatient erThreadArrivalPatient )
 	{
 		erThreadArrivalPatient = new ERDepartmentArrivalPatient();
 		erThreadArrivalPatient.vSetSimulationEngine( engine );
 		erThreadArrivalPatient.vSetWaitingRoom( erDepartment.erGetWaitingRoom() );
+		erThreadArrivalPatient.vSetRandomMode(cmd.iGetPatientRandomMode() );
+		erThreadArrivalPatient.vSetInverseSimFlag( cmd.iGetExecMode() );
+		erThreadArrivalPatient.vSetFileWriteMode( cmd.iGetFileWriteMode() );
+		erThreadArrivalPatient.vSetPatientArrivalMode( cmd.iGetPatientArrivalMode() );
 //		erThreadArrivalPatient.start();
+	}
+
+	/**
+	 * <PRE>
+	 *    患者発生を別スレッドに立ち上げて実行します。
+	 *    逆シミュレーション用
+	 * </PRE>
+	 * @param cmd						コマンドライン解析クラス
+	 * @param engine					FUSEシミュレーションエンジン
+	 * @param erThreadArrivalPatient	患者到達分布生成用スレッド
+	 */
+	private static void vThreadInvoke( CCmdCheck cmd, SimulationEngine engine, ERDepartmentArrivalPatient erThreadArrivalPatient )
+	{
+		for( int i = 0; i < invSimEngine.erGetERDepartments().length; i++ )
+		{
+			erThreadArrivalPatient = new ERDepartmentArrivalPatient();
+			erThreadArrivalPatient.vSetSimulationEngine( engine );
+			erThreadArrivalPatient.vSetWaitingRoom( invSimEngine.erGetERDepartments()[i].erGetWaitingRoom() );
+			erThreadArrivalPatient.vSetRandomMode(cmd.iGetPatientRandomMode() );
+			erThreadArrivalPatient.vSetInverseSimFlag( cmd.iGetExecMode() );
+			erThreadArrivalPatient.vSetFileWriteMode( cmd.iGetFileWriteMode() );
+			erThreadArrivalPatient.vSetPatientArrivalMode( cmd.iGetPatientArrivalMode() );
+//			erThreadArrivalPatient.start();
+		}
 	}
 
 	/**

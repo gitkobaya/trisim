@@ -40,7 +40,7 @@ public class ERTriageNodeManager
 	 * <PRE>
 	 * ファイル名つきコンストラクタ
 	 * </PRE>
-	 * @param filename
+	 * @param filename ノードリンク情報が記述されたファイル名
 	 */
 	public ERTriageNodeManager( String filename )
 	{
@@ -141,145 +141,198 @@ public class ERTriageNodeManager
 		return tempNodes;
 	}
 
-    /**
-     * <PRE>
-     *    Node全体を返すメソッド
-     *    返り値のリスト自体はコピーなのでエレメントの削除や追加をしても問題ないですが、参照しているエレメントは原本なので
-     *    それを操作すると値が変わってしまいます。
-     * </PRE>
-     * @return ノードマネージャクラスに登録された全ノード
-     */
-    public List<ERTriageNode> getAll()
-    {
-        return new ArrayList<ERTriageNode>(this.nodes);
-    }
+	/**
+	 * <PRE>
+	 *    Node全体を返すメソッド
+	 *    返り値のリスト自体はコピーなのでエレメントの削除や追加をしても問題ないですが、参照しているエレメントは原本なので
+	 *    それを操作すると値が変わってしまいます。
+	 * </PRE>
+	 * @return ノードマネージャクラスに登録された全ノード
+	 */
+	public List<ERTriageNode> getAll()
+	{
+		return new ArrayList<ERTriageNode>(this.nodes);
+	}
 
-    /** Node全体のフルコピーを返すメソッド */
-    public ArrayList<ERTriageNode> getAllClone() {
-        ArrayList<ERTriageNode> copiedList=new ArrayList<ERTriageNode>(nodes.size());
-        Map<Long,ERTriageNode> idMap=new HashMap<Long, ERTriageNode>(nodes.size());
+	/**
+	 * <PRE>
+	 *    Node全体のフルコピーを返すメソッド
+	 * </PRE>
+	 * @return ノードのコピー
+	 */
+	public ArrayList<ERTriageNode> getAllClone()
+	{
+		ArrayList<ERTriageNode> copiedList=new ArrayList<ERTriageNode>(nodes.size());
+		Map<Long,ERTriageNode> idMap=new HashMap<Long, ERTriageNode>(nodes.size());
 
-        // ノードだけのコピーを生成する
-        for (ERTriageNode node:this.nodes){
-            ERTriageNode copy=node.simpleClone();
-            copiedList.add(copy);
+		// ノードだけのコピーを生成する
+		for (ERTriageNode node:this.nodes)
+		{
+			ERTriageNode copy=node.simpleClone();
+			copiedList.add(copy);
 
-            // マップを作っておく
-            idMap.put(copy.getId(), copy);
-        }
+			// マップを作っておく
+			idMap.put(copy.getId(), copy);
+		}
 
-        System.out.println("DEBUG: num of Nodes:"+this.nodes.size());
+		System.out.println("DEBUG: num of Nodes:"+this.nodes.size());
 
-        // リンクを追加していく
-        int linksDebug=0;
-        int nodeCounter=0;
-        for (ERTriageNode node:this.nodes){
-            ERTriageNode copy=copiedList.get(nodeCounter);
-            ERTriageNode origine=node; // コピー元
+		// リンクを追加していく
+		int linksDebug=0;
+		int nodeCounter=0;
+		for (ERTriageNode node:this.nodes)
+		{
+			ERTriageNode copy=copiedList.get(nodeCounter);
+			ERTriageNode origine=node; // コピー元
 
-            for (ERTriageLink link:origine.getLinks()){
-                ERTriageNode desti=idMap.get(link.getDestination().getId());
-                ERTriageLink newLink=new ERTriageLink(copy, desti, link.getDistance());
-                copy.addLink(newLink);
-                linksDebug++;
-            }
-            nodeCounter++;
-        }
+			for (ERTriageLink link:origine.getLinks())
+			{
+				ERTriageNode desti=idMap.get(link.getDestination().getId());
+				ERTriageLink newLink=new ERTriageLink(copy, desti, link.getDistance());
+				copy.addLink(newLink);
+				linksDebug++;
+			}
+			nodeCounter++;
+		}
 
-        System.out.println("DEBUG: num of links:"+linksDebug);
+		System.out.println("DEBUG: num of links:"+linksDebug);
 
-        return copiedList;
-    }
+		return copiedList;
+	}
 
-    /** Node全体への参照を返すメソッド */
-    public List<ERTriageNode> getAllReference() {
-        return this.nodes;
-    }
+	/**
+	 * <PRE>
+	 *    Node全体への参照を返すメソッド
+	 * </PRE>
+	 * @return ノード全体の参照（アドレスのみ）
+	 */
+	public List<ERTriageNode> getAllReference()
+	{
+		return this.nodes;
+	}
 
-    /** 指定されたIDのノードを返すメソッド */
-    public ERTriageNode getNodeById(long id){
-        ERTriageNode result=null;
-        result=this.getNodeById(id,nodes);
-        return result;
-    }
+	/**
+	 * <PRE>
+	 *    指定されたIDのノードを返すメソッド
+	 * </PRE>
+	 * @param id 指定ノードID
+	 * @return IDで指定されたノード
+	 */
+	public ERTriageNode getNodeById(long id)
+	{
+		ERTriageNode result=null;
+		result=this.getNodeById(id,nodes);
+		return result;
+	}
 
-    /** 指定されたIDのノードを返すメソッド */
-    private ERTriageNode getNodeById(long id, List<ERTriageNode> targetNodes){
-        ERTriageNode result=null;
+	/**
+	 * <PRE>
+	 *   指定されたIDのノードを返すメソッド
+	 * </PRE>
+	 * @param id			ノードID
+	 * @param targetNodes	指定ノード群
+	 * @return				指定ノード群の該当IDのノード
+	 */
+	private ERTriageNode getNodeById(long id, List<ERTriageNode> targetNodes){
+		ERTriageNode result=null;
 
-        for (ERTriageNode node:targetNodes){
-            if (node.getId()==id){
-                result=node;
-                break;
-            }
-        }
-        return result;
-    }
+		for (ERTriageNode node:targetNodes)
+		{
+			if (node.getId()==id)
+			{
+				result=node;
+				break;
+			}
+		}
+		return result;
+	}
 
-    /** 指定されたXY線分を+-Z方向に無限に伸ばした面によって切断される
-     * リンクへの参照を返すメソッドです */
-    public List<ERTriageLink> getLinksCutByPlane(Position pos1, Position pos2){
-        ArrayList<ERTriageLink> cutLinks=new ArrayList<ERTriageLink>();
-        double[] vec=new double[2];  // 切断面ベクトル
-        double[] vec0=new double[2];  // 汎用の自分ベクトル
-        double[] vecA=new double[2];// 汎用の相手ベクトル1
-        double[] vecB=new double[2];// 汎用の相手ベクトル2
+	/**
+	 * <PRE>
+	 *    指定されたXY線分を+-Z方向に無限に伸ばした面によって切断される
+	 *    リンクへの参照を返すメソッドです
+	 * </PRE>
+	 * @param pos1	始点(x,y)
+	 * @param pos2	終点(x,y)
+	 * @return		始点終点間のリンクすべて
+	 */
+	public List<ERTriageLink> getLinksCutByPlane(Position pos1, Position pos2)
+	{
+		ArrayList<ERTriageLink> cutLinks=new ArrayList<ERTriageLink>();
+		double[] vec=new double[2];  // 切断面ベクトル
+		double[] vec0=new double[2];  // 汎用の自分ベクトル
+		double[] vecA=new double[2];// 汎用の相手ベクトル1
+		double[] vecB=new double[2];// 汎用の相手ベクトル2
 
-        vec[0]=pos2.getX()-pos1.getX();
-        vec[1]=pos2.getY()-pos1.getY();
+		vec[0]=pos2.getX()-pos1.getX();
+		vec[1]=pos2.getY()-pos1.getY();
 
-        for (ERTriageNode node:nodes){
-            for (ERTriageLink link:node.getLinks()){
-                // 切断面から見たリンクとの関係
-                Position posA=link.getStart().getPosition();
-                vecA[0]=posA.getX()-pos1.getX();
-                vecA[1]=posA.getY()-pos1.getY();
+		for (ERTriageNode node:nodes)
+		{
+			for (ERTriageLink link:node.getLinks())
+			{
+				// 切断面から見たリンクとの関係
+				Position posA=link.getStart().getPosition();
+				vecA[0]=posA.getX()-pos1.getX();
+				vecA[1]=posA.getY()-pos1.getY();
 
-                Position posB=link.getDestination().getPosition();
-                vecB[0]=posB.getX()-pos1.getX();
-                vecB[1]=posB.getY()-pos1.getY();
+				Position posB=link.getDestination().getPosition();
+				vecB[0]=posB.getX()-pos1.getX();
+				vecB[1]=posB.getY()-pos1.getY();
 
-                double check1=vec[0]*vecA[1]-vec[1]*vecA[0]; //Z軸方向要素
-                double check2=vec[0]*vecB[1]-vec[1]*vecB[0]; //Z軸方向要素
+				double check1=vec[0]*vecA[1]-vec[1]*vecA[0]; //Z軸方向要素
+				double check2=vec[0]*vecB[1]-vec[1]*vecB[0]; //Z軸方向要素
 
-                if (check1*check2<=0){
-                    // リンクから見た切断面との関係
-                    vec0[0]=posB.getX()-posA.getX();
-                    vec0[1]=posB.getY()-posA.getY();
+				if (check1*check2<=0)
+				{
+					// リンクから見た切断面との関係
+					vec0[0]=posB.getX()-posA.getX();
+					vec0[1]=posB.getY()-posA.getY();
 
-                    vecA[0]=-vecA[0];
-                    vecA[1]=-vecA[1];
+					vecA[0]=-vecA[0];
+					vecA[1]=-vecA[1];
 
-                    vecB[0]=pos2.getX()-posA.getX();
-                    vecB[1]=pos2.getY()-posA.getY();
+					vecB[0]=pos2.getX()-posA.getX();
+					vecB[1]=pos2.getY()-posA.getY();
 
-                    check1=vec0[0]*vecA[1]-vec0[1]*vecA[0]; //Z軸方向要素
-                    check2=vec0[0]*vecB[1]-vec0[1]*vecB[0]; //Z軸方向要素
-                    if (check1*check2<=0){
-                        cutLinks.add(link);
-                    }
-                }
-            }
-        }
+					check1=vec0[0]*vecA[1]-vec0[1]*vecA[0]; //Z軸方向要素
+					check2=vec0[0]*vecB[1]-vec0[1]*vecB[0]; //Z軸方向要素
+					if (check1*check2<=0)
+					{
+						cutLinks.add(link);
+					}
+				}
+			}
+		}
 
-        return cutLinks;
-    }
+		return cutLinks;
+	}
 
-    /** 指定された範囲に含まれるノードへの参照を返すメソッドです<br>
-    中心となる点から指定された範囲の園内のノードをピックアップ<br>
-    なお，境界線上は範囲内とみなされません*/
-    public List<ERTriageNode> getNodesInRange(Position pos, double radius){
-        ArrayList<ERTriageNode> rangedNodes=new ArrayList<ERTriageNode>(100);
+	/**
+	 * <PRE>
+	 *   指定された範囲に含まれるノードへの参照を返すメソッドです
+	 *   中心となる点から指定された範囲の園内のノードをピックアップ
+	 *   なお，境界線上は範囲内とみなされません
+	 * </PRE>
+	 * @param pos		指定した位置
+	 * @param radius	指定した位置を中心とした半径
+	 * @return	範囲内にあるノードすべて
+	 */
+	public List<ERTriageNode> getNodesInRange(Position pos, double radius)
+	{
+		ArrayList<ERTriageNode> rangedNodes=new ArrayList<ERTriageNode>(100);
 
-        // 範囲に含まれるかどうかの確認
-        for ( ERTriageNode node:this.nodes ){
-            if (node.getPosition().getDistance(pos)<radius){
-                rangedNodes.add(node);
-            }
-        }
+		// 範囲に含まれるかどうかの確認
+		for ( ERTriageNode node:this.nodes )
+		{
+			if (node.getPosition().getDistance(pos)<radius)
+			{
+				rangedNodes.add(node);
+			}
+		}
 
-        return rangedNodes;
-    }
+		return rangedNodes;
+	}
 
     /** 指定された範囲に含まれるノードへの参照を返すメソッドです<br>
      * 二つの座標を対角とする直方体に含まれるノードをピックアップ<br>

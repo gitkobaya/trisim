@@ -1574,4 +1574,15 @@ public class InverseSimulationEngine
 		for( i = 0;i < alElapesdTime.size(); i++ )
 			System.out.println(alElapesdTime.get(i));
 	}
+
+	/**
+	 * <PRE>
+	 *    逆シミュレーションにおける全救急部門を取得します。
+	 * </PRE>
+	 * @return 全救急部門
+	 */
+	public ERDepartment[] erGetERDepartments()
+	{
+		return erDepartments;
+	}
 }
