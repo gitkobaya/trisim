@@ -107,7 +107,7 @@ public class InitSimParam extends InitSettingFileRead
 		alfInternalAISLowerExtremitySeverity	= new double[9];			// 患者の下肢AIS調整パラメータ(weibull分布用α、β及び各度数分布7パラメータ)
 		alfInternalAISUnspecifiedSeverity		= new double[9];			// 患者の熱傷及びその他AIS調整パラメータ(weibull分布用α、β及び各度数分布7パラメータ)
 		alfInjuryAISPartAnatomy					= new double[11];			// 患者の外傷部位調整パラメータ(weibull分布用α、β及び各度数分布9パラメータ)
-		alfInjuryAISNumber						= new double[11];			// 患者の外傷ヶ所調整パラメータ(各度数分布9パラメータ)
+		alfInjuryAISNumber						= new double[10];			// 患者の外傷ヶ所調整パラメータ(各度数分布9パラメータ)
 
 		// 医師パラメータ
 		alfDoctorJudgeModerateTrauma			= new double[5];			// 傷病状態（中症度）判定確率の発生確率weibull分布のα、β及び医師の度数(5パラメータ)
@@ -869,7 +869,7 @@ public class InitSimParam extends InitSettingFileRead
 		}
 
 		// 患者の傷病部位の発生weibull分布のα
-		alfInjuryAISPartAnatomy[0] = GetInitDataFloat( strPatientSectionName, "InjuryPartAnatomyWeibullAlpha", -1, strIniFullPath );
+		alfInjuryAISPartAnatomy[0] = GetInitDataFloat( strPatientSectionName, "InjuryAISPartAnatomyWeibullAlpha", -1, strIniFullPath );
 		if( 0 > alfInjuryAISPartAnatomy[0] )
 		{
 			/* 範囲外を指定した場合はエラーを出力します。*/
@@ -877,7 +877,7 @@ public class InitSimParam extends InitSettingFileRead
 		}
 
 		// 患者の傷病部位の発生weibull分布のβ
-		alfInjuryAISPartAnatomy[1] = GetInitDataFloat( strPatientSectionName, "InjuryPartAnatomyWeibullBeta", -1, strIniFullPath );
+		alfInjuryAISPartAnatomy[1] = GetInitDataFloat( strPatientSectionName, "InjuryAISPartAnatomyWeibullBeta", -1, strIniFullPath );
 		if( 0 > alfInjuryAISPartAnatomy[1] )
 		{
 			/* 範囲外を指定した場合はエラーを出力します。*/
@@ -1034,14 +1034,6 @@ public class InitSimParam extends InitSettingFileRead
 		{
 			/* 範囲外を指定した場合はエラーを出力します。*/
 			throw(new IllegalArgumentException("Injury Number of Anatomy 8 parameter out of range"));
-		}
-
-		// 患者の傷病数9
-		alfInjuryAISNumber[10] = GetInitDataFloat( strPatientSectionName, "InjuryNumberAnatomy9", -1, strIniFullPath );
-		if( 0 > alfInjuryAISNumber[10] || alfInjuryAISNumber[10] > 1.0 )
-		{
-			/* 範囲外を指定した場合はエラーを出力します。*/
-			throw(new IllegalArgumentException("Injury Number of Anatomy 9 parameter out of range"));
 		}
 
 /*医師パラメータ*/
@@ -2618,17 +2610,6 @@ public class InitSimParam extends InitSettingFileRead
 	public double lfGetInjuryAISNumber8()
 	{
 		return alfInjuryAISNumber[9];
-	}
-
-	/**
-	 * <PRE>
-	 * 患者の外傷発生数9
-	 * </PRE>
-	 * @return 患者の外傷発生数9
-	 */
-	public double lfGetInjuryAISNumber9()
-	{
-		return alfInjuryAISNumber[10];
 	}
 
 	/**

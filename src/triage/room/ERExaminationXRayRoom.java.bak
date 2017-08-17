@@ -15,17 +15,17 @@ import utility.node.ERTriageNode;
 import utility.node.ERTriageNodeManager;
 import utility.sfmt.Rand;
 
-public class ERExaminationFastRoom extends Agent
+public class ERExaminationXRayRoom extends Agent
 {
 	private static final long serialVersionUID = -2280826609228507294L;
 
-	ERPatientAgent erCurrentPatientAgent;								// 現在対応している患者
-	ArrayList<ERClinicalEngineerAgent> ArrayListClinicalEngineerAgents;	// 現在所属している医療技師エージェント
-	ERClinicalEngineerAgent erCurrentClinicalEngineerAgent;				// 担当している医療技師エージェント
-	int iAttachedClinicalEngineerNum;
-	double lfTotalTime;
-	private Logger cFastRoomLog;										// ログクラス
-	Rand rnd;															// 乱数クラス
+	private ERPatientAgent erCurrentPatientAgent;								// 現在対応している患者
+	private ArrayList<ERClinicalEngineerAgent> ArrayListClinicalEngineerAgents;	// 現在所属している医療技師エージェント
+	private ERClinicalEngineerAgent erCurrentClinicalEngineerAgent;				// 担当している医療技師エージェント
+	private int iAttachedClinicalEngineerNum;
+	private double lfTotalTime;
+	private Logger cXRayRoomLog;										// ログクラス
+	private Rand rnd;													// 乱数クラス
 
 	private ERTriageNodeManager erTriageNodeManager;
 	private ERTriageNode erTriageNode;
@@ -41,12 +41,12 @@ public class ERExaminationFastRoom extends Agent
 	private int iDrawHeight;
 	private int iDrawF;
 
-	private Object csFastRoomCriticalSection;							// クリティカルセクション用
+	private Object csXRayRoomCriticalSection;							// クリティカルセクション用
 
 	private double lfLastBedTime;
 	private double lfLongestTotalTime;
 
-	public ERExaminationFastRoom()
+	public ERExaminationXRayRoom()
 	{
 		vInitialize();
 	}
@@ -59,7 +59,7 @@ public class ERExaminationFastRoom extends Agent
 	 * @author kobayashi
 	 * @since 2015/08/07
 	 */
-	public ERExaminationFastRoom( int iAttachedClinicalEngineerNumData )
+	public ERExaminationXRayRoom( int iAttachedClinicalEngineerNumData )
 	{
 		vInitialize( iAttachedClinicalEngineerNumData );
 	}
@@ -79,9 +79,10 @@ public class ERExaminationFastRoom extends Agent
 		iAttachedClinicalEngineerNum	= 0;
 		lfTotalTime						= 0;
 //		long seed;
-//		rnd = null;
 //		seed = System.currentTimeMillis();
+//		rnd = null;
 //		rnd = new Sfmt( (int)seed );
+
 		iInverseSimFlag = 0;
 	}
 
@@ -141,7 +142,7 @@ public class ERExaminationFastRoom extends Agent
 	{
 		int i;
 
-		synchronized( csFastRoomCriticalSection )
+		synchronized( csXRayRoomCriticalSection )
 		{
 			// 患者エージェントの終了処理を行います。
 			if( erCurrentPatientAgent != null )
@@ -166,7 +167,7 @@ public class ERExaminationFastRoom extends Agent
 				ArrayListClinicalEngineerAgents = null;
 			}
 			// ログ出力
-			cFastRoomLog = null;									// Fast室ログ出力設定
+			cXRayRoomLog = null;									// X線室ログ出力設定
 
 			// 乱数
 			rnd = null;												// 乱数クラス
@@ -275,8 +276,8 @@ public class ERExaminationFastRoom extends Agent
 			ArrayListClinicalEngineerAgents.get(i).vSetExperienceRateAIS1( alfExperienceRateAIS1[i] );
 			ArrayListClinicalEngineerAgents.get(i).vSetExperienceRateAIS2( alfExperienceRateAIS2[i] );
 			ArrayListClinicalEngineerAgents.get(i).vSetRoomNumber( aiRoomNumber[i] );
-//			ArrayListClinicalEngineerAgents.get(i).vSetExaminationTime( alfExaminationTime[i] );
 			ArrayListClinicalEngineerAgents.get(i).vSetExaminationTime();
+//			ArrayListClinicalEngineerAgents.get(i).vSetExaminationTime( alfExaminationTime[i] );
 		}
 	}
 
@@ -306,12 +307,12 @@ public class ERExaminationFastRoom extends Agent
 	 */
 	public void vImplementExaminationRoom( ArrayList<EREmergencyRoom> ArrayListEmergencyRooms, ArrayList<ERSevereInjuryObservationRoom> ArrayListSereveInjuryObservationRooms, ArrayList<ERConsultationRoom> ArrayListConsultationRooms, ArrayList<EROperationRoom> ArrayListOperationRooms, ERWaitingRoom erWaitingRoom ) throws ERClinicalEngineerAgentException
 	{
-		synchronized( csFastRoomCriticalSection )
+		synchronized( csXRayRoomCriticalSection )
 		{
 			// 患者が検査室にいれば検査を実行します。
 			if( erCurrentPatientAgent != null )
 			{
-				cFastRoomLog.info("検査室対応中" );
+				cXRayRoomLog.info(erCurrentPatientAgent.getId() + "," + "検査室対応中" );
 				vImplementExamination( ArrayListEmergencyRooms, ArrayListSereveInjuryObservationRooms, ArrayListConsultationRooms, ArrayListOperationRooms, erWaitingRoom, erCurrentClinicalEngineerAgent, erCurrentPatientAgent );
 				// 医師の対応が終了した場合、処置が終了した患者エージェントを削除します。
 				if( erCurrentClinicalEngineerAgent.iGetAttending() == 0 )
@@ -346,7 +347,7 @@ public class ERExaminationFastRoom extends Agent
 		{
 			// 移動時間がまだ終了していないので、移動を実施しません。
 			erClinicalEngineerAgent.vSetPatientMoveWaitFlag( 1 );
-			cFastRoomLog.info( erPatientAgent.getId() + "," + "FAST室移動時間：" + erCurrentPatientAgent.lfGetMoveWaitingTime() );
+			cXRayRoomLog.info(erCurrentPatientAgent.getId() + "," + "X線室移動時間：" + erCurrentPatientAgent.lfGetMoveWaitingTime() );
 			return;
 		}
 		// 部屋移動が終了したのでフラグOFFに処置中とします。
@@ -372,49 +373,43 @@ public class ERExaminationFastRoom extends Agent
 	public void vExaminationProcess( ArrayList<EREmergencyRoom> ArrayListEmergencyRooms, ArrayList<ERSevereInjuryObservationRoom> ArrayListSereveInjuryObservationRooms, ArrayList<ERConsultationRoom> ArrayListConsultationRooms, ArrayList<EROperationRoom> ArrayListOperationRooms, ERWaitingRoom erWaitingRoom, ERClinicalEngineerAgent erClinicalEngineerAgent, ERPatientAgent erPatientAgent ) throws ERClinicalEngineerAgentException
 	{
 		double lfExaminationTime;
-		// Fast室にいる医療技師エージェントの数及び連携度を算出します。
+		// X線室にいる医療技師エージェントの数及び連携度を算出します。
 		erClinicalEngineerAgent.lfCalcAssociationRate(ArrayListClinicalEngineerAgents);
 		lfExaminationTime = erClinicalEngineerAgent.lfGetExaminationTime()*erClinicalEngineerAgent.lfGetAssociationRate();
 
-		// 検査時間が経過していない場合
-//		if( erClinicalEngineerAgent.lfGetExaminationTime() > erClinicalEngineerAgent.lfGetCurrentPassOverTime() )
+		// 手術時間が経過していない場合
 		if( lfExaminationTime > erClinicalEngineerAgent.lfGetCurrentPassOverTime()-erPatientAgent.lfGetMoveTime() )
+//		if( erClinicalEngineerAgent.lfGetExaminationTime() > erClinicalEngineerAgent.lfGetCurrentPassOverTime() )
 		{
 			// 何もせずに終了します。
-			cFastRoomLog.info( erPatientAgent.getId() + "," + "検査時間：" + erClinicalEngineerAgent.lfGetExaminationTime() );
-			cFastRoomLog.info( erPatientAgent.getId() + "," + "対応時間：" + erClinicalEngineerAgent.lfGetCurrentPassOverTime() );
+			cXRayRoomLog.info(erPatientAgent.getId() + "," + this.getId() +"," + "検査時間：" + erClinicalEngineerAgent.lfGetExaminationTime() );
+			cXRayRoomLog.info(erPatientAgent.getId() + "," + this.getId() +"," + "対応時間：" + erClinicalEngineerAgent.lfGetCurrentPassOverTime() );
 			return ;
 		}
-		// Fast室の検査を実行します。
+		// X線室の検査を実行します。
 		if( erClinicalEngineerAgent.iGetClinicalEngineerDepartment() == 10 )
 		{
 			erClinicalEngineerAgent.vImplementExamination( erPatientAgent, 1 );
-			cFastRoomLog.info( erPatientAgent.getId() + "," + "X線検査終了" );
-		}
-		// X線室の検査を実行します。
-		else if( erClinicalEngineerAgent.iGetClinicalEngineerDepartment() == 11 )
-		{
-			erClinicalEngineerAgent.vImplementExamination( erPatientAgent, 2 );
-			cFastRoomLog.info("X線検査終了" );
+			cXRayRoomLog.info(erPatientAgent.getId() + "," + this.getId() +"," + "X線検査終了" );
 		}
 		erPatientAgent.vSetMoveWaitingTime( 0.0 );
 
 		// 診察室からの依頼の場合、空きがあるならば診察室へ移動します。
 		if( erClinicalEngineerAgent.iGetRequestDoctorDepartment() == 1 )
 		{
-			cFastRoomLog.info(erPatientAgent.getId() + "," + "診察室からの依頼です。" + "診察室へ移動します。" );
+			cXRayRoomLog.info(erPatientAgent.getId() + "," + this.getId() +"," + "診察室からの依頼です。診察室へ移動します。" );
 			vJudgeMoveConsultationRoom( ArrayListConsultationRooms, erWaitingRoom, erClinicalEngineerAgent, erPatientAgent );
 		}
 		// 手術室からの依頼の場合、空きがあるならば手術室へ移動します。
 		else if( erClinicalEngineerAgent.iGetRequestDoctorDepartment() == 2 )
 		{
-			cFastRoomLog.info(erPatientAgent.getId() + "," + "手術室からの依頼です。" + "手術室へ移動します。" );
+			cXRayRoomLog.info(erPatientAgent.getId() + "," + this.getId() +"," + "手術室からの依頼です。手術室へ移動します。" );
 			vJudgeMoveOperationRoom( ArrayListOperationRooms, erWaitingRoom, erClinicalEngineerAgent, erPatientAgent );
 		}
 		// 初療室からの依頼の場合、空きがあるならば初療室へ移動します。
 		else if( erClinicalEngineerAgent.iGetRequestDoctorDepartment() == 3 )
 		{
-			cFastRoomLog.info(erPatientAgent.getId() + "," + "初療室からの依頼です。" + "初療室へ移動します。" );
+			cXRayRoomLog.info(erPatientAgent.getId() + "," + this.getId() +"," + "初療室からの依頼です。初療室へ移動します。" );
 			vJudgeMoveEmergencyRoom( ArrayListEmergencyRooms, ArrayListSereveInjuryObservationRooms, erWaitingRoom, erCurrentClinicalEngineerAgent, erPatientAgent );
 		}
 		else
@@ -446,7 +441,6 @@ public class ERExaminationFastRoom extends Agent
 			// 診察室に空きがあるか否か
 			if( ArrayListConsultationRooms.get(i).isVacant() == true )
 			{
-				cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "診察室移動準備開始" + "Fast室" );
 				// 診察室待機フラグをOFFにします。
 				erPAgent.vSetConsultationRoomWaitFlag( 0 );
 
@@ -479,16 +473,14 @@ public class ERExaminationFastRoom extends Agent
 				// 技士エージェントの対応を終了します。
 				erClinicalEngineerAgent.vSetAttending( 0 );
 
-				// 移動先の経路を患者エージェントに設定します。
-				cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "診察室移動準備終了" + "Fast室" );
-				if( iInverseSimFlag == 1 )
-				{
-					erPAgent.vSetMoveRoute( erTriageNodeManager.getRoute( this.erGetTriageNode(), ArrayListConsultationRooms.get(i).erGetTriageNode() ) );
-					cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "診察室移動開始" + "Fast室" );
-				}
 				// 対応を受けた患者エージェントを削除します。
 				vRemovePatientAgent( erPAgent );
 
+				if( iInverseSimFlag == 1 )
+				{
+					// 移動先の経路を患者エージェントに設定します。
+					erPAgent.vSetMoveRoute( erTriageNodeManager.getRoute( this.erGetTriageNode(), ArrayListConsultationRooms.get(i).erGetTriageNode() ) );
+				}
 				erPAgent = null;
 
 				// 診察室で担当する医師エージェントを設定します。
@@ -505,7 +497,6 @@ public class ERExaminationFastRoom extends Agent
 		if( iJudgeCount == ArrayListConsultationRooms.size() )
 		{
 			// 診察室待機フラグをONにします。
-			cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "診察室満室" + "Fast室" );
 			erPAgent.vSetConsultationRoomWaitFlag( 1 );
 			vJudgeMoveWaitingRoom( erWaitingRoom, erClinicalEngineerAgent, erPAgent );
 		}
@@ -534,7 +525,6 @@ public class ERExaminationFastRoom extends Agent
 			// 手術室に空きがある場合
 			if( ArrayListOperationRooms.get(i).isVacant() == true )
 			{
-				cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "手術室移動準備開始" + "Fast室" );
 				// 手術室待ちフラグをOFFにします。
 				erPAgent.vSetOperationRoomWaitFlag( 0 );
 
@@ -569,11 +559,9 @@ public class ERExaminationFastRoom extends Agent
 				ArrayListOperationRooms.get(i).cGetSurgeonDoctorAgent().vSetSurgeon(1);
 				ArrayListOperationRooms.get(i).cGetSurgeonDoctorAgent().vSetAttending(1);
 
-				cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "診察室移動準備終了" + "Fast室" );
 				if( iInverseSimFlag == 1 )
 				{
 					// 移動先の経路を患者エージェントに設定します。
-					cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "手術室移動開始" + "Fast室" );
 					erPAgent.vSetMoveRoute( erTriageNodeManager.getRoute( this.erGetTriageNode(), ArrayListOperationRooms.get(i).erGetTriageNode() ) );
 				}
 				erPAgent = null;
@@ -588,7 +576,6 @@ public class ERExaminationFastRoom extends Agent
 		if( iJudgeCount == ArrayListOperationRooms.size() )
 		{
 			// 空きがない場合は患者の手術室待ちフラグをONにして、待合室に移動します。
-			cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "手術室満室" + "Fast室" );
 			erPAgent.vSetOperationRoomWaitFlag( 1 );
 			vJudgeMoveWaitingRoom( erWaitingRoom, erClinicalEngineerAgent, erPAgent );
 		}
@@ -619,7 +606,6 @@ public class ERExaminationFastRoom extends Agent
 			// 初療室に空きがある場合
 			if( ArrayListEmergencyRooms.get(i).isVacant() == true )
 			{
-				cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "初療室移動準備開始" + "Fast室" );
 				// 初療室待ちフラグをOFFにします。
 				erPAgent.vSetEmergencyRoomWaitFlag( 0 );
 
@@ -657,16 +643,15 @@ public class ERExaminationFastRoom extends Agent
 				// 医師エージェントの対応を終了します。
 				erClinicalEngineerAgent.vSetAttending( 0 );
 
-				cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "診察室移動準備終了" + "Fast室" );
+				// 初療室で担当する医師エージェントを設定します。
+				ArrayListEmergencyRooms.get(i).cGetSurgeonDoctorAgent().vSetSurgeon(1);
+				ArrayListEmergencyRooms.get(i).cGetSurgeonDoctorAgent().vSetAttending(1);
+
 				if( iInverseSimFlag == 1 )
 				{
 					// 移動先の経路を患者エージェントに設定します。
 					erPAgent.vSetMoveRoute( erTriageNodeManager.getRoute( this.erGetTriageNode(), ArrayListEmergencyRooms.get(i).erGetTriageNode() ) );
-					cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "診察室移動開始" + "Fast室" );
 				}
-				// 初療室で担当する医師エージェントを設定します。
-				ArrayListEmergencyRooms.get(i).cGetSurgeonDoctorAgent().vSetSurgeon(1);
-				ArrayListEmergencyRooms.get(i).cGetSurgeonDoctorAgent().vSetAttending(1);
 				erPAgent = null;
 				break;
 			}
@@ -678,7 +663,6 @@ public class ERExaminationFastRoom extends Agent
 		if( iJudgeCount == ArrayListEmergencyRooms.size() )
 		{
 			// 空きがない場合は患者の初療室待ちフラグをONにして、重症観察室に移動します。
-			cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "初療室満室" + "Fast室" );
 			erPAgent.vSetEmergencyRoomWaitFlag( 1 );
 			vJudgeMoveSereveInjuryObservationRoom( ArrayListSevereInjuryObservationRooms, erWaitingRoom, erClinicalEngineerAgent, erPAgent );
 		}
@@ -703,7 +687,6 @@ public class ERExaminationFastRoom extends Agent
 			// 重症観察室に空きがある場合は観察室へエージェントを移動します。
 			if( ArrayListSereveInjuryObservationRooms.get(i).isVacant() == true )
 			{
-				cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "重症観察室移動準備開始" + "Fast室" );
 				// 重傷観察室待機フラグをOFFにします。
 				erPAgent.vSetSereveInjuryObservationRoomWaitFlag( 0 );
 
@@ -731,16 +714,14 @@ public class ERExaminationFastRoom extends Agent
 				// 看護師エージェントの対応を終了します。
 				erClinicalEngineerAgent.vSetAttending( 0 );
 
-				cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "重症観察室移動準備終了" + "Fast室" );
+				// 対応を受けた患者エージェントを削除します。
+				vRemovePatientAgent( erPAgent );
+
 				if( iInverseSimFlag == 1 )
 				{
 					// 移動先の経路を患者エージェントに設定します。
 					erPAgent.vSetMoveRoute( erTriageNodeManager.getRoute( this.erGetTriageNode(), ArrayListSereveInjuryObservationRooms.get(i).erGetTriageNode() ) );
-					cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "重症観察室移動開始" + "Fast室" );
 				}
-				// 対応を受けた患者エージェントを削除します。
-				vRemovePatientAgent( erPAgent );
-
 				erPAgent = null;
 
 				break;
@@ -754,7 +735,6 @@ public class ERExaminationFastRoom extends Agent
 		{
 			// 空きがない場合は重症観察室待機フラグをONにしてそのまま待機室で待機します。
 			erPAgent.vSetSereveInjuryObservationRoomWaitFlag( 1 );
-			cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "重症観察室満室" + "Fast室" );
 			vJudgeMoveWaitingRoom( erWaitingRoom, erClinicalEngineerAgent, erPAgent );
 		}
 	}
@@ -777,7 +757,6 @@ public class ERExaminationFastRoom extends Agent
 		// 待合室に空きがあるか否か
 		if( erWaitingRoom.isVacant() == true )
 		{
-			cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "待合室移動準備開始" + "Fast室" );
 			// 患者エージェントを待合室に配置します。
 			erWaitingRoom.vSetPatientAgent( erPAgent );
 
@@ -800,12 +779,10 @@ public class ERExaminationFastRoom extends Agent
 			// 医療技師エージェントの対応を終了します。
 			erClinicalEngineerAgent.vSetAttending( 0 );
 
-			cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "待合室移動準備終了" + "Fast室" );
 			if( iInverseSimFlag == 1 )
 			{
 				// 移動先の経路を患者エージェントに設定します。
 				erPAgent.vSetMoveRoute( erTriageNodeManager.getRoute( this.erGetTriageNode(), erWaitingRoom.erGetTriageNode() ) );
-				cFastRoomLog.info(erPAgent.getId() + "," + erClinicalEngineerAgent.getId() + "," + "待合室移動開始" + "Fast室" );
 			}
 			erPAgent = null;
 		}
@@ -906,7 +883,7 @@ public class ERExaminationFastRoom extends Agent
 		lfSecond = timeStep / 1000.0;
 		lfTotalTime += lfSecond;
 
-		synchronized( csFastRoomCriticalSection )
+		synchronized( csXRayRoomCriticalSection )
 		{
 			// 死亡患者がいる場合は削除をする。
 			if( erCurrentPatientAgent != null )
@@ -923,135 +900,55 @@ public class ERExaminationFastRoom extends Agent
 	 * <PRE>
 	 *    MRIのログ出力設定をします。
 	 * </PRE>
-	 * @param log	ロガーインスタンス
+	 * @param log	ロガークラスインスタンス
 	 */
 	public void vSetLog(Logger log)
 	{
 		// TODO 自動生成されたメソッド・スタブ
-		cFastRoomLog = log;
+		cXRayRoomLog = log;
 	}
 
-	/**
-	 * <PRE>
-	 *    Fast室のX座標を取得します。
-	 *    描画用です。
-	 * </PRE>
-	 * @return	X座標
-	 */
 	public int iGetX()
 	{
 		return iDrawX;
 	}
-
-	/**
-	 * <PRE>
-	 *    Fast室のY座標を取得します。
-	 *    描画用です。
-	 * </PRE>
-	 * @return	Y座標
-	 */
 	public int iGetY()
 	{
 		return iDrawY;
 	}
-
-	/**
-	 * <PRE>
-	 *    Fast室の横幅を取得します。
-	 *    描画用です。
-	 * </PRE>
-	 * @return	横幅
-	 */
 	public int iGetWidth()
 	{
 		return iDrawWidth;
 	}
-
-	/**
-	 * <PRE>
-	 *    Fast室の縦幅を取得します。
-	 *    描画用です。
-	 * </PRE>
-	 * @return	縦幅
-	 */
 	public int iGetHeight()
 	{
 		return iDrawHeight;
 	}
-
-	/**
-	 * <PRE>
-	 *    Fast室の階数を取得します。
-	 *    描画用です。
-	 * </PRE>
-	 * @return	階数
-	 */
 	public int iGetF()
 	{
 		return iDrawF;
 	}
 
-	/**
-	 * <PRE>
-	 *    Fast室のX座標を格納します。
-	 * </PRE>
-	 * @param iData	X座標
-	 */
 	public void vSetX( int iData )
 	{
 		iDrawX = iData;
 	}
-
-	/**
-	 * <PRE>
-	 *    Fast室のY座標を格納します。
-	 * </PRE>
-	 * @param iData	Y座標
-	 */
 	public void vSetY( int iData )
 	{
 		iDrawY = iData;
 	}
-
-	/**
-	 * <PRE>
-	 *    Fast室のZ座標を格納します。
-	 * </PRE>
-	 * @param iData	Z座標
-	 */
 	public void vSetZ( int iData )
 	{
 		iDrawZ = iData;
 	}
-
-	/**
-	 * <PRE>
-	 *   Fast室の横幅を格納します。
-	 * </PRE>
-	 * @param iData	横幅
-	 */
 	public void vSetWidth( int iData )
 	{
 		iDrawWidth = iData;
 	}
-
-	/**
-	 * <PRE>
-	 *    Fast室の縦幅を格納します。
-	 * </PRE>
-	 * @param iData	縦幅
-	 */
 	public void vSetHeight( int iData )
 	{
 		iDrawHeight = iData;
 	}
-
-	/**
-	 * <PRE>
-	 *    Fast室の階数を格納します。
-	 * </PRE>
-	 * @param iData	階数
-	 */
 	public void vSetF( int iData )
 	{
 		iDrawF = iData;
@@ -1059,7 +956,7 @@ public class ERExaminationFastRoom extends Agent
 
 	/**
 	 * <PRE>
-	 *   Fast室に所属しているエージェントの座標を設定します。
+	 *   診察室に所属しているエージェントの座標を設定します。
 	 * </PRE>
 	 */
 	public void vSetAffiliationAgentPosition()
@@ -1105,9 +1002,9 @@ public class ERExaminationFastRoom extends Agent
 
 	/**
 	 * <PRE>
-	 *    現在選択されているFAST室のノードを取得します。
+	 *    現在選択されているX線室のノードを取得します。
 	 * </PRE>
-	 * @param erNode 選択中のFAST室のノード
+	 * @param erNode 選択中のX線室のノード
 	 */
 	public void vSetTriageNode( ERTriageNode erNode )
 	{
@@ -1142,7 +1039,7 @@ public class ERExaminationFastRoom extends Agent
 	public synchronized int iGetPatientInARoom()
 	{
 		// TODO 自動生成されたメソッド・スタブ
-		synchronized( csFastRoomCriticalSection )
+		synchronized( csXRayRoomCriticalSection )
 		{
 			if( erCurrentPatientAgent != null )
 			{
@@ -1164,10 +1061,10 @@ public class ERExaminationFastRoom extends Agent
 	 * @author kobayashi
 	 * @since 2016/07/27
 	 */
-	public void vSetCriticalSection(Object cs)
+	public void vSetCriticalSection(Object cs )
 	{
 		// TODO 自動生成されたメソッド・スタブ
-		csFastRoomCriticalSection = cs;
+		csXRayRoomCriticalSection = cs;
 	}
 
 	/**

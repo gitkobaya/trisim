@@ -36,14 +36,6 @@ public class CRex extends CRealCodedGa
 	private int iBestLoc;
 //	private ObjectiveFunctionInterface pflfObjectiveFunction;
 
-	/**
-	 * <PRE>
-	 * 　コンストラクタです。初期化処理を行います。
-	 * </PRE>
-	 * @author kobayashi
-	 * @since 2015/10/30
-	 * @version 1.0
-	 */
 	public CRex()
 	{
 		iParentOutputFlag = 0;
@@ -55,19 +47,6 @@ public class CRex extends CRealCodedGa
 		iDistanceFlag = 2;
 	}
 
-	/**
-	 * <PRE>
-	 * 　初期化処理を行います。
-	 * </PRE>
-	 * @param iGenerationNum		世代数
-	 * @param iGenNum				遺伝子数
-	 * @param iGenVectorData		遺伝子次元数
-	 * @param iParentNumberData		親数
-	 * @param iChildrenNumberData	子孫数
-	 * @author kobayashi
-	 * @since 2015/10/30
-	 * @version 1.0
-	 */
 	public void vInitialize( int iGenerationNum, int iGenNum, int iGenVectorData, int iParentNumberData, int iChildrenNumberData )
 	{
 		int i,j;
@@ -118,21 +97,6 @@ public class CRex extends CRealCodedGa
 		rnd = new Sfmt( (int)seed );
 	}
 
-	/**
-	 * <PRE>
-	 * 　初期化処理を行います。
-	 * </PRE>
-	 * @param iGenerationNum			世代数
-	 * @param iGenNum					遺伝子数
-	 * @param iGenVectorData			遺伝子次元数
-	 * @param iParentNumberData			親数
-	 * @param iChildrenNumberData		子孫数
-	 * @param lfLearningRateData		学習率
-	 * @param iUpperEvalChildrenNumData	評価値上位の子孫数
-	 * @author kobayashi
-	 * @since 2015/10/30
-	 * @version 1.0
-	 */
 	public void vInitialize( int iGenerationNum, int iGenNum, int iGenVectorData, int iParentNumberData, int iChildrenNumberData, double lfLearningRateData,int iUpperEvalChildrenNumData )
 	{
 		int i,j;
@@ -196,14 +160,6 @@ public class CRex extends CRealCodedGa
 		rnd = new Sfmt( (int)seed );
 	}
 
-	/**
-	 * <PRE>
-	 * 　終了処理を行います。
-	 * </PRE>
-	 * @author kobayashi
-	 * @since 2015/10/30
-	 * @version 1.0
-	 */
 	public void vTerminate()
 	{
 		int i;
@@ -223,14 +179,6 @@ public class CRex extends CRealCodedGa
 		plfCentroidSteep = null;
 	}
 
-	/**
-	 * <PRE>
-	 * 　REXを実行します。
-	 * </PRE>
-	 * @author kobayashi
-	 * @since 2015/10/30
-	 * @version 1.0
-	 */
 	public void vRex()
 	{
 		int i,j,k;
@@ -310,14 +258,6 @@ public class CRex extends CRealCodedGa
 		iBestLoc = piParentLoc[0];
 	}
 
-	/**
-	 * <PRE>
-	 * 　REX Starを実行します。未完
-	 * </PRE>
-	 * @author kobayashi
-	 * @since 2015/10/30
-	 * @version 1.0
-	 */
 	public void vRexStar()
 	{
 		int i,j,k;

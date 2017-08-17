@@ -248,25 +248,11 @@ public class CCsv
 		}
 	}
 
-	/**
-	 * <PRE>
-	 *   ファイルの書き込みを行います。(String型)
-	 * </PRE>
-	 * @param strWriteData	書き込み用データ
-	 * @throws IOException	ファイル書き込みエラー
-	 */
 	public void vWrite( String strWriteData ) throws IOException
 	{
 		pwCsvWriteFilePointer.println( strWriteData );
 	}
 
-	/**
-	 * <PRE>
-	 *   ファイルの書き込みを行います。(String[][]型)
-	 * </PRE>
-	 * @param ppstrWriteData	書き込み用データ
-	 * @throws IOException		ファイル書き込みエラー
-	 */
 	public void vWrite( String[][] ppstrWriteData ) throws IOException
 	{
 		int i,j;
@@ -283,13 +269,6 @@ public class CCsv
 		}
 	}
 
-	/**
-	 * <PRE>
-	 *   ファイルの書き込みを行います。(double型)
-	 * </PRE>
-	 * @param pplfWriteData	書き込み用データ
-	 * @throws IOException	ファイル書き込みエラー
-	 */
 	public void vWrite( double[][] pplfWriteData ) throws IOException
 	{
 		int i,j;
@@ -306,13 +285,6 @@ public class CCsv
 		}
 	}
 
-	/**
-	 * <PRE>
-	 *   ファイルの書き込みを行います。(float型)
-	 * </PRE>
-	 * @param pplfWriteData	書き込み用データ
-	 * @throws IOException	ファイル書き込みエラー
-	 */
 	public void vWrite( float[][] pplfWriteData ) throws IOException
 	{
 		int i,j;
@@ -329,13 +301,6 @@ public class CCsv
 		}
 	}
 
-	/**
-	 * <PRE>
-	 *   ファイルの書き込みを行います。(int[][]型)
-	 * </PRE>
-	 * @param ppiWriteData	書き込み用データ
-	 * @throws IOException	ファイル書き込みエラー
-	 */
 	public void vWrite( int[][] ppiWriteData ) throws IOException
 	{
 		int i,j;
@@ -352,13 +317,6 @@ public class CCsv
 		}
 	}
 
-	/**
-	 * <PRE>
-	 *   ファイルの書き込みを行います。(Double[][]型)
-	 * </PRE>
-	 * @param pplfWriteData	書き込み用データ
-	 * @throws IOException	ファイル書き込みエラー
-	 */
 	public void vWrite( Double[][] pplfWriteData ) throws IOException
 	{
 		int i,j;
@@ -375,13 +333,6 @@ public class CCsv
 		}
 	}
 
-	/**
-	 * <PRE>
-	 *   ファイルの書き込みを行います。(Float[][]型)
-	 * </PRE>
-	 * @param pplfWriteData	書き込み用データ
-	 * @throws IOException	ファイル書き込みエラー
-	 */
 	public void vWrite( Float[][] pplfWriteData ) throws IOException
 	{
 		int i,j;
@@ -398,14 +349,6 @@ public class CCsv
 		}
 	}
 
-	/**
-	 * <PRE>
-	 *   数値かどうかを判定します。(小数点用)
-	 * </PRE>
-	 * @param strData		判定用文字列
-	 * @return				true  数値
-	 * 						false 数値以外の文字列
-	 */
 	public boolean isDoubleDigit( String strData )
 	{
 		try
@@ -419,14 +362,6 @@ public class CCsv
 		return true;
 	}
 
-	/**
-	 * <PRE>
-	 *   数値かどうかを判定します。(整数用)
-	 * </PRE>
-	 * @param strData		判定用文字列
-	 * @return				true  数値
-	 * 						false 数値以外の文字列
-	 */
 	public boolean isIntDigit( String strData )
 	{
 		try
@@ -440,23 +375,11 @@ public class CCsv
 		return true;
 	}
 
-	/**
-	 * <PRE>
-	 *   csvファイルの行数を取得します。
-	 * </PRE>
-	 * @return	行数
-	 */
 	public int iGetRow()
 	{
 		return iRow;
 	}
 
-	/**
-	 * <PRE>
-	 *   csvファイルの列数を取得します。
-	 * </PRE>
-	 * @return	列数
-	 */
 	public int iGetColumn()
 	{
 		return iColumn;

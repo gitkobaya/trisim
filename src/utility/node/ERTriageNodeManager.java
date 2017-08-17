@@ -334,360 +334,519 @@ public class ERTriageNodeManager
 		return rangedNodes;
 	}
 
-    /** 指定された範囲に含まれるノードへの参照を返すメソッドです<br>
-     * 二つの座標を対角とする直方体に含まれるノードをピックアップ<br>
-    なお，境界線上は範囲内とみなされません*/
-    public List<ERTriageNode> getNodesInRange(Position pos1, Position pos2){
-        ArrayList<ERTriageNode> rangedNodes=new ArrayList<ERTriageNode>(100);
+    /**
+	 * <PRE>
+	 *   指定された範囲に含まれるノードへの参照を返すメソッドです
+     *   二つの座標を対角とする直方体に含まれるノードをピックアップ
+     *   なお，境界線上は範囲内とみなされません
+	 * </PRE>
+	 *
+	 * @param pos1	直方体の１つ目の座標
+	 * @param pos2	直方体の２つ目の座標
+	 * @return		指定された範囲に存在するノードリスト
+	 */
+	public List<ERTriageNode> getNodesInRange(Position pos1, Position pos2)
+	{
+		ArrayList<ERTriageNode> rangedNodes=new ArrayList<ERTriageNode>(100);
 
-        // バウンダリボックスに含まれるかどうかの確認
-        for ( ERTriageNode node:this.nodes ){
-            if (this.isInbound(node, pos1, pos2)){
-                rangedNodes.add(node);
-            }
-        }
+		// バウンダリボックスに含まれるかどうかの確認
+		for ( ERTriageNode node:this.nodes )
+		{
+			if (this.isInbound(node, pos1, pos2))
+			{
+				rangedNodes.add(node);
+			}
+		}
 
-        return rangedNodes;
-    }
+		return rangedNodes;
+	}
 
-    /** ノードがバウンダリボックスに含まれるかどうかの確認メソッドです <br>
-     ** 二つの座標を対角とする直方体にノードが含まれるならtrueを返します */
-    public boolean isInbound(ERTriageNode node,Position pos1, Position pos2){
-        boolean result=false;
-        double minX,minY,minZ;
-        double maxX,maxY,maxZ;
+	/**
+	 * <PRE>
+	 *   ノードがバウンダリボックスに含まれるかどうかの確認メソッドです
+	 *   二つの座標を対角とする直方体にノードが含まれるならtrueを返します
+	 * </PRE>
+	 *
+	 * @param node	指定ノード
+	 * @param pos1	直方体の１つ目の座標
+	 * @param pos2	直方体の２つ目の座標
+	 * @return		true 存在する。 false 存在しない。
+	 */
+	public boolean isInbound(ERTriageNode node,Position pos1, Position pos2)
+	{
+		boolean result=false;
+		double minX,minY,minZ;
+		double maxX,maxY,maxZ;
 
-        if (pos1.getX()<pos2.getX()){
-            minX=pos1.getX();
-            maxX=pos2.getX();
-        }else{
-            minX=pos2.getX();
-            maxX=pos1.getX();
-        }
+		if (pos1.getX()<pos2.getX())
+		{
+			minX=pos1.getX();
+			maxX=pos2.getX();
+		}
+		else
+		{
+			minX=pos2.getX();
+			maxX=pos1.getX();
+		}
 
-        if (pos1.getY()<pos2.getY()){
-            minY=pos1.getY();
-            maxY=pos2.getY();
-        }else{
-            minY=pos2.getY();
-            maxY=pos1.getY();
-        }
+		if (pos1.getY()<pos2.getY())
+		{
+			minY=pos1.getY();
+			maxY=pos2.getY();
+		}
+		else
+		{
+			minY=pos2.getY();
+			maxY=pos1.getY();
+		}
 
-        if (pos1.getZ()<pos2.getZ()){
-            minZ=pos1.getZ();
-            maxZ=pos2.getZ();
-        }else{
-            minZ=pos2.getZ();
-            maxZ=pos1.getZ();
-        }
+		if (pos1.getZ()<pos2.getZ()){
+			minZ=pos1.getZ();
+			maxZ=pos2.getZ();
+		}else{
+			minZ=pos2.getZ();
+			maxZ=pos1.getZ();
+		}
 
-        double[] nodePos=node.getPosByArray();
+		double[] nodePos=node.getPosByArray();
 
-        // 指定したバウンダリボックスに含まれるかどうか
-        if (minX<nodePos[0] && nodePos[0]<maxX &&
-            minY<nodePos[1] && nodePos[1]<maxY &&
-            minZ<nodePos[2] && nodePos[2]<maxZ){
-            result=true;
-        }
-        return result;
-    }
+		// 指定したバウンダリボックスに含まれるかどうか
+		if (minX<nodePos[0] && nodePos[0]<maxX &&
+			minY<nodePos[1] && nodePos[1]<maxY &&
+			minZ<nodePos[2] && nodePos[2]<maxZ)
+		{
+			result=true;
+		}
+		return result;
+	}
 
-    /** ノードのソート */
-    public void sortNodesById(ArrayList<ERTriageNode> targetNodes){
-        Collections.sort(targetNodes,new ERTriageSortNodes());
-    }
+	/**
+	 * <PRE>
+	 *   ノードのソート
+	 * </PRE>
+	 *
+	 * @param targetNodes	ソートするノードリスト
+	 */
+	public void sortNodesById(ArrayList<ERTriageNode> targetNodes)
+	{
+		Collections.sort(targetNodes,new ERTriageSortNodes());
+	}
 
-    /** 最も自分に近いNodeを返すメソッド<br>
-        * 引数：double x, y, z<br>
-        * 戻り値：一番近いNode  */
-    public ERTriageNode getNearestNode( double[] elements ) {
-        ERTriageNode result=null;
-        double distance=Constants.HUGE; // とにかく巨大な数
+	/**
+	 * <PRE>
+	 * 最も自分に近いNodeを返すメソッド
+	 * 引数：double x, y, z
+	 * 戻り値：一番近いNode
+	 * </PRE>
+	 *
+	 * @param elements	引数：double x, y, z
+	 * @return	一番近いNode
+	 */
+	public ERTriageNode getNearestNode( double[] elements )
+	{
+		ERTriageNode result=null;
+		double distance=Constants.HUGE; // とにかく巨大な数
 
-        // ノードの中で指定された地点の最近傍を求める
-        for(ERTriageNode node:nodes){
-            double tempDist=this.getDistance(elements, node.getPosByArray());
-            if (tempDist<distance){
-                result=node;
-                distance=tempDist;
-            }
-        }
-        return result;
-    }
+		// ノードの中で指定された地点の最近傍を求める
+		for(ERTriageNode node:nodes)
+		{
+			double tempDist=this.getDistance(elements, node.getPosByArray());
+			if (tempDist<distance)
+			{
+				result=node;
+				distance=tempDist;
+			}
+		}
+		return result;
+	}
 
-    /** 最も自分に近いNodeを返すメソッド<br>
-     * 引数：Position<br>
-     * 戻り値：一番近いNode  */
-    public ERTriageNode getNearestNode( Position pos) {
-        return this.getNearestNode(pos.get());
-    }
+    /**
+	 * <PRE>
+	 *   最も自分に近いNodeを返すメソッド
+	 *   引数：Position
+	 *   戻り値：一番近いNode
+	 * </PRE>
+	 * @param pos	現在座標位置
+	 * @return		指定位置にもっと近いノード
+	 */
+	public ERTriageNode getNearestNode( Position pos)
+	{
+		return this.getNearestNode(pos.get());
+	}
 
-    /** 現在管理しているノード数を取得 */
-    public int getNumOfNodes(){
-        return this.nodes.size();
-    }
+	/**
+	 * <PRE>
+	 *    現在管理しているノード数を取得
+	 * </PRE>
+	 * @return 現在管理しているノード数
+	 */
+	public int getNumOfNodes()
+	{
+		return this.nodes.size();
+	}
 
-    /** ノードリストをセットするメソッド */
-    public void setNodeList(List<ERTriageNode> list){
-        nodes=list;
-    }
+	/**
+	 * <PRE>
+	 *   ノードリストをセットするメソッド
+	 * </PRE>
+	 * @param list	設定するノードリスト
+	 */
+	public void setNodeList(List<ERTriageNode> list)
+	{
+		nodes=list;
+	}
 
-    /** Nodeの追加用メソッド <br>
-     * 引数：ERTriageNode point */
-    public void addNode( ERTriageNode point ) {
-        this.nodes.add( point );
-    }
+	/**
+	 * <PRE>
+	 *   Nodeの追加用メソッド
+	 *   引数：ERTriageNode point
+	 * </PRE>
+	 * @param point 追加するノード
+	 */
+	public void addNode( ERTriageNode point )
+	{
+		this.nodes.add( point );
+	}
 
-    /** Nodeをまとめて追加するメソッド */
-    public void addNodes(Collection<ERTriageNode> nodes){
-        this.nodes.addAll(nodes);
-    }
+	/**
+	 * <PRE>
+	 *   Nodeをまとめて追加するメソッド
+	 * </PRE>
+	 * @param nodes 追加するノードリスト
+	 */
+	public void addNodes(Collection<ERTriageNode> nodes)
+	{
+		this.nodes.addAll(nodes);
+	}
 
-    /** Nodeを除去するメソッドです<br>
-     * そのノードに対するリンクも切断されます */
-    public void removeNode(ERTriageNode node){
-        if (this.nodes.contains(node)){
-            for(ERTriageLink link:node.getLinks()){
-                ERTriageNode des=link.getDestination();
-                ERTriageLink linkToMe=des.getLink(node);
-                if (linkToMe!=null){
-                    des.removeLink(linkToMe);
-                }
-            }
-            node.removeAllLinks(); // リンク全削除
-            this.nodes.remove(node);
-        }
-        return;
-    }
+	/**
+	 * <PRE>
+	 *   Nodeを除去するメソッドです
+	 *   そのノードに対するリンクも切断されます
+	 * </PRE>
+	 * @param node 除去したいノード
+	 */
+	public void removeNode(ERTriageNode node)
+	{
+		if (this.nodes.contains(node))
+		{
+			for(ERTriageLink link:node.getLinks())
+			{
+				ERTriageNode des=link.getDestination();
+				ERTriageLink linkToMe=des.getLink(node);
+				if (linkToMe!=null)
+				{
+					des.removeLink(linkToMe);
+				}
+			}
+			node.removeAllLinks(); // リンク全削除
+			this.nodes.remove(node);
+		}
+		return;
+	}
 
-    /** 既存ノードを削除し、ノードをまとめて設定するメソッド<br>
-     * 2次元配列の状態で追加することができます */
-    public void setNodes(ERTriageNode[][] nodes){
-        this.nodes.clear();
-        for (ERTriageNode[] nodeArray:nodes){
-            for (ERTriageNode thisNode:nodeArray){
-                this.nodes.add(thisNode);
-            }
-        }
-    }
+	/**
+	 * <PRE>
+	 *   既存ノードを削除し、ノードをまとめて設定するメソッド
+	 *    2次元配列の状態で追加することができます
+	 * </PRE>
+	 * @param nodes 再設定用ノードリスト（配列）
+	 */
+	public void setNodes(ERTriageNode[][] nodes)
+	{
+		this.nodes.clear();
+		for (ERTriageNode[] nodeArray:nodes)
+		{
+			for (ERTriageNode thisNode:nodeArray)
+			{
+				this.nodes.add(thisNode);
+			}
+		}
+	}
 
-    /** 最後に検索したルートの距離を返すメソッド */
-    public double getLastDistance(){
-        return prevDistance;
-    }
+	/**
+	 * <PRE>
+	 *   最後に検索したルートの距離を返すメソッド
+	 * </PRE>
+	 * @return 最後に検索したルートの距離
+	 */
+	public double getLastDistance()
+	{
+		return prevDistance;
+	}
 
-    /** ルートを探索するメソッドです <br>
-     * 要素(0)にスタートノードが，要素(n-1)にゴールノードが入ります．<br>
-     * 引数：ERTriageNode s, e <br>
-     * 戻り値：Nodeのリスト
-     */
-    public ArrayList<ERTriageNode> getRoute( ERTriageNode s, ERTriageNode g ) {
-        ArrayList<ERTriageNode> path = astar(s, g);
-        return path;
-    }
+    /**
+	 * <PRE>
+	 * ルートを探索するメソッドです
+	 * 要素(0)にスタートノードが，要素(n-1)にゴールノードが入ります．
+	 * 引数：ERTriageNode s, e
+	 * 戻り値：Nodeのリスト
+	 * </PRE>
+	 * @param s	開始ノード
+	 * @param g	終了ノード
+	 * @return	経路ノードリスト
+	 */
+	public ArrayList<ERTriageNode> getRoute( ERTriageNode s, ERTriageNode g )
+	{
+		ArrayList<ERTriageNode> path = astar(s, g);
+		return path;
+	}
 
-    /** ノードをダンプするデバッグ用メソッド */
-    public void dumpNodes(){
-        System.out.println("### DUMP NODES INFO ###");
-        for (ERTriageNode node:this.nodes){
-            System.out.println("NODE: ID:"+node.getId()+" "+node.getPosition());
-            for (ERTriageLink link:node.getLinks()){
-                System.out.println("        LINK: ID:"+link.getStart().getId()+" - ID:"+link.getDestination().getId()+" Distance:"+link.getDistance());
-            }
-        }
-    }
+	/**
+	 * <PRE>
+	 *    ノードをダンプするデバッグ用メソッド
+	 * </PRE>
+	 */
+	public void dumpNodes()
+	{
+		System.out.println("### DUMP NODES INFO ###");
+		for (ERTriageNode node:this.nodes)
+		{
+			System.out.println("NODE: ID:"+node.getId()+" "+node.getPosition());
+			for (ERTriageLink link:node.getLinks())
+			{
+				System.out.println("        LINK: ID:"+link.getStart().getId()+" - ID:"+link.getDestination().getId()+" Distance:"+link.getDistance());
+			}
+		}
+	}
 
     /***** A*アルゴリズム関連 *****/
 
-    /** A-starアルゴリズムのメソッド */
-    private ArrayList<ERTriageNode> astar( ERTriageNode s, ERTriageNode g ) {
+    /**
+	 * <PRE>
+	 *    A-starアルゴリズムのメソッド
+	 * </PRE>
+	 * @param s	開始ノード
+	 * @param g	終了ノード
+	 * @return	経路ノードリスト
+	 */
+	private ArrayList<ERTriageNode> astar( ERTriageNode s, ERTriageNode g )
+	{
 
-        LinkedList<ERTriageCameFrom> closeList = new LinkedList<ERTriageCameFrom>(); // 探索済みリスト(ひょっとするとMapだけでいいかも)
-        Map<Long,ERTriageCameFrom> closeMap = new HashMap<Long,ERTriageCameFrom>(); // 探索済みリストの検索用インデックス
-        LinkedList<ERTriageCameFrom> openList = new LinkedList<ERTriageCameFrom>(); // 探索候補リスト
-        Map<Long,ERTriageCameFrom> openMap = new HashMap<Long,ERTriageCameFrom>(); // 探索候補リストの検索用インデックス
-        ArrayList<ERTriageNode> result = null; // 探索結果
-        ERTriageCameFrom currentCameFrom = null; // 現在探索しているCameFrom
-        LinkedList<ERTriageLink> nextLinks = null; // 次の探索候補へのリンク
+		LinkedList<ERTriageCameFrom> closeList = new LinkedList<ERTriageCameFrom>(); // 探索済みリスト(ひょっとするとMapだけでいいかも)
+		Map<Long,ERTriageCameFrom> closeMap = new HashMap<Long,ERTriageCameFrom>(); // 探索済みリストの検索用インデックス
+		LinkedList<ERTriageCameFrom> openList = new LinkedList<ERTriageCameFrom>(); // 探索候補リスト
+		Map<Long,ERTriageCameFrom> openMap = new HashMap<Long,ERTriageCameFrom>(); // 探索候補リストの検索用インデックス
+		ArrayList<ERTriageNode> result = null; // 探索結果
+		ERTriageCameFrom currentCameFrom = null; // 現在探索しているCameFrom
+		LinkedList<ERTriageLink> nextLinks = null; // 次の探索候補へのリンク
 
-        // 初期位置の追加
-        double dist = 0.0;
-        double totalCost = dist + getHeuristic(s, g);
-        currentCameFrom = new ERTriageCameFrom(s, null, dist, totalCost);
-        openList.add(currentCameFrom);
+		// 初期位置の追加
+		double dist = 0.0;
+		double totalCost = dist + getHeuristic(s, g);
+		currentCameFrom = new ERTriageCameFrom(s, null, dist, totalCost);
+		openList.add(currentCameFrom);
 
-        // メインループ
-        int counter=0;
-        while( !openList.isEmpty() ) {
+		// メインループ
+		int counter=0;
+		while( !openList.isEmpty() )
+		{
 
-            // openList内の最小コストのNodeを現在のNodeにする。
-            currentCameFrom = openList.getFirst(); // ソートしているので最初のノードが常に最小コスト
-            ERTriageNode currentNode=currentCameFrom.getCurrentNode();
+			// openList内の最小コストのNodeを現在のNodeにする。
+			currentCameFrom = openList.getFirst(); // ソートしているので最初のノードが常に最小コスト
+			ERTriageNode currentNode=currentCameFrom.getCurrentNode();
 
-            //openList.remove(currentCameFrom);
-            this.removeFromList(currentCameFrom, openList, openMap);
-            //closeList.add(currentCameFrom);
-            this.addToCloseList(currentCameFrom, closeList, closeMap);
+			//openList.remove(currentCameFrom);
+			this.removeFromList(currentCameFrom, openList, openMap);
+			//closeList.add(currentCameFrom);
+			this.addToCloseList(currentCameFrom, closeList, closeMap);
 
-            // ゴールに着いていた場合は終了
-            if( currentNode.getId() == g.getId() ) {
-                result = reconstructPath( closeList, closeMap, g );
-                break;
-            }
+			// ゴールに着いていた場合は終了
+			if( currentNode.getId() == g.getId() )
+			{
+				result = reconstructPath( closeList, closeMap, g );
+				break;
+			}
 
-            // 現在のノードの移動先候補点を探索
-            nextLinks = currentNode.getLinks();
-            for( ERTriageLink candidateLink : nextLinks ) {
+			// 現在のノードの移動先候補点を探索
+			nextLinks = currentNode.getLinks();
+			for( ERTriageLink candidateLink : nextLinks )
+			{
 
-                ERTriageNode target=candidateLink.getDestination();
+				ERTriageNode target=candidateLink.getDestination();
 
-                dist = currentCameFrom.getDist() + candidateLink.getDistance();
-                totalCost = dist + getHeuristic(target, g);
-                ERTriageCameFrom candidateKeiro=new ERTriageCameFrom(target, currentNode, dist, totalCost);
+				dist = currentCameFrom.getDist() + candidateLink.getDistance();
+				totalCost = dist + getHeuristic(target, g);
+				ERTriageCameFrom candidateKeiro=new ERTriageCameFrom(target, currentNode, dist, totalCost);
 
-               // 行き先が探索済みの場合、そのノードと現在調査中のノードの距離を比較
-                ERTriageCameFrom already=getERTriageCameFrom(target, closeList,closeMap);
-                if (already !=null){
-                    // 探索済みのケースより短い経路発見
-                    if (totalCost<already.getTotalCost()){
-                        // クローズリストの要素を置き換えて探索候補に追加
-                        //boolean check=closeList.remove(already);
-                        boolean check=this.removeFromList(already, closeList, closeMap);
-                        if (!check){
-                            System.err.println("ERROR: Close list don't have the element !");
-                        }
-                        addToOpenList(candidateKeiro,openList,openMap);
-                    }
-                    continue; // この後は必要なし
-                }
+				// 行き先が探索済みの場合、そのノードと現在調査中のノードの距離を比較
+				ERTriageCameFrom already=getERTriageCameFrom(target, closeList,closeMap);
+				if (already !=null)
+				{
+					// 探索済みのケースより短い経路発見
+					if (totalCost<already.getTotalCost())
+					{
+						// クローズリストの要素を置き換えて探索候補に追加
+						//boolean check=closeList.remove(already);
+						boolean check=this.removeFromList(already, closeList, closeMap);
+						if (!check)
+						{
+							System.err.println("ERROR: Close list don't have the element !");
+						}
+						addToOpenList(candidateKeiro,openList,openMap);
+					}
+					continue; // この後は必要なし
+				}
 
-               // 移動先候補点が既に探索候補にあるか調査
-               ERTriageCameFrom isExist=getERTriageCameFrom(target, openList,openMap);
-               if( isExist==null ) { // まだ探索候補になっていない
-                   // 探索候補リストに追加
-                   addToOpenList( candidateKeiro, openList,openMap);
-               }else{ // もう探索候補になっている
-                   // 探索候補に入っている経路より短い経路発見
-                   if (totalCost<isExist.getTotalCost()){
-                       // 探索候補ノードの経路置き換え
-                       //boolean check=openList.remove(isExist);
-                       boolean check=this.removeFromList(isExist, openList, openMap);
-                       if (!check){
-                           System.err.println("ERROR: Open list don't have the element !");
-                       }
-                       addToOpenList( candidateKeiro, openList,openMap);
-                   }
-               }
-               counter++;
-               //System.out.println("DEBUG: dist:"+dist + "  cost:" + totalCost+" cycle:"+counter+" sizeOfOpenList:"+openList.size()+" sizeOfCloseList:"+closeList.size());
-           }
-       }
-        return result;
-    }
+				// 移動先候補点が既に探索候補にあるか調査
+				ERTriageCameFrom isExist=getERTriageCameFrom(target, openList,openMap);
+				if( isExist==null )
+				{ // まだ探索候補になっていない
+					// 探索候補リストに追加
+					addToOpenList( candidateKeiro, openList,openMap);
+				}
+				else
+				{ // もう探索候補になっている
+					// 探索候補に入っている経路より短い経路発見
+					if (totalCost<isExist.getTotalCost())
+					{
+						// 探索候補ノードの経路置き換え
+						//boolean check=openList.remove(isExist);
+						boolean check=this.removeFromList(isExist, openList, openMap);
+						if (!check)
+						{
+							System.err.println("ERROR: Open list don't have the element !");
+						}
+						addToOpenList( candidateKeiro, openList,openMap);
+					}
+				}
+				counter++;
+				//System.out.println("DEBUG: dist:"+dist + "  cost:" + totalCost+" cycle:"+counter+" sizeOfOpenList:"+openList.size()+" sizeOfCloseList:"+closeList.size());
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * <PRE>
+	 * 	ヒューリスティック計算
+	 * 	引数：ERTriageNode point, goal
+	 * 	戻り値：Goalまでの直線距離
+	 * </PRE>
+	 *
+	 * @param current		現在のノード
+	 * @param goal			目標のノード
+	 * @return				現在位置から目標位置までの距離
+	 */
+	private double getHeuristic( ERTriageNode current, ERTriageNode goal )
+	{
+		double distance=0;
+		double[] posC=current.getPosByArray();
+		double[] posG=goal.getPosByArray();
+
+		distance=this.getDistance(posC,posG);
+
+		return distance;
+	}
+
+	/**
+	 * <PRE>
+	 * 	2点間の距離を計算します
+	 * </PRE>
+	 *
+	 * @param pos1		位置1
+	 * @param pos2		位置2
+	 * @return	2点間の距離
+	 */
+	private double getDistance(double[] pos1, double[] pos2)
+	{
+		double distance=0;
+		for(int i=0;i<pos1.length;i++)
+		{
+			distance=distance+(pos1[i]-pos2[i])*(pos1[i]-pos2[i]);
+		}
+		distance=Math.sqrt(distance);
+		return distance;
+	}
+
+	/**
+	 * <PRE>
+	 * 	経路を作成するメソッド
+	 * </PRE>
+	 *
+	 * @param cameList	経路リストデータ
+	 * @param cameMap	経路マップデータ
+	 * @param g			ゴールノード
+	 * @return			目標までの経路データ
+	 */
+	private ArrayList<ERTriageNode> reconstructPath( List<ERTriageCameFrom> cameList, Map<Long,ERTriageCameFrom> cameMap, ERTriageNode g )
+	{
+		ArrayList<ERTriageNode> path = new ArrayList<ERTriageNode>();
+		ERTriageCameFrom current = null;
+
+		// ゴールを設定
+		path.add( g );
+		current = getERTriageCameFrom(g, cameList,cameMap);
+
+		// スタートノードになるまでパスに追加
+		while( current.getPrevNode() != null )
+		{
+			// 次のERTriageCameFromをリスト中から見つける
+			current = getERTriageCameFrom(current.getPrevNode(), cameList,cameMap);
+			cameList.remove(current);
+			path.add( 0, current.getCurrentNode() );
+		}
+
+		return path;
+	}
 
     /**
-     * <PRE>
-     * 	ヒューリスティック計算
-     * 	引数：ERTriageNode point, goal
-     * 	戻り値：Goalまでの直線距離
-     * </PRE>
-     *
-     * @param current		現在のノード
-     * @param goal			目標のノード
-     * @return				現在位置から目標位置までの距離
-     */
-    private double getHeuristic( ERTriageNode current, ERTriageNode goal ) {
-        double distance=0;
-        double[] posC=current.getPosByArray();
-        double[] posG=goal.getPosByArray();
+	 * <PRE>
+	 *    リストへ昇順で追加
+	 * </PRE>
+	 * @param keiro		追加する経路データ
+	 * @param openList	追加経路データを格納するリスト
+	 * @param openMap	追加経路データを格納するマップリスト
+	 */
+	private void addToOpenList(ERTriageCameFrom keiro, LinkedList<ERTriageCameFrom> openList, Map<Long,ERTriageCameFrom> openMap)
+	{
+		boolean inserted=false;
+		for (ListIterator<ERTriageCameFrom> i = openList.listIterator(); i.hasNext();)
+		{
+			ERTriageCameFrom target=(ERTriageCameFrom)i.next();
+			// ターゲットよりもコストが小さいならその前に挿入
+			if (keiro.getTotalCost()<target.getTotalCost())
+			{
+				openList.add(i.nextIndex()-1,keiro);
+				inserted=true;
+				break;
+			}
+		}
 
-        distance=this.getDistance(posC,posG);
+		// 自分よりコストが大きい要素が無いなら末尾に追加
+		if (!inserted)
+		{
+			openList.addLast(keiro);
+		}
 
-        return distance;
-    }
+		// 検索マップに追加
+		openMap.put(keiro.getCurrentNode().getId(), keiro);
+	}
+
+	/**
+	 * <PRE>
+	 *    リストへ追加(特にソートは行いません)
+	 * </PRE>
+	 * @param keiro			追加する経路データ
+	 * @param closeList		追加する経路データを格納するリスト
+	 * @param closeMap		追加する経路データを格納するマップリスト
+	 */
+	private void addToCloseList(ERTriageCameFrom keiro, LinkedList<ERTriageCameFrom> closeList, Map<Long,ERTriageCameFrom> closeMap)
+	{
+		closeList.add(keiro);
+		closeMap.put(keiro.getCurrentNode().getId(), keiro);
+	}
 
     /**
-     * <PRE>
-     * 	2点間の距離を計算します
-     * </PRE>
-     *
-     * @param pos1		位置1
-     * @param pos2		位置2
-     * @return	2点間の距離
-     */
-    private double getDistance(double[] pos1, double[] pos2){
-        double distance=0;
-        for(int i=0;i<pos1.length;i++){
-            distance=distance+(pos1[i]-pos2[i])*(pos1[i]-pos2[i]);
-        }
-        distance=Math.sqrt(distance);
-        return distance;
-    }
-
-    /**
-     * <PRE>
-     * 	経路を作成するメソッド
-     * </PRE>
-     *
-     * @param cameList	経路リストデータ
-     * @param cameMap	経路マップデータ
-     * @param g			ゴールノード
-     * @return			目標までの経路データ
-     */
-    private ArrayList<ERTriageNode> reconstructPath( List<ERTriageCameFrom> cameList, Map<Long,ERTriageCameFrom> cameMap, ERTriageNode g ) {
-        ArrayList<ERTriageNode> path = new ArrayList<ERTriageNode>();
-        ERTriageCameFrom current = null;
-
-        // ゴールを設定
-        path.add( g );
-        current = getERTriageCameFrom(g, cameList,cameMap);
-
-        // スタートノードになるまでパスに追加
-        while( current.getPrevNode() != null )
-        {
-            // 次のERTriageCameFromをリスト中から見つける
-            current = getERTriageCameFrom(current.getPrevNode(), cameList,cameMap);
-            cameList.remove(current);
-            path.add( 0, current.getCurrentNode() );
-        }
-
-        return path;
-    }
-
-    /** リストへ昇順で追加 */
-    private void addToOpenList(ERTriageCameFrom keiro, LinkedList<ERTriageCameFrom> openList, Map<Long,ERTriageCameFrom> openMap)
-    {
-        boolean inserted=false;
-        for (ListIterator<ERTriageCameFrom> i = openList.listIterator(); i.hasNext();)
-        {
-            ERTriageCameFrom target=(ERTriageCameFrom)i.next();
-            // ターゲットよりもコストが小さいならその前に挿入
-            if (keiro.getTotalCost()<target.getTotalCost())
-            {
-                openList.add(i.nextIndex()-1,keiro);
-                inserted=true;
-                break;
-            }
-        }
-
-        // 自分よりコストが大きい要素が無いなら末尾に追加
-        if (!inserted){
-            openList.addLast(keiro);
-        }
-
-        // 検索マップに追加
-        openMap.put(keiro.getCurrentNode().getId(), keiro);
-    }
-
-    /** リストへ追加(特にソートは行いません) */
-    private void addToCloseList(ERTriageCameFrom keiro, LinkedList<ERTriageCameFrom> closeList, Map<Long,ERTriageCameFrom> closeMap)
-    {
-        closeList.add(keiro);
-        closeMap.put(keiro.getCurrentNode().getId(), keiro);
-    }
-
-    /** リストから削除<br>
-     * 検索用マップからも確実に削除しなければ誤動作します */
+	 * <PRE>
+	 *   リストから削除
+     *   検索用マップからも確実に削除しなければ誤動作します
+	 * </PRE>
+	 * @param target		対象とする経路データ
+	 * @param cameList		削除する経路リスト
+	 * @param cameMap		削除する経路マップリスト
+	 * @return				削除後の経路リスト
+	 */
     private boolean removeFromList(ERTriageCameFrom target, List<ERTriageCameFrom> cameList,Map<Long,ERTriageCameFrom> cameMap )
     {
         boolean result=cameList.remove(target);
@@ -695,7 +854,15 @@ public class ERTriageNodeManager
         return result;
     }
 
-    /** ERTriageCameFromのリスト中から現在のNodeのERTriageCameFromを取得 */
+    /**
+	 * <PRE>
+	 * 	  ERTriageCameFromのリスト中から現在のNodeのERTriageCameFromを取得
+	 * </PRE>
+     * @param current		対象とするノード
+     * @param cameList		経路リスト
+     * @param cameMap		経路リストをまとめるマップ
+     * @return				対象とするノードに該当する経路リスト
+     */
     private ERTriageCameFrom getERTriageCameFrom( ERTriageNode current, List<ERTriageCameFrom> cameList,Map<Long,ERTriageCameFrom> cameMap )
     {
         return cameMap.get(current.getId());

@@ -14,8 +14,6 @@ import jp.ac.nihon_u.cit.su.furulab.fuse.SimulationEngine;
 import main.ERFinisher;
 import triage.ERDepartment;
 import utility.csv.CCsv;
-import utility.initparam.InitSimParam;
-import utility.sfmt.Rand;
 
 
 public class InverseSimulationEngine
@@ -106,8 +104,6 @@ public class InverseSimulationEngine
 	private long lEndTime;
 	private ArrayList<Long> alElapesdTime;
 
-	private InitSimParam initSimParam;
-
 	/**
 	 * <PRE>
 	 *    逆シミュレーションのコンストラクタです。
@@ -162,7 +158,6 @@ public class InverseSimulationEngine
 	 * @param iInverseSimFlag							逆シミュレーションか否か
 	 * @param iFileWriteModeData						ファイル書き込みモード
 	 * @param iPatientArrivalModeData					患者到達モード（0:通常,1:災害）
-	 * @param initSimParam								初期設定パラメータ（合わせ込み）
 	 * @throws IOException								java標準のIO例外クラス
 	 */
 	public InverseSimulationEngine( int iGenerationNum,
@@ -188,13 +183,12 @@ public class InverseSimulationEngine
 			 String strFastRoomPath,
 			 Logger log,
 			 Object cs,
-			 Rand rnd,
+			 utility.sfmt.Rand rnd,
 			 double lfPatientPepoleData,
 			 int iRandomMode,
 			 int iInverseSimFlag,
 			 int iFileWriteModeData,
-			 int iPatientArrivalModeData,
-			 InitSimParam initSimParam ) throws IOException
+			 int iPatientArrivalModeData) throws IOException
 	{
 		vInitialize( iGenerationNum, iGensNum, iGensVectorDimNum, iInvSimMethod,
 				iSimEndTime,
@@ -221,8 +215,7 @@ public class InverseSimulationEngine
 				 iRandomMode,
 				 iInverseSimFlag,
 				 iFileWriteModeData,
-				 iPatientArrivalModeData,
-				 initSimParam );
+				 iPatientArrivalModeData );
 	}
 
 	/**
@@ -258,7 +251,6 @@ public class InverseSimulationEngine
 	 * @param iInverseSimFlagData						逆シミュレーションか否か
 	 * @param iFileWriteModeData						ファイル書き込みモード
 	 * @param iPatientArrivalModeData					患者到達モード（0:通常,1:災害）
-	 * @param initParam									初期設定パラメータ（合わせ込みデータ）
 	 * @throws IOException								java標準のIO例外クラス
 	 */
 	public void vInitialize( int iGenerationNum,
@@ -289,8 +281,7 @@ public class InverseSimulationEngine
 							 int iRandomModeData,
 							 int iInverseSimFlagData,
 							 int iFileWriteModeData,
-							 int iPatientArrivalModeData,
-							 InitSimParam initParam ) throws IOException
+							 int iPatientArrivalModeData ) throws IOException
 	{
 		int i;
 
@@ -327,7 +318,6 @@ public class InverseSimulationEngine
 		invEngineCriticalSection			= cs;
 		iFileWriteMode						= iFileWriteModeData;
 		iPatientArrivalMode					= iPatientArrivalModeData;
-		initSimParam						= initParam;
 
 		SimLog.warning( "クラス名" + "," + this.getClass() + "," + "メソッド名" + "," + "vInitialize" + "," + "クリティカルセクションのアドレス" + "," + cs + "," );
 		// 各救急部門オブジェクトにパラメーターを割り振ります。
@@ -347,7 +337,7 @@ public class InverseSimulationEngine
 											  strHighCareUnitPathData, strGeneralWardPathData, strWaitingRoomPathData,
 											  strXRayRoomPathData, strCTRoomPathData, strMRIRoomPathData, strAngiographyRoomPathData,
 											  strFastRoomPathData, lfPatientPepoleData, iRandomModeData, iInverseSimFlagData, iFileWriteModeData,
-											  iPatientArrivalMode, SimRandom, initSimParam );
+											  iPatientArrivalMode, SimRandom );
 				erDepartments[i].vSetAllLog( log );
 				erDepartments[i].vSetCriticalSection( cs );
 			}
@@ -1229,7 +1219,7 @@ public class InverseSimulationEngine
 										  strSevereInjuryObservationRoomPath, strIntensiveCareUnitPath,
 										  strHighCareUnitPath, strGeneralWardPath, strWaitingRoomPath,
 										  strXRayRoomPath, strCTRoomPath, strMRIRoomPath, strAngiographyRoomPath,
-										  strFastRoomPath, lfPatientPepole, iRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, SimRandom, initSimParam );
+										  strFastRoomPath, lfPatientPepole, iRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, SimRandom );
 			// ログ出力を設定します。
 			erDepartments[i].vSetAllLog( SimLog );
 			erDepartments[i].vSetCriticalSection( invEngineCriticalSection );

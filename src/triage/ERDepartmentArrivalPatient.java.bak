@@ -3,7 +3,6 @@ package triage;
 import java.io.IOException;
 
 import triage.room.ERWaitingRoom;
-import utility.initparam.InitSimParam;
 import jp.ac.nihon_u.cit.su.furulab.fuse.SimulationEngine;
 import jp.ac.nihon_u.cit.su.furulab.fuse.extention.FuseLightPlugIn;
 
@@ -17,8 +16,6 @@ public class ERDepartmentArrivalPatient extends Thread
 	private int iFileWriteMode;
 	int iPatientArrivalMode;
 
-	private InitSimParam initSimParam;
-
 	public ERDepartmentArrivalPatient()
 	{
 		cEngine = null;
@@ -27,6 +24,16 @@ public class ERDepartmentArrivalPatient extends Thread
 		iInverseSimFlag = 0;
 		iFileWriteMode = 0;
 		iPatientArrivalMode = 0;
+	}
+
+	public void vSetSimulationEngine( SimulationEngine engine )
+	{
+		cEngine = engine;
+	}
+
+	public void vSetWaitingRoom( ERWaitingRoom waitingroom )
+	{
+		erWaitingRoom = waitingroom;
 	}
 
 	@Override
@@ -54,7 +61,7 @@ public class ERDepartmentArrivalPatient extends Thread
 						// 一端停止してから再実行します。
 						cEngine.pause();
 						try{
-						erWaitingRoom.vArrivalPatient( lfSecond, cEngine, iPatientRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, initSimParam );
+						erWaitingRoom.vArrivalPatient( lfSecond, cEngine, iPatientRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode );
 						}
 						catch( IOException ioe ){
 							ioe.printStackTrace();
@@ -64,28 +71,6 @@ public class ERDepartmentArrivalPatient extends Thread
 				}
 			}
 		}
-	}
-
-	/**
-	 * <PRE>
-	 *   シミュレーションエンジンを登録します。
-	 * </PRE>
-	 * @param engine シミュレーションエンジン
-	 */
-	public void vSetSimulationEngine( SimulationEngine engine )
-	{
-		cEngine = engine;
-	}
-
-	/**
-	 * <PRE>
-	 *    待合室インスタンスを設定します。
-	 * </PRE>
-	 * @param waitingroom 待合室インスタンス
-	 */
-	public void vSetWaitingRoom( ERWaitingRoom waitingroom )
-	{
-		erWaitingRoom = waitingroom;
 	}
 
 	/**
@@ -131,17 +116,5 @@ public class ERDepartmentArrivalPatient extends Thread
 	public void vSetPatientArrivalMode(int iPatientArrivalMode)
 	{
 		this.iPatientArrivalMode = iPatientArrivalMode;
-	}
-
-
-	/**
-	 * <PRE>
-	 *    初期設定パラメータクラスを設定します。
-	 * </PRE>
-	 * @param initparam 初期設定パラメータクラス
-	 */
-	public void vSetInitSimParma(InitSimParam initparam)
-	{
-		this.initSimParam = initparam;
 	}
 }

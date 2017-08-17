@@ -1565,54 +1565,135 @@ public class ERHighCareUnitRoom extends Agent{
 		cHighCareUnitLog = log;
 	}
 
+	/**
+	 * <PRE>
+	 *    HCUのX座標を取得します。
+	 *    描画用です。
+	 * </PRE>
+	 * @return	X座標
+	 */
 	public int iGetX()
 	{
 		return iDrawX;
 	}
+
+	/**
+	 * <PRE>
+	 *    HCUのY座標を取得します。
+	 *    描画用です。
+	 * </PRE>
+	 * @return	Y座標
+	 */
 	public int iGetY()
 	{
 		return iDrawY;
 	}
+
+	/**
+	 * <PRE>
+	 *    HCUの横幅を取得します。
+	 *    描画用です。
+	 * </PRE>
+	 * @return	横幅
+	 */
 	public int iGetWidth()
 	{
 		return iDrawWidth;
 	}
+
+	/**
+	 * <PRE>
+	 *    HCUの縦幅を取得します。
+	 *    描画用です。
+	 * </PRE>
+	 * @return	縦幅
+	 */
 	public int iGetHeight()
 	{
 		return iDrawHeight;
 	}
+
+	/**
+	 * <PRE>
+	 *    HCUの階数を取得します。
+	 *    描画用です。
+	 * </PRE>
+	 * @return	階数
+	 */
 	public int iGetF()
 	{
 		return iDrawF;
 	}
 
+	/**
+	 * <PRE>
+	 *    HCUのX座標を格納します。
+	 * </PRE>
+	 * @param iData	X座標
+	 */
 	public void vSetX( int iData )
 	{
 		iDrawX = iData;
 	}
+
+	/**
+	 * <PRE>
+	 *    HCUのY座標を格納します。
+	 * </PRE>
+	 * @param iData	Y座標
+	 */
 	public void vSetY( int iData )
 	{
 		iDrawY = iData;
 	}
+
+	/**
+	 * <PRE>
+	 *    HCUのZ座標を格納します。
+	 * </PRE>
+	 * @param iData	Z座標
+	 */
 	public void vSetZ( int iData )
 	{
 		iDrawZ = iData;
 	}
+
+	/**
+	 * <PRE>
+	 *   HCUの横幅を格納します。
+	 * </PRE>
+	 * @param iData	横幅
+	 */
 	public void vSetWidth( int iData )
 	{
 		iDrawWidth = iData;
 	}
+
+	/**
+	 * <PRE>
+	 *    HCUの縦幅を格納します。
+	 * </PRE>
+	 * @param iData	縦幅
+	 */
 	public void vSetHeight( int iData )
 	{
 		iDrawHeight = iData;
 	}
+
+	/**
+	 * <PRE>
+	 *    HCUの階数を格納します。
+	 * </PRE>
+	 * @param iData	階数
+	 */
 	public void vSetF( int iData )
 	{
 		iDrawF = iData;
 	}
+
 	/**
 	 * <PRE>
-	 *   診察室に所属しているエージェントの座標を設定します。
+	 *   HCUに所属しているエージェントの座標を設定します。
 	 * </PRE>
 	 * @param iLoc			対象としている看護師の番号
 	 * @param cCurNode		対象としている看護師のノード

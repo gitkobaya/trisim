@@ -28,7 +28,6 @@ import triage.room.ERSevereInjuryObservationRoom;
 import triage.room.ERStairs;
 import triage.room.ERWaitingRoom;
 import utility.csv.CCsv;
-import utility.initparam.InitSimParam;
 import utility.node.ERTriageNode;
 import utility.node.ERTriageNodeManager;
 import utility.sfmt.Rand;
@@ -246,30 +245,29 @@ public class ERDepartment extends Agent
 	 *    13 血管造影検査室
 	 *    14 FAST室
 	 * </PRE>
-	 * @param engine								FUSEのシミュレーションエンジンクラス
-	 * @param env 									FUSEの環境クラス
-	 * @param strConsultationRoomPath				診察室の設定ファイルパス
-	 * @param strOperationRoomPath 					手術室の設定ファイルパス
-	 * @param strEmergencyRoomPath 					初療室の設定ファイルパス
-	 * @param strObservationRoomPath 				観察室の設定ファイルパス
-	 * @param strSevereInjuryObservationRoomPath 	重症観察室の設定ファイルパス
-	 * @param strIntensiveCareUnitPath 				集中治療室の設定ファイルパス
-	 * @param strHighCareUnitPath 					高度治療室の設定ファイルパス
-	 * @param strGeneralWardPath 					一般病棟の設定ファイルパス
-	 * @param strWaitingRoomPath 					待合室の設定ファイルパス
-	 * @param strXRayRoomPath 						X線室の設定ファイルパス
-	 * @param strCTRoomPath 						CT室の設定ファイルパス
-	 * @param strMRIRoomPath 						MRI室の設定ファイルパス
-	 * @param strAngiographyRoomPath 				血管造影室の設定ファイルパス
-	 * @param strFastRoomPath 						超音波室の設定ファイルパス
-	 * @param lfPatientPepole 						到達する患者の人数
-	 * @param iRandomMode 							患者の発生分布
-	 * @param iInverseSimFlag 						逆シミュレーションか否か
-	 * @param iFileWriteMode 						ファイル書き込みモード
-	 * @param iPatientArrivalMode 					患者到達モード（0:通常,1:災害）
-	 * @param sfmtRandom 							メルセンヌツイスターのインスタンス
-	 * @param initparam								初期設定パラメータ（合わせ込み用）
-	 * @throws IOException 							java標準のIO例外クラス
+	 * @param engine FUSEのシミュレーションエンジンクラス
+	 * @param env FUSEの環境クラス
+	 * @param strConsultationRoomPath 診察室の設定ファイルパス
+	 * @param strOperationRoomPath 手術室の設定ファイルパス
+	 * @param strEmergencyRoomPath 初療室の設定ファイルパス
+	 * @param strObservationRoomPath 観察室の設定ファイルパス
+	 * @param strSevereInjuryObservationRoomPath 重症観察室の設定ファイルパス
+	 * @param strIntensiveCareUnitPath 集中治療室の設定ファイルパス
+	 * @param strHighCareUnitPath 高度治療室の設定ファイルパス
+	 * @param strGeneralWardPath 一般病棟の設定ファイルパス
+	 * @param strWaitingRoomPath 待合室の設定ファイルパス
+	 * @param strXRayRoomPath X線室の設定ファイルパス
+	 * @param strCTRoomPath CT室の設定ファイルパス
+	 * @param strMRIRoomPath MRI室の設定ファイルパス
+	 * @param strAngiographyRoomPath 血管造影室の設定ファイルパス
+	 * @param strFastRoomPath 超音波室の設定ファイルパス
+	 * @param lfPatientPepole 到達する患者の人数
+	 * @param iRandomMode 患者の発生分布
+	 * @param iInverseSimFlag 逆シミュレーションか否か
+	 * @param iFileWriteMode ファイル書き込みモード
+	 * @param iPatientArrivalMode 患者到達モード（0:通常,1:災害）
+	 * @param sfmtRandom メルセンヌツイスターのインスタンス
+	 * @throws IOException java標準のIO例外クラス
 	 */
 	public void vInitialize( SimulationEngine engine,
 			Environment env,
@@ -292,8 +290,7 @@ public class ERDepartment extends Agent
 			int iInverseSimFlag,
 			int iFileWriteMode,
 			int iPatientArrivalMode,
-			Rand sfmtRandom,
-			InitSimParam initparam ) throws IOException
+			utility.sfmt.Rand sfmtRandom ) throws IOException
 	{
 		int i,j;
 		double lfEndLogicalTime = 0.0;
@@ -372,7 +369,7 @@ public class ERDepartment extends Agent
 			for( lfSecond = 0.0; lfSecond < lfEndLogicalTime; lfSecond += 1.0/3600.0 )
 			{
 				// 患者を到達分布にしたがって生成します。(午前8時30分を0秒とする。)
-				erWaitingRoom.vArrivalPatient( lfSecond, erEngine, iRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, initparam );
+				erWaitingRoom.vArrivalPatient( lfSecond, erEngine, iRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode );
 			}
 			erWaitingRoom.vSetSimulationEndTime( lfEndTime );
 			// テスト用
@@ -381,9 +378,6 @@ public class ERDepartment extends Agent
 			// 救急部門に到達する人数を取得します。
 			iTotalPatientNum = erWaitingRoom.iGetTotalPatientNum();
 			lfSurvivalProbability = erWaitingRoom.lfCalcInitialAvgSurvivalProbability();
-
-			// 初期設定ファイル操作用クラスの設定をします。
-			vSetAllInitParam( initparam );
 
 			// 終了条件用の値を設定し、終了条件に達したら自動的に終了します。
 			ERDepartmentLog.warning( "クラス名" + "," + this.getClass() + "," + "メソッド名" + "," + "vInitialize" + "," + "終了条件クラス生成開始" + "," + erFinisher + "," );
@@ -427,30 +421,29 @@ public class ERDepartment extends Agent
 	 *    13 血管造影検査室
 	 *    14 FAST室
 	 * </PRE>
-	 * @param engine								FUSEのシミュレーションエンジンクラス
-	 * @param env 									FUSEの環境クラス
-	 * @param strEmergencyDepartmentPath 			救急部門の設定ファイルパス
-	 * @param strConsultationRoomPath 				診察室の設定ファイルパス
-	 * @param strOperationRoomPath 					手術室の設定ファイルパス
-	 * @param strEmergencyRoomPath 					初療室の設定ファイルパス
-	 * @param strObservationRoomPath 				観察室の設定ファイルパス
-	 * @param strSevereInjuryObservationRoomPath 	重症観察室の設定ファイルパス
-	 * @param strIntensiveCareUnitPath 				集中治療室の設定ファイルパス
-	 * @param strHighCareUnitPath 					高度治療室の設定ファイルパス
-	 * @param strGeneralWardPath 					一般病棟の設定ファイルパス
-	 * @param strWaitingRoomPath 					待合室の設定ファイルパス
-	 * @param strXRayRoomPath 						X線室の設定ファイルパス
-	 * @param strCTRoomPath 						CT室の設定ファイルパス
-	 * @param strMRIRoomPath 						MRI室の設定ファイルパス
-	 * @param strAngiographyRoomPath 				血管造影室の設定ファイルパス
-	 * @param strFastRoomPath 						超音波室の設定ファイルパス
-	 * @param lfPatientPepole 						到達する患者の人数
-	 * @param iRandomMode 							患者の発生分布
-	 * @param iInverseSimFlag 						逆シミュレーションか否か
-	 * @param iFileWriteMode 						ファイル書き込みモード
-	 * @param iPatientArrivalMode 					患者到達モード(0:通常, 1:災害)
-	 * @param sfmtRandom 							メルセンヌツイスターのインスタンス
-	 * @param initparam								初期設定パrメータ（合わせ込み用）
+	 * @param engine FUSEのシミュレーションエンジンクラス
+	 * @param env FUSEの環境クラス
+	 * @param strEmergencyDepartmentPath 救急部門の設定ファイルパス
+	 * @param strConsultationRoomPath 診察室の設定ファイルパス
+	 * @param strOperationRoomPath 手術室の設定ファイルパス
+	 * @param strEmergencyRoomPath 初療室の設定ファイルパス
+	 * @param strObservationRoomPath 観察室の設定ファイルパス
+	 * @param strSevereInjuryObservationRoomPath 重症観察室の設定ファイルパス
+	 * @param strIntensiveCareUnitPath 集中治療室の設定ファイルパス
+	 * @param strHighCareUnitPath 高度治療室の設定ファイルパス
+	 * @param strGeneralWardPath 一般病棟の設定ファイルパス
+	 * @param strWaitingRoomPath 待合室の設定ファイルパス
+	 * @param strXRayRoomPath X線室の設定ファイルパス
+	 * @param strCTRoomPath CT室の設定ファイルパス
+	 * @param strMRIRoomPath MRI室の設定ファイルパス
+	 * @param strAngiographyRoomPath 血管造影室の設定ファイルパス
+	 * @param strFastRoomPath 超音波室の設定ファイルパス
+	 * @param lfPatientPepole 到達する患者の人数
+	 * @param iRandomMode 患者の発生分布
+	 * @param iInverseSimFlag 逆シミュレーションか否か
+	 * @param iFileWriteMode ファイル書き込みモード
+	 * @param iPatientArrivalMode 患者到達モード(0:通常, 1:災害)
+	 * @param sfmtRandom メルセンヌツイスターのインスタンス
 	 */
 	public void vInitialize( SimulationEngine engine,
 			Environment env,
@@ -474,8 +467,7 @@ public class ERDepartment extends Agent
 			int iInverseSimFlag,
 			int iFileWriteMode,
 			int iPatientArrivalMode,
-			Rand sfmtRandom,
-			InitSimParam initparam )
+			utility.sfmt.Rand sfmtRandom )
 	{
 		int i,j;
 
@@ -545,7 +537,7 @@ public class ERDepartment extends Agent
 					strObservationRoomPath, strSevereInjuryObservationRoomPath, strIntensiveCareUnitPath,
 					strHighCareUnitPath, strGeneralWardPath, strWaitingRoomPath, strXRayRoomPath,
 					strCTRoomPath, strMRIRoomPath, strAngiographyRoomPath, strFastRoomPath,
-					lfPatientPepole, iRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, sfmtRandom, initparam );
+					lfPatientPepole, iRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, sfmtRandom );
 		}
 		catch( IOException ioe )
 		{
@@ -801,155 +793,6 @@ public class ERDepartment extends Agent
 
 			lfTotalTime = 0.0;
 			iCurrentStatusFlag = 0;
-		}
-	}
-
-	/**
-	 * <PRE>
-	 *    初期設定ファイル用インスタンスを設定します。
-	 * </PRE>
-	 * @param initparam 初期設定パラメータインスタンス
-	 */
-	public void vSetAllInitParam( InitSimParam initparam )
-	{
-		int i,j;
-		// 診察室
-		for( i = 0;i < ArrayListConsultationRooms.size(); i++ )
-		{
-			for( j = 0; j < ArrayListConsultationRooms.get(i).iGetNurseAgentsNum(); j++ )
-			{
-				ArrayListConsultationRooms.get(i).cGetNurseAgent(j).vSetInitParam( initparam );
-			}
-			ArrayListConsultationRooms.get(i).cGetDoctorAgent().vSetInitParam( initparam );
-		}
-		// 初療室
-		for( i = 0;i < ArrayListEmergencyRooms.size(); i++ )
-		{
-			for( j = 0; j < ArrayListEmergencyRooms.get(i).iGetNurseAgentsNum(); j++ )
-			{
-				ArrayListEmergencyRooms.get(i).cGetNurseAgent(j).vSetInitParam( initparam );
-			}
-			for( j = 0; j < ArrayListEmergencyRooms.get(i).iGetDoctorAgentsNum(); j++ )
-			{
-				ArrayListEmergencyRooms.get(i).cGetDoctorAgent(j).vSetInitParam( initparam );
-			}
-			for( j = 0; j < ArrayListEmergencyRooms.get(i).iGetClinicalEngineerAgentsNum(); j++ )
-			{
-				ArrayListEmergencyRooms.get(i).cGetClinicalEngineerAgent(j).vSetInitParam( initparam );
-			}
-		}
-		// 観察室
-		for( i = 0;i < ArrayListObservationRooms.size(); i++ )
-		{
-			for( j = 0; j < ArrayListObservationRooms.get(i).iGetNurseAgentsNum(); j++ )
-			{
-				ArrayListObservationRooms.get(i).erGetNurseAgent(j).vSetInitParam( initparam );
-			}
-		}
-		// 重症観察室
-		for( i = 0;i < ArrayListSevereInjuryObservationRooms.size(); i++ )
-		{
-			for( j = 0; j < ArrayListSevereInjuryObservationRooms.get(i).iGetNurseAgentsNum(); j++ )
-			{
-				ArrayListSevereInjuryObservationRooms.get(i).erGetNurseAgent(j).vSetInitParam( initparam );
-			}
-		}
-		// 手術室
-		for( i = 0;i < ArrayListOperationRooms.size(); i++ )
-		{
-			for( j = 0; j < ArrayListOperationRooms.get(i).iGetNurseAgentsNum(); j++ )
-			{
-				ArrayListOperationRooms.get(i).cGetNurseAgent(j).vSetInitParam( initparam );
-			}
-			for( j = 0; j < ArrayListOperationRooms.get(i).iGetDoctorAgentsNum(); j++ )
-			{
-				ArrayListOperationRooms.get(i).cGetDoctorAgent(j).vSetInitParam( initparam );
-			}
-		}
-		// 高度治療室
-		for( i = 0;i < ArrayListHighCareUnitRooms.size(); i++ )
-		{
-			for( j = 0; j < ArrayListHighCareUnitRooms.get(i).iGetNurseAgentsNum(); j++ )
-			{
-				ArrayListHighCareUnitRooms.get(i).cGetNurseAgent(j).vSetInitParam( initparam );
-			}
-			for( j = 0; j < ArrayListHighCareUnitRooms.get(i).iGetDoctorAgentsNum(); j++ )
-			{
-				ArrayListHighCareUnitRooms.get(i).cGetDoctorAgent(j).vSetInitParam( initparam );
-			}
-		}
-		// 集中治療室
-		for( i = 0;i < ArrayListIntensiveCareUnitRooms.size(); i++ )
-		{
-			for( j = 0; j < ArrayListIntensiveCareUnitRooms.get(i).iGetNurseAgentsNum(); j++ )
-			{
-				ArrayListIntensiveCareUnitRooms.get(i).cGetNurseAgent(j).vSetInitParam( initparam );
-			}
-			for( j = 0; j < ArrayListIntensiveCareUnitRooms.get(i).iGetDoctorAgentsNum(); j++ )
-			{
-				ArrayListIntensiveCareUnitRooms.get(i).cGetDoctorAgent(j).vSetInitParam( initparam );
-			}
-		}
-		// 一般病棟
-		for( i = 0;i < ArrayListGeneralWardRooms.size(); i++ )
-		{
-			for( j = 0; j < ArrayListGeneralWardRooms.get(i).iGetNurseAgentsNum(); j++ )
-			{
-				ArrayListGeneralWardRooms.get(i).cGetNurseAgent(j).vSetInitParam( initparam );
-			}
-			for( j = 0;j < ArrayListGeneralWardRooms.get(i).iGetDoctorAgentsNum(); j++ )
-			{
-				ArrayListGeneralWardRooms.get(i).cGetDoctorAgent(j).vSetInitParam( initparam );
-			}
-		}
-		// 待合室
-		for( i = 0;i < erWaitingRoom.iGetNurseAgentsNum(); i++ )
-		{
-			erWaitingRoom.erGetNurseAgent(i).vSetInitParam( initparam );
-		}
-		for( i = 0;i < erWaitingRoom.erGetPatientAgents().size(); i++ )
-		{
-			erWaitingRoom.erGetPatientAgent(i).vSetInitParam( initparam );
-		}
-		// 検査室(X線室)
-		for( i = 0;i < ArrayListExaminationXRayRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListExaminationXRayRooms.get(i).iGetClinicalEngineerAgentsNum(); j++ )
-			{
-				ArrayListExaminationXRayRooms.get(i).cGetClinicalEngineerAgent(j).vSetInitParam( initparam );
-			}
-		}
-		// 検査室(CT室)
-		for( i = 0;i < ArrayListExaminationCTRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListExaminationCTRooms.get(i).iGetClinicalEngineerAgentsNum(); j++ )
-			{
-				ArrayListExaminationCTRooms.get(i).cGetClinicalEngineerAgent(j).vSetInitParam( initparam );
-			}
-		}
-		// 検査室(MRI室)
-		for( i = 0;i < ArrayListExaminationMRIRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListExaminationMRIRooms.get(i).iGetClinicalEngineerAgentsNum(); j++ )
-			{
-				ArrayListExaminationMRIRooms.get(i).cGetClinicalEngineerAgent(j).vSetInitParam( initparam );
-			}
-		}
-		// 検査室(血管造影室)
-		for( i = 0;i < ArrayListExaminationAngiographyRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListExaminationAngiographyRooms.get(i).iGetClinicalEngineerAgentsNum(); j++ )
-			{
-				ArrayListExaminationAngiographyRooms.get(i).cGetClinicalEngineerAgent(j).vSetInitParam( initparam );
-			}
-		}
-		// 検査室(FAST室)
-		for( i = 0;i < ArrayListExaminationFastRooms.size(); i++ )
-		{
-			for( j = 0;j < ArrayListExaminationFastRooms.get(i).iGetClinicalEngineerAgentsNum(); j++ )
-			{
-				ArrayListExaminationFastRooms.get(i).cGetClinicalEngineerAgent(j).vSetInitParam( initparam );
-			}
 		}
 	}
 
@@ -7445,252 +7288,126 @@ public class ERDepartment extends Agent
 		return iFastRoomNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   診察室の医師数を取得します。
-	 * </PRE>
-	 * @return 診察室の医師数
-	 */
 	public double iGetConsultationRoomDoctorNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iConsultationDoctorNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   診察室の看護師数を取得します。
-	 * </PRE>
-	 * @return 診察室の看護師数
-	 */
 	public double iGetConsultationRoomNurseNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iConsultationNurseNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   手術室の医師数を取得します。
-	 * </PRE>
-	 * @return 手術室の医師数
-	 */
 	public double iGetOperationRoomDoctorNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iOperationDoctorNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   手術室の看護師数を取得します。
-	 * </PRE>
-	 * @return 手術室の看護師数
-	 */
 	public double iGetOperationRoomNurseNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iOperationNurseNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   初療室の医師数を取得します。
-	 * </PRE>
-	 * @return 初療室の医師数
-	 */
 	public double iGetEmergencyRoomDoctorNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iEmergencyDoctorNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   初療室の看護師数を取得します。
-	 * </PRE>
-	 * @return 初療室の看護師数
-	 */
 	public double iGetEmergencyRoomNurseNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iEmergencyNurseNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   初療室の医療技師数を取得します。
-	 * </PRE>
-	 * @return 初療室の医療技師数
-	 */
 	public double iGetEmergencyRoomClinicalEngineerNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iEmergencyClinicalEngineerNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   観察室の看護師数を取得します。
-	 * </PRE>
-	 * @return 観察室の看護師数
-	 */
 	public double iGetObservationRoomNurseNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iObservationNurseNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   重症観察室の看護師数を取得します。
-	 * </PRE>
-	 * @return 重症観察室の看護師数
-	 */
 	public double iGetInjurySevereObservationRoomNurseNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iSevereInjuryObservationNurseNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   集中治療室の医師数を取得します。
-	 * </PRE>
-	 * @return 集中治療室の医師数
-	 */
 	public double iGetIntensiveCareUnitRoomDoctorNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iIntensiveCareUnitDoctorNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   集中治療室の看護師数を取得します。
-	 * </PRE>
-	 * @return 集中治療室の看護師数
-	 */
 	public double iGetIntensiveCareUnitRoomNurseNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iIntensiveCareUnitNurseNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   高度治療室の医師数を取得します。
-	 * </PRE>
-	 * @return 高度治療室の医師数
-	 */
 	public double iGetHighCareUnitRoomDoctorNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iHighCareUnitDoctorNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   高度治療室の看護師数を取得します。
-	 * </PRE>
-	 * @return 高度治療室の看護師数
-	 */
 	public double iGetHighCareUnitRoomNurseNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iHighCareUnitNurseNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   一般病棟の医師数を取得します。
-	 * </PRE>
-	 * @return 一般病棟の医師数
-	 */
 	public double iGetGeneralWardRoomDoctorNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iGeneralWardDoctorNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   一般病棟の看護師数を取得します。
-	 * </PRE>
-	 * @return 一般病棟の看護師数
-	 */
 	public double iGetGeneralWardRoomNurseNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iGeneralWardNurseNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   待合室の看護師数を取得します。
-	 * </PRE>
-	 * @return 待合室の看護師数
-	 */
 	public double iGetWaitingRoomNurseNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iWaitingNurseNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   X線室の医療技師数を取得します。
-	 * </PRE>
-	 * @return X線室の医療技師数
-	 */
 	public double iGetExaminationXRayRoomClinicalEngineerNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iXRayClinicalEngineerNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   CT室の医療技師数を取得します。
-	 * </PRE>
-	 * @return CT室の医療技師数
-	 */
 	public double iGetExaminationCTRoomClinicalEngineerNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iCTClinicalEngineerNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   MRI室の医療技師数を取得します。
-	 * </PRE>
-	 * @return MRI室の医療技師数
-	 */
 	public double iGetExaminationMRIRoomClinicalEngineerNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iMRIClinicalEngineerNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   血管造影室の医療技師数を取得します。
-	 * </PRE>
-	 * @return 血管造影室の医療技師数
-	 */
 	public double iGetExaminationAnmgiographyRoomClinicalEngineerNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		return iAngiographyClinicalEngineerNum;
 	}
 
-	/**
-	 * <PRE>
-	 *   超音波室の医療技師数を取得します。
-	 * </PRE>
-	 * @return 超音波室の医療技師数
-	 */
 	public double iGetExaminationFastRoomClinicalEngineerNum()
 	{
 		// TODO 自動生成されたメソッド・スタブ

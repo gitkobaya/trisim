@@ -1050,7 +1050,7 @@ public class ERExaminationAngiographyRoom extends Agent
 
 	/**
 	 * <PRE>
-	 *   診察室に所属しているエージェントの座標を設定します。
+	 *   血管造影室に所属しているエージェントの座標を設定します。
 	 * </PRE>
 	 */
 	public void vSetAffiliationAgentPosition()

@@ -1577,7 +1577,7 @@ public class EREmergencyRoom extends Agent
 
 	/**
 	 * <PRE>
-	 *   初療室に所属しているエージェントの座標を設定します。
+	 *   診察室に所属しているエージェントの座標を設定します。
 	 * </PRE>
 	 */
 	public void vSetAffiliationAgentPosition()

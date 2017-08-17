@@ -908,47 +908,127 @@ public class ERExaminationXRayRoom extends Agent
 		cXRayRoomLog = log;
 	}
 
+	/**
+	 * <PRE>
+	 *    X線室のX座標を取得します。
+	 *    描画用です。
+	 * </PRE>
+	 * @return	X座標
+	 */
 	public int iGetX()
 	{
 		return iDrawX;
 	}
+
+	/**
+	 * <PRE>
+	 *    X線室のY座標を取得します。
+	 *    描画用です。
+	 * </PRE>
+	 * @return	Y座標
+	 */
 	public int iGetY()
 	{
 		return iDrawY;
 	}
+
+	/**
+	 * <PRE>
+	 *    X線室の横幅を取得します。
+	 *    描画用です。
+	 * </PRE>
+	 * @return	横幅
+	 */
 	public int iGetWidth()
 	{
 		return iDrawWidth;
 	}
+
+	/**
+	 * <PRE>
+	 *    X線室の縦幅を取得します。
+	 *    描画用です。
+	 * </PRE>
+	 * @return	縦幅
+	 */
 	public int iGetHeight()
 	{
 		return iDrawHeight;
 	}
+
+	/**
+	 * <PRE>
+	 *    X線室の階数を取得します。
+	 *    描画用です。
+	 * </PRE>
+	 * @return	階数
+	 */
 	public int iGetF()
 	{
 		return iDrawF;
 	}
 
+	/**
+	 * <PRE>
+	 *    X線室のX座標を格納します。
+	 * </PRE>
+	 * @param iData	X座標
+	 */
 	public void vSetX( int iData )
 	{
 		iDrawX = iData;
 	}
+
+	/**
+	 * <PRE>
+	 *    X線室のY座標を格納します。
+	 * </PRE>
+	 * @param iData	Y座標
+	 */
 	public void vSetY( int iData )
 	{
 		iDrawY = iData;
 	}
+
+	/**
+	 * <PRE>
+	 *    X線室のZ座標を格納します。
+	 * </PRE>
+	 * @param iData	Z座標
+	 */
 	public void vSetZ( int iData )
 	{
 		iDrawZ = iData;
 	}
+
+	/**
+	 * <PRE>
+	 *   X線室の横幅を格納します。
+	 * </PRE>
+	 * @param iData	横幅
+	 */
 	public void vSetWidth( int iData )
 	{
 		iDrawWidth = iData;
 	}
+
+	/**
+	 * <PRE>
+	 *    X線室の縦幅を格納します。
+	 * </PRE>
+	 * @param iData	縦幅
+	 */
 	public void vSetHeight( int iData )
 	{
 		iDrawHeight = iData;
 	}
+
+	/**
+	 * <PRE>
+	 *    X線室の階数を格納します。
+	 * </PRE>
+	 * @param iData	階数
+	 */
 	public void vSetF( int iData )
 	{
 		iDrawF = iData;
@@ -956,7 +1036,7 @@ public class ERExaminationXRayRoom extends Agent
 
 	/**
 	 * <PRE>
-	 *   診察室に所属しているエージェントの座標を設定します。
+	 *   X線室に所属しているエージェントの座標を設定します。
 	 * </PRE>
 	 */
 	public void vSetAffiliationAgentPosition()

@@ -11,7 +11,6 @@ import jp.ac.nihon_u.cit.su.furulab.fuse.Message;
 import jp.ac.nihon_u.cit.su.furulab.fuse.SimulationEngine;
 import jp.ac.nihon_u.cit.su.furulab.fuse.models.Agent;
 import utility.csv.CCsv;
-import utility.initparam.InitSimParam;
 import utility.node.ERTriageNode;
 
 
@@ -148,8 +147,6 @@ public class ERNurseAgent extends Agent
 	private Object erNurseCriticalSection;						// クリティカルセクション用
 
 	private int iFileWriteMode;									// 長時間シミュレーションファイル出力モード
-
-	private InitSimParam initSimParam;							// 初期設定ファイル操作クラス
 
 	/**
 	 * <PRE>
@@ -2120,19 +2117,16 @@ public class ERNurseAgent extends Agent
 		double lfRand = 0.0;
 
 //		lfRand = 0.5 * ( normalRand() + 1.0 );
-//		lfRand = weibullRand(initSimParam.lfGetNurseJudgeMildTraumaWeibullAlpha(), initSimParam.lfGetNurseJudgeMildTraumaWeibullBeta());
 //		if( lfRand <= lfPrevProb )
 //		{
 //			iEmergency = 4;
 //		}
-//		lfCurProb = initSimParam.lfGetNurseJudgeMildTrauma4();
 //		if( lfPrevProb <= lfRand && lfRand <= lfCurProb )
 //		{
 //			iEmergency = 4;
 //		}
 //		lfPrevProb = lfCurProb;
 //		lfCurProb += 0.5;
-//		lfCurProb += initSimParam.lfGetNurseJudgeMildTrauma5();
 //		if( lfPrevProb <= lfRand && lfRand <= lfCurProb )
 		{
 			iEmergency = 5;
@@ -2147,31 +2141,31 @@ public class ERNurseAgent extends Agent
 		double lfPrevProb = 0.0;
 		double lfRand = 0.0;
 
+//		lfRand = 0.5 * ( normalRand() + 1.5 );
+//		lfRand = 0.5 * ( normalRand() + 1.3 );
+		lfRand = 0.5 * ( normalRand() + 1.0 );
+//		lfRand = 0.7 * normalRand() + 0.3;
 //		lfRand = weibullRand(1.0, 0.1);
 //		lfRand = weibullRand(1.0, 0.5);
-//		lfRand = weibullRand(1.8, 0.35);			// 現在設定値
+		lfRand = weibullRand(1.8, 0.35);
 //		lfRand = weibullRand(2.5, 0.4);	//O.Kデータ
 //		lfRand = weibullRand(4.0, 0.4);
-		lfRand = weibullRand(initSimParam.lfGetNurseJudgeModerateTraumaWeibullAlpha(), initSimParam.lfGetNurseJudgeModerateTraumaWeibullBeta());
 		if( lfRand <= lfPrevProb )
 		{
 			iEmergency = 3;
 		}
-		lfCurProb = initSimParam.lfGetNurseJudgeModerateTrauma3();
 		if( lfPrevProb <= lfRand && lfRand <= lfCurProb )
 		{
 			iEmergency = 3;
 		}
 		lfPrevProb = lfCurProb;
-//		lfCurProb += 0.5;
-		lfCurProb += initSimParam.lfGetNurseJudgeModerateTrauma4();
+		lfCurProb += 0.5;
 		if( lfPrevProb <= lfRand && lfRand <= lfCurProb )
 		{
 			iEmergency = 4;
 		}
 		lfPrevProb = lfCurProb;
-//		lfCurProb += 0.25;
-		lfCurProb += initSimParam.lfGetNurseJudgeModerateTrauma5();
+		lfCurProb += 0.25;
 		if( lfPrevProb <= lfRand && lfRand <= lfCurProb )
 		{
 			iEmergency = 5;
@@ -2186,31 +2180,31 @@ public class ERNurseAgent extends Agent
 		double lfPrevProb = 0.0;
 		double lfRand = 0.0;
 
+//		lfRand = 0.5 * ( normalRand() + 1.0 );
+		lfRand = 0.56 * normalRand() + 0.44;
+//		lfRand = 0.5 * normalRand() + 0.5;
+//		lfRand = 0.15 * normalRand() + 0.85;
 //		lfRand = weibullRand(1.0, 0.5);
 //		lfRand = rnd.NextUnif();
 //		lfRand = 0.6 * normalRand() + 0.4;
-//		lfRand = weibullRand(2.0, 1.0);
-//		lfRand = weibullRand(2.5, 0.4);	//O.Kデータ	//現在設定値
-		lfRand = weibullRand(initSimParam.lfGetNurseJudgeSevereTraumaWeibullAlpha(), initSimParam.lfGetNurseJudgeSevereTraumaWeibullBeta());
+		lfRand = weibullRand(2.0, 1.0);
+		lfRand = weibullRand(2.5, 0.4);	//O.Kデータ
 		if( lfRand <= lfPrevProb )
 		{
 			iEmergency = 2;
 		}
-		lfCurProb = initSimParam.lfGetNurseJudgeSevereTrauma2();
 		if( lfPrevProb <= lfRand && lfRand <= lfCurProb )
 		{
 			iEmergency = 2;
 		}
 		lfPrevProb = lfCurProb;
-//		lfCurProb += 0.5;
-		lfCurProb += initSimParam.lfGetNurseJudgeSevereTrauma3();
+		lfCurProb += 0.5;
 		if( lfPrevProb <= lfRand && lfRand <= lfCurProb )
 		{
 			iEmergency = 3;
 		}
 		lfPrevProb = lfCurProb;
-//		lfCurProb += 0.25;
-		lfCurProb += initSimParam.lfGetNurseJudgeSevereTrauma4();
+		lfCurProb += 0.25;
 		if( lfPrevProb <= lfRand && lfRand <= lfCurProb )
 		{
 			iEmergency = 4;
@@ -3639,12 +3633,5 @@ public class ERNurseAgent extends Agent
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		rnd = sfmtRandom;
-	}
-
-	public void vSetInitParam(InitSimParam initparam)
-	{
-		// TODO 自動生成されたメソッド・スタブ
-		initSimParam = initparam;
-
 	}
 }

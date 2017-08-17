@@ -7,7 +7,6 @@ import java.util.Queue;
 import java.util.logging.Logger;
 
 import utility.csv.CCsv;
-import utility.initparam.InitSimParam;
 import utility.sfmt.Rand;
 import jp.ac.nihon_u.cit.su.furulab.fuse.Message;
 import jp.ac.nihon_u.cit.su.furulab.fuse.SimulationEngine;
@@ -98,8 +97,6 @@ public class ERClinicalEngineerAgent extends Agent
 	private Rand sfmtClinicalEngineer;					// メルセンヌツイスターオブジェクト
 
 	private int iFileWriteMode;							// 長時間シミュレーション用ファイル出力モード
-
-	private InitSimParam initParamClinicalEngineerAgent;// 初期設定ファイル操作用変数
 
 	/**
 	 * <PRE>
@@ -1385,11 +1382,5 @@ public class ERClinicalEngineerAgent extends Agent
 	{
 		// TODO 自動生成されたメソッド・スタブ
 		rnd = sfmtRandom;
-	}
-
-	public void vSetInitParam(InitSimParam initparam)
-	{
-		// TODO 自動生成されたメソッド・スタブ
-		initParamClinicalEngineerAgent = initparam;
 	}
 }

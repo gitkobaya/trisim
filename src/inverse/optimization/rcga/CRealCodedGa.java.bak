@@ -14,14 +14,6 @@ public class CRealCodedGa
 	protected Sfmt rnd;
 	protected ObjectiveFunctionInterface pflfObjectiveFunction;
 
-	/**
-	 * <PRE>
-	 * 　コンストラクタです。初期化処理を行います。
-	 * </PRE>
-	 * @author kobayashi
-	 * @since 2015/10/30
-	 * @version 1.0
-	 */
 	public CRealCodedGa()
 	{
 		iGenerationNumber = 0;
@@ -30,33 +22,11 @@ public class CRealCodedGa
 		pplfGens =  null;
 	}
 
-	/**
-	 * <PRE>
-	 * 　コンストラクタです。初期化処理を行います。
-	 * </PRE>
-	 * @param iGenerationNum		世代数
-	 * @param iGenNum				遺伝子数
-	 * @param iGenVectorData		遺伝子次元数
-	 * @author kobayashi
-	 * @since 2015/10/30
-	 * @version 1.0
-	 */
 	public CRealCodedGa( int iGenerationNum, int iGenNum, int iGenVectorData )
 	{
 		vInitialize( iGenerationNum, iGenNum, iGenVectorData );
 	}
 
-	/**
-	 * <PRE>
-	 * 　初期化処理を行います。
-	 * </PRE>
-	 * @param iGenerationNum		世代数
-	 * @param iGenNum				遺伝子数
-	 * @param iGenVectorData		遺伝子次元数
-	 * @author kobayashi
-	 * @since 2015/10/30
-	 * @version 1.0
-	 */
 	public void vInitialize( int iGenerationNum, int iGenNum, int iGenVectorData )
 	{
 		int i,j;
@@ -113,7 +83,7 @@ public class CRealCodedGa
 
 	/**
 	 * <PRE>
-	 * 　終了処理を行います。
+	 * 　目的関数をインストールします。
 	 * </PRE>
 	 * @author kobayashi
 	 * @since 2015/10/30

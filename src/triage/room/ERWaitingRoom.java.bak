@@ -11,7 +11,6 @@ import triage.agent.ERDoctorAgent;
 import triage.agent.ERNurseAgent;
 import triage.agent.ERNurseAgentException;
 import triage.agent.ERPatientAgent;
-import utility.initparam.InitSimParam;
 import utility.node.ERTriageNode;
 import utility.node.ERTriageNodeManager;
 import utility.sfmt.Rand;
@@ -570,12 +569,11 @@ public class ERWaitingRoom extends Agent
 	 * @param iInverseSimMode	逆シミュレーションモード
 	 * @param iFileWriteMode	ファイル書き込みモード
 	 * @param iDisasterFlag		災害モード
-	 * @param initSimParam		初期設定パラメータ（合わせ込み用）
 	 * @throws IOException		例外
 	 * @author kobayashi
 	 * @since 2015/08/07
 	 */
-	public void vArrivalPatient( double lfTime, SimulationEngine engine, int iRandomMode, int iInverseSimMode, int iFileWriteMode, int iDisasterFlag, InitSimParam initSimParam ) throws IOException
+	public void vArrivalPatient( double lfTime, SimulationEngine engine, int iRandomMode, int iInverseSimMode, int iFileWriteMode, int iDisasterFlag ) throws IOException
 	{
 		double lfProb1 = 0.0;
 		double lfProb2 = 0.0;
@@ -600,7 +598,6 @@ public class ERWaitingRoom extends Agent
 		{
 //			erCurrentPatientAgent = new ERPatientAgent();
 			ArrayListPatientAgents.add( new ERPatientAgent() );
-			ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetInitParam( initSimParam );
 			ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetRandom( rnd );
 			ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetPatientRandomMode( iRandomMode );
 			// ランダムに患者の容体を割り当てます。
@@ -630,7 +627,6 @@ public class ERWaitingRoom extends Agent
 		{
 //			erCurrentPatientAgent = new ERPatientAgent();
 			ArrayListPatientAgents.add( new ERPatientAgent() );
-			ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetInitParam( initSimParam );
 			ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetRandom( rnd );
 			ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetPatientRandomMode( iRandomMode );
 			// ランダムに患者の容体を割り当てます。
@@ -4277,135 +4273,54 @@ public class ERWaitingRoom extends Agent
 		cWaitingRoomLog = log;
 	}
 
-	/**
-	 * <PRE>
-	 *    待合室のX座標を取得します。
-	 *    描画用です。
-	 * </PRE>
-	 * @return	X座標
-	 */
 	public int iGetX()
 	{
 		return iDrawX;
 	}
-
-	/**
-	 * <PRE>
-	 *    待合室のY座標を取得します。
-	 *    描画用です。
-	 * </PRE>
-	 * @return	Y座標
-	 */
 	public int iGetY()
 	{
 		return iDrawY;
 	}
-
-	/**
-	 * <PRE>
-	 *    待合室の横幅を取得します。
-	 *    描画用です。
-	 * </PRE>
-	 * @return	横幅
-	 */
 	public int iGetWidth()
 	{
 		return iDrawWidth;
 	}
-
-	/**
-	 * <PRE>
-	 *    待合室の縦幅を取得します。
-	 *    描画用です。
-	 * </PRE>
-	 * @return	縦幅
-	 */
 	public int iGetHeight()
 	{
 		return iDrawHeight;
 	}
-
-	/**
-	 * <PRE>
-	 *    待合室の階数を取得します。
-	 *    描画用です。
-	 * </PRE>
-	 * @return	階数
-	 */
 	public int iGetF()
 	{
 		return iDrawF;
 	}
 
-	/**
-	 * <PRE>
-	 *    待合室のX座標を格納します。
-	 * </PRE>
-	 * @param iData	X座標
-	 */
 	public void vSetX( int iData )
 	{
 		iDrawX = iData;
 	}
-
-	/**
-	 * <PRE>
-	 *    待合室のY座標を格納します。
-	 * </PRE>
-	 * @param iData	Y座標
-	 */
 	public void vSetY( int iData )
 	{
 		iDrawY = iData;
 	}
-
-	/**
-	 * <PRE>
-	 *    待合室のZ座標を格納します。
-	 * </PRE>
-	 * @param iData	Z座標
-	 */
 	public void vSetZ( int iData )
 	{
 		iDrawZ = iData;
 	}
-
-	/**
-	 * <PRE>
-	 *   待合室の横幅を格納します。
-	 * </PRE>
-	 * @param iData	横幅
-	 */
 	public void vSetWidth( int iData )
 	{
 		iDrawWidth = iData;
 	}
-
-	/**
-	 * <PRE>
-	 *    待合室の縦幅を格納します。
-	 * </PRE>
-	 * @param iData	縦幅
-	 */
 	public void vSetHeight( int iData )
 	{
 		iDrawHeight = iData;
 	}
-
-	/**
-	 * <PRE>
-	 *    待合室の階数を格納します。
-	 * </PRE>
-	 * @param iData	階数
-	 */
 	public void vSetF( int iData )
 	{
 		iDrawF = iData;
 	}
-
 	/**
 	 * <PRE>
-	 *   待合室に所属しているエージェントの座標を設定します。
+	 *   診察室に所属しているエージェントの座標を設定します。
 	 * </PRE>
 	 */
 	public void vSetAffiliationAgentPosition()

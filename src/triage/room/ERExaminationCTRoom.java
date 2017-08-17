@@ -1057,7 +1057,7 @@ public class ERExaminationCTRoom extends Agent
 
 	/**
 	 * <PRE>
-	 *   診察室に所属しているエージェントの座標を設定します。
+	 *   CT室に所属しているエージェントの座標を設定します。
 	 * </PRE>
 	 */
 	public void vSetAffiliationAgentPosition()

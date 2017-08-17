@@ -170,7 +170,7 @@ public class ERMain
 					erDepartment.vSetLog( cTRISimLogger );
 
 					// 初期化を実行します。
-					vInitialize( cmd, erDepartment, cTRISimLogger, strNodeLinkFileName, csCriticalSection, initSimParam );
+					vInitialize( cmd, erDepartment, cTRISimLogger, strNodeLinkFileName, csCriticalSection );
 
 					// 患者エージェントを別スレッドから登場させるようにします。
 //					vThreadInvoke( cmd, engine, erDepartment );
@@ -202,7 +202,7 @@ public class ERMain
 					initInvSimParam.readInitSettingFile();
 
 //					// 初期化を実行します。
-					vInitialize( cmd, cTRISimLogger, strNodeLinkFileName, csCriticalSection, initSimParam );
+					vInitialize( cmd, cTRISimLogger, strNodeLinkFileName, csCriticalSection );
 
 					// 最適化手法の初期化を行います。
 					vInitializeInvSimEngine( cmd );
@@ -246,7 +246,7 @@ public class ERMain
 				initGuiSimParam.readInitSettingFile();
 
 				// 初期化を実行します。
-				vInitialize( erDepartment, cTRISimLogger, strNodeLinkFileName, csCriticalSection, initGuiSimParam, initSimParam );
+				vInitialize( erDepartment, cTRISimLogger, strNodeLinkFileName, csCriticalSection, initGuiSimParam );
 
 				// 描画処理の初期を実行します。
 //				vReadDrawERDepartmentFile();
@@ -536,9 +536,8 @@ public class ERMain
 	 * @param log						ログのインスタンス
 	 * @param strNodeLinkFileName		FUSEノードリンクのファイル名
 	 * @param cs						クリティカルセクションのインスタンス
-	 * @param initParam					初期設定ファイルのインスタンス
 	 */
-	private static void vInitialize( CCmdCheck cmd, ERDepartment erDepartment, Logger log, String strNodeLinkFileName, Object cs, InitSimParam initParam )
+	private static void vInitialize( CCmdCheck cmd, ERDepartment erDepartment, Logger log, String strNodeLinkFileName, Object cs )
 	{
 		// 地形の作成(縦横のメッシュの数を指定。)
 		geo = new SimpleMeshGeometry(300, 300);
@@ -561,7 +560,7 @@ public class ERMain
 				cmd.strGetHighCareUnitPath(), cmd.strGetGeneralWardPath(), cmd.strGetWaitingRoomPath(), cmd.strGetXRayRoomPath(),
 				cmd.strGetCTRoomPath(), cmd.strGetMRIRoomPath(), cmd.strGetAngiographyRoomPath(), cmd.strGetFastRoomPath(),
 				cmd.lfGetPatientPepole(), cmd.iGetPatientRandomMode(), cmd.iGetExecMode(), cmd.iGetFileWriteMode(),
-				cmd.iGetPatientArrivalMode(), random, initParam );
+				cmd.iGetPatientArrivalMode(), random  );
 		erDepartment.vSetAllLog( log );
 		erDepartment.vSetCriticalSection( cs );
 //		erDepartment.vReadNodeManager( strNodeLinkFileName );
@@ -580,10 +579,9 @@ public class ERMain
 	 * @param log						ログインスタンス
 	 * @param strNodeLinkFileName		FUSEノードリンクのファイル名
 	 * @param cs						クリティカルセクションのインスタンス
-	 * @param initParam					初期設定ファイルのインスタンス
 	 * @throws IOException				java標準エラー
 	 */
-	private static void vInitialize( CCmdCheck cmd, Logger log, String strNodeLinkFileName, Object cs, InitSimParam initParam ) throws IOException
+	private static void vInitialize( CCmdCheck cmd, Logger log, String strNodeLinkFileName, Object cs ) throws IOException
 	{
 		// 地形の作成(縦横のメッシュの数を指定。)
 		geo = new SimpleMeshGeometry(300, 300);
@@ -608,7 +606,7 @@ public class ERMain
 			cmd.strGetSevereInjuryObservationRoomPath(), cmd.strGetIntensiveCareUnitPath(),
 			cmd.strGetHighCareUnitPath(), cmd.strGetGeneralWardPath(), cmd.strGetWaitingRoomPath(), cmd.strGetXRayRoomPath(),
 			cmd.strGetCTRoomPath(), cmd.strGetMRIRoomPath(), cmd.strGetAngiographyRoomPath(), cmd.strGetFastRoomPath(),
-			log, cs, random, cmd.lfGetPatientPepole(), cmd.iGetPatientRandomMode(), cmd.iGetExecMode(), cmd.iGetFileWriteMode(),cmd.iGetPatientArrivalMode(), initParam );
+			log, cs, random, cmd.lfGetPatientPepole(), cmd.iGetPatientRandomMode(), cmd.iGetExecMode(), cmd.iGetFileWriteMode(),cmd.iGetPatientArrivalMode() );
 
 		if( cmd.iGetExecMode() == 1 )
 		{
@@ -639,10 +637,9 @@ public class ERMain
 	 * @param strNodeLinkFileName		FUSEノードリンクのファイル名
 	 * @param cs						クリティカルセクションのインスタンス
 	 * @param initGuiSimParam			可視化用初期設定ファイルのインスタンス
-	 * @param initParam					初期設定ファイルのインスタンス
 	 * @throws IOException				java標準IOExceptionクラス
 	 */
-	private static void vInitialize( ERDepartment erDepartment, Logger log, String strNodeLinkFileName, Object cs, InitGUISimParam initGuiSimParam, InitSimParam initParam ) throws IOException
+	private static void vInitialize( ERDepartment erDepartment, Logger log, String strNodeLinkFileName, Object cs, InitGUISimParam initGuiSimParam ) throws IOException
 	{
 		int iPatientRandomMode = 0;
 		int iFileWriteModeFlag = 0;
@@ -690,7 +687,7 @@ public class ERMain
 				strHighCareUnitPath, strGeneralWardPath, strWaitingRoomPath, strXRayRoomPath,
 				strCTRoomPath, strMRIRoomPath, strAngiographyRoomPath, strFastRoomPath,
 				lfPatientPepole, iPatientRandomMode, 0, iFileWriteModeFlag,
-				iPatientArrivalMode, random, initParam );
+				iPatientArrivalMode, random );
 
 		// ログインスタンス及びクリティカルセクションインスタンスを設定します。
 		erDepartment.vSetAllLog( log );

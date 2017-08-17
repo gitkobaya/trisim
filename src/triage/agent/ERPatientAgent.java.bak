@@ -12,7 +12,6 @@ import jp.ac.nihon_u.cit.su.furulab.fuse.SimulationEngine;
 import jp.ac.nihon_u.cit.su.furulab.fuse.models.Agent;
 import jp.ac.nihon_u.cit.su.furulab.fuse.util.Position;
 import utility.csv.CCsv;
-import utility.initparam.InitSimParam;
 import utility.node.ERTriageNode;
 import utility.sfmt.Rand;
 
@@ -215,8 +214,6 @@ public class ERPatientAgent extends Agent
 	private Object csPatientCriticalSection;			// クリティカルセクション用
 
 	private int iFileWriteMode;							// 長時間シミュレーション用ファイル出力モード
-
-	private InitSimParam initSimParam;					// 職設定ファイル操作用変数
 
 	/**
 	 * <PRE>
@@ -567,8 +564,7 @@ public class ERPatientAgent extends Agent
 				iSurvivalCount = 0;
 			}
 
-			// 重みをかけて死亡率の調整をします。
-			if( iSurvivalCount*initSimParam.lfGetSurvivalProbabilityWeight() > initSimParam.lfGetSurvivalJudgeCount() )
+			if( iSurvivalCount > 4 )
 			{
 				// 死亡とみなし、医師エージェント及び看護師エージェントにその内容を送信します。
 				// 生存とし、この場合における患者エージェントの状態を担当者に送信します。
@@ -825,8 +821,7 @@ public class ERPatientAgent extends Agent
 				lfRand = weibullRand(1.0, 0.1);
 
 				lfPrevProb = 0.0;
-//				lfProb = 0.793972955;
-				lfProb = initSimParam.lfGetGcsScore15();
+				lfProb = 0.793972955;
 				if( lfRand <= lfProb )
 				{
 					iBestMotorResponse = 6;
@@ -834,8 +829,7 @@ public class ERPatientAgent extends Agent
 					iBestVerbalResponse = 5;
 				}
 				lfPrevProb = lfProb;
-//				lfProb += 0.060714533;
-				lfProb += initSimParam.lfGetGcsScore14();
+				lfProb += 0.060714533;
 				if( lfPrevProb <= lfRand && lfRand <= lfProb )
 				{
 					iBestMotorResponse = 6;
@@ -843,8 +837,7 @@ public class ERPatientAgent extends Agent
 					iBestVerbalResponse = 5;
 				}
 				lfPrevProb = lfProb;
-//				lfProb += 0.017235668;
-				lfProb += initSimParam.lfGetGcsScore13();
+				lfProb += 0.017235668;
 				if( lfPrevProb <= lfRand && lfRand <= lfProb )
 				{
 					iBestMotorResponse = 5;
@@ -852,8 +845,7 @@ public class ERPatientAgent extends Agent
 					iBestVerbalResponse = 4;
 				}
 				lfPrevProb = lfProb;
-//				lfProb += 0.009092482;
-				lfProb += initSimParam.lfGetGcsScore12();
+				lfProb += 0.009092482;
 				if( lfPrevProb <= lfRand && lfRand <= lfProb )
 				{
 					iBestMotorResponse = 5;
@@ -861,8 +853,7 @@ public class ERPatientAgent extends Agent
 					iBestVerbalResponse = 4;
 				}
 				lfPrevProb = lfProb;
-//				lfProb += 0.008771106;
-				lfProb += initSimParam.lfGetGcsScore11();
+				lfProb += 0.008771106;
 				if( lfPrevProb <= lfRand && lfRand <= lfProb )
 				{
 					iBestMotorResponse = 6;
@@ -870,8 +861,7 @@ public class ERPatientAgent extends Agent
 					iBestVerbalResponse = 1;
 				}
 				lfPrevProb = lfProb;
-//				lfProb += 0.0074856;
-				lfProb += initSimParam.lfGetGcsScore10();
+				lfProb += 0.0074856;
 				if( lfPrevProb <= lfRand && lfRand <= lfProb )
 				{
 					iBestMotorResponse = 6;
@@ -879,8 +869,7 @@ public class ERPatientAgent extends Agent
 					iBestVerbalResponse = 1;
 				}
 				lfPrevProb = lfProb;
-//				lfProb += 0.005211243;
-				lfProb += initSimParam.lfGetGcsScore9();
+				lfProb += 0.005211243;
 				if( lfPrevProb <= lfRand && lfRand <= lfProb )
 				{
 					iBestMotorResponse = 5;
@@ -888,8 +877,7 @@ public class ERPatientAgent extends Agent
 					iBestVerbalResponse = 2;
 				}
 				lfPrevProb = lfProb;
-//				lfProb += 0.005794665;
-				lfProb += initSimParam.lfGetGcsScore8();
+				lfProb += 0.005794665;
 				if( lfPrevProb <= lfRand && lfRand <= lfProb )
 				{
 					iBestMotorResponse = 5;
@@ -897,8 +885,7 @@ public class ERPatientAgent extends Agent
 					iBestVerbalResponse = 1;
 				}
 				lfPrevProb = lfProb;
-//				lfProb += 0.008840325;
-				lfProb += initSimParam.lfGetGcsScore7();
+				lfProb += 0.008840325;
 				if( lfPrevProb <= lfRand && lfRand <= lfProb )
 				{
 					iBestMotorResponse = 5;
@@ -906,8 +893,7 @@ public class ERPatientAgent extends Agent
 					iBestVerbalResponse = 1;
 				}
 				lfPrevProb = lfProb;
-//				lfProb += 0.008563447;
-				lfProb += initSimParam.lfGetGcsScore6();
+				lfProb += 0.008563447;
 				if( lfPrevProb <= lfRand && lfRand <= lfProb )
 				{
 					iBestMotorResponse = 4;
@@ -915,8 +901,7 @@ public class ERPatientAgent extends Agent
 					iBestVerbalResponse = 1;
 				}
 				lfPrevProb = lfProb;
-//				lfProb += 0.004598156;
-				lfProb += initSimParam.lfGetGcsScore5();
+				lfProb += 0.004598156;
 				if( lfPrevProb <= lfRand && lfRand <= lfProb )
 				{
 					iBestMotorResponse = 3;
@@ -924,8 +909,7 @@ public class ERPatientAgent extends Agent
 					iBestVerbalResponse = 1;
 				}
 				lfPrevProb = lfProb;
-//				lfProb += 0.004879978;
-				lfProb += initSimParam.lfGetGcsScore4();
+				lfProb += 0.004879978;
 				if( lfPrevProb <= lfRand && lfRand <= lfProb )
 				{
 					iBestMotorResponse = 2;
@@ -933,8 +917,7 @@ public class ERPatientAgent extends Agent
 					iBestVerbalResponse = 1;
 				}
 				lfPrevProb = lfProb;
-//				lfProb += 0.064838941;
-				lfProb += initSimParam.lfGetGcsScore3();
+				lfProb += 0.064838941;
 //				if( lfPrevProb <= lfRand && lfRand <= lfProb )
 				if( lfPrevProb <= lfRand )
 				{
@@ -985,68 +968,58 @@ public class ERPatientAgent extends Agent
 		else if( iInjuryRandomMode == 2 )
 		{
 			lfRand = rnd.NextUnif();
-//			lfRand	= weibullRand( initSimParam.lfGetInjuryAISNumberWeibullAlpha(), initSimParam.lfGetInjuryAISNumberWeibullBeta() );
 		}
 
 		lfPrevProb = 0.0;
-//		lfProb = 0.534646217;
-		lfProb = initSimParam.lfGetInjuryAISNumber1();
+		lfProb = 0.534646217;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			iNumTrauma = 1;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.225528;
-		lfProb += initSimParam.lfGetInjuryAISNumber2();
+		lfProb += 0.225528;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			iNumTrauma = 2;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.140907571;
-		lfProb += initSimParam.lfGetInjuryAISNumber3();
+		lfProb += 0.140907571;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			iNumTrauma = 3;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.065361013;
-		lfProb += initSimParam.lfGetInjuryAISNumber4();
+		lfProb += 0.065361013;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			iNumTrauma = 4;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.025350891;
-		lfProb += initSimParam.lfGetInjuryAISNumber5();
+		lfProb += 0.025350891;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			iNumTrauma = 5;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.007049446;
-		lfProb += initSimParam.lfGetInjuryAISNumber6();
+		lfProb += 0.007049446;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			iNumTrauma = 6;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.001120681;
-		lfProb += initSimParam.lfGetInjuryAISNumber7();
+		lfProb += 0.001120681;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			iNumTrauma = 7;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.0000271133;
-		lfProb += initSimParam.lfGetInjuryAISNumber8();
+		lfProb += 0.0000271133;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			iNumTrauma = 8;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.00000903775;
-		lfProb += initSimParam.lfGetInjuryAISNumber9();
+		lfProb += 0.00000903775;
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		if( lfPrevProb <= lfRand )
 		{
@@ -1080,76 +1053,66 @@ public class ERPatientAgent extends Agent
 		else if( iInjuryRandomMode == 2 )
 		{
 			lfRand = rnd.NextUnif();
-//			lfRand	= weibullRand( initSimParam.lfGetInjuryAISPartAnatomyWeibullAlpha(), initSimParam.lfGetInjuryAISPartAnatomyWeibullBeta() );
 		}
 
 		lfPrevProb = 0.0;
-//		lfProb = 0.211858767;
-		lfProb = initSimParam.lfGetInjuryAISPartAnatomyHead();
+		lfProb = 0.211858767;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// 頭部外傷の場合
 			iPartTrauma = 1;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.08642084;
-		lfProb += initSimParam.lfGetInjuryAISPartAnatomyFace();
+		lfProb += 0.08642084;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// 顔面外傷の場合
 			iPartTrauma = 2;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.007814182;
-		lfProb += initSimParam.lfGetInjuryAISPartAnatomyNeck();
+		lfProb += 0.007814182;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// 頸部外傷の場合
 			iPartTrauma = 3;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.145592351;
-		lfProb += initSimParam.lfGetInjuryAISPartAnatomyThorax();
+		lfProb += 0.145592351;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// 胸部外傷の場合
 			iPartTrauma = 4;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.06012076;
-		lfProb += initSimParam.lfGetInjuryAISPartAnatomyAbdomen();
+		lfProb += 0.06012076;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// 腹部及び骨盤内臓器
 			iPartTrauma = 5;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.094156734;
-		lfProb += initSimParam.lfGetInjuryAISPartAnatomySpine();
+		lfProb += 0.094156734;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// 脊椎外傷の場合
 			iPartTrauma = 6;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.125022019;
-		lfProb += initSimParam.lfGetInjuryAISPartAnatomyUpperExtremity();
+		lfProb += 0.125022019;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// 上肢外傷の場合
 			iPartTrauma = 7;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.232047443;
-		lfProb += initSimParam.lfGetInjuryAISPartAnatomyLowerExtremity();
+		lfProb += 0.232047443;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// 下肢外傷の場合
 			iPartTrauma = 8;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.036966903;
-		lfProb += initSimParam.lfGetInjuryAISPartAnatomyUnspecified();
+		lfProb += 0.036966903;
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		if( lfPrevProb <= lfRand )
 		{
@@ -1241,56 +1204,49 @@ public class ERPatientAgent extends Agent
 		else if( iInjuryRandomMode == 2 )
 		{
 //			lfRand	= weibullRand( 1.0, 0.05 );
-//			lfRand	= weibullRand( 1.0, 0.12 );		// 現在設定値
+			lfRand	= weibullRand( 1.0, 0.12 );
 //			lfRand	= weibullRand( 1.0, 0.375 );
 //			lfRand	= weibullRand( 1.0, 0.250 );
 //			lfRand = 0.5*normalRand()+0.5;
-			lfRand	= weibullRand( initSimParam.lfGetInternalAISHeadSeverityWeibullAlpha(), initSimParam.lfGetInternalAISHeadSeverityWeibullBeta() );
 		}
 
 		lfPrevProb = 0.0;
-//		lfProb = 0.12540995;
-		lfProb = initSimParam.lfGetInternalAISHeadSeverity1();
+		lfProb = 0.12540995;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 1の場合
 			iPartTrauma = 1;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.101690609;
-		lfProb += initSimParam.lfGetInternalAISHeadSeverity2();
+		lfProb += 0.101690609;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 2の場合
 			iPartTrauma = 2;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.290336736;
-		lfProb += initSimParam.lfGetInternalAISHeadSeverity3();
+		lfProb += 0.290336736;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 3の場合
 			iPartTrauma = 3;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.29243845;
-		lfProb += initSimParam.lfGetInternalAISHeadSeverity4();
+		lfProb += 0.29243845;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 4の場合
 			iPartTrauma = 4;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.176105132;
-		lfProb += initSimParam.lfGetInternalAISHeadSeverity5();
+		lfProb += 0.176105132;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 5の場合
 			iPartTrauma = 5;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.010046653;
-		lfProb += initSimParam.lfGetInternalAISHeadSeverity6();
+		lfProb += 0.010046653;
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		if( lfPrevProb <= lfRand )
 		{
@@ -1299,12 +1255,64 @@ public class ERPatientAgent extends Agent
 		}
 		lfPrevProb = lfProb;
 //		lfProb += 0.00397247;
-//		lfProb += initSimParam.lfGetInternalAISHeadSeverity7();
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 //		{
 //			// AIS 7の場合
 //			iPartTrauma = 7;
 //		}
+
+//	// 新規患者重症度決定アルゴリズム
+//
+//		lfPrevProb = 0.0;
+//		lfProb = 0.66063043;
+//		if( lfPrevProb <= lfRand && lfRand < lfProb )
+//		{
+//			// AIS 1の場合
+//			iPartTrauma = 1;
+//		}
+//		lfPrevProb = lfProb;
+//		lfProb += 0.275518273;
+//		if( lfPrevProb <= lfRand && lfRand < lfProb )
+//		{
+//			// AIS 2の場合
+//			iPartTrauma = 2;
+//		}
+//		lfPrevProb = lfProb;
+//		lfProb += 0.022083169;
+//		if( lfPrevProb <= lfRand && lfRand < lfProb )
+//		{
+//			// AIS 3の場合
+//			iPartTrauma = 3;
+//		}
+//		lfPrevProb = lfProb;
+//		lfProb += 0.022243027;
+//		if( lfPrevProb <= lfRand && lfRand < lfProb )
+//		{
+//			// AIS 4の場合
+//			iPartTrauma = 4;
+//		}
+//		lfPrevProb = lfProb;
+//		lfProb += 0.013394651;
+//		if( lfPrevProb <= lfRand && lfRand < lfProb )
+//		{
+//			// AIS 5の場合
+//			iPartTrauma = 5;
+//		}
+//		lfPrevProb = lfProb;
+//		lfProb += 0.00613045;
+////		if( lfPrevProb <= lfRand && lfRand < lfProb )
+//		if( lfPrevProb <= lfRand )
+//		{
+//			// AIS 6の場合
+//			iPartTrauma = 6;
+//		}
+//		lfPrevProb = lfProb;
+////		lfProb += 0.00397247;
+////		if( lfPrevProb <= lfRand && lfRand < lfProb )
+////		{
+////			// AIS 7の場合
+////			iPartTrauma = 7;
+////		}
 
 		return iPartTrauma;
 	}
@@ -1333,53 +1341,46 @@ public class ERPatientAgent extends Agent
 		else if( iInjuryRandomMode == 2 )
 		{
 //			lfRand	= weibullRand( 1.0, 0.05 );
-//			lfRand	= weibullRand( 1.0, 0.12 );		//現在の設定値
-			lfRand	= weibullRand( initSimParam.lfGetInternalAISFaceSeverityWeibullAlpha(), initSimParam.lfGetInternalAISFaceSeverityWeibullBeta() );
+			lfRand	= weibullRand( 1.0, 0.12 );
 		}
 
 		lfPrevProb = 0.0;
-//		lfProb = 0.574000679;
-		lfProb = initSimParam.lfGetInternalAISFaceSeverity1();
+		lfProb = 0.574000679;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 1の場合
 			iPartTrauma = 1;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.37255124;
-		lfProb += initSimParam.lfGetInternalAISFaceSeverity2();
+		lfProb += 0.37255124;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 2の場合
 			iPartTrauma = 2;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.046031027;
-		lfProb += initSimParam.lfGetInternalAISFaceSeverity3();
+		lfProb += 0.046031027;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 3の場合
 			iPartTrauma = 3;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.00577511;
-		lfProb += initSimParam.lfGetInternalAISFaceSeverity4();
+		lfProb += 0.00577511;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 4の場合
 			iPartTrauma = 4;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.0;
-		lfProb += initSimParam.lfGetInternalAISFaceSeverity5();
+		lfProb += 0.0;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 5の場合
 			iPartTrauma = 5;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.0;
-		lfProb += initSimParam.lfGetInternalAISFaceSeverity6();
+		lfProb += 0.0;
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		if( lfPrevProb <= lfRand )
 		{
@@ -1388,7 +1389,6 @@ public class ERPatientAgent extends Agent
 		}
 		lfPrevProb = lfProb;
 //		lfProb += 0.001641943;
-//		lfProb += initSimParam.lfGetInternalAISFaceSeverity7();
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 //		{
 //			// AIS 7の場合
@@ -1421,53 +1421,46 @@ public class ERPatientAgent extends Agent
 		else if( iInjuryRandomMode == 2 )
 		{
 //			lfRand	= weibullRand( 1.0, 0.05 );
-//			lfRand	= weibullRand( 1.0, 0.12 );		// 現在設定値
-			lfRand	= weibullRand( initSimParam.lfGetInternalAISNeckSeverityWeibullAlpha(), initSimParam.lfGetInternalAISNeckSeverityWeibullBeta() );
+			lfRand	= weibullRand( 1.0, 0.12 );
 		}
 
 		lfPrevProb = 0.0;
-//		lfProb = 0.444583594;
-		lfProb = initSimParam.lfGetInternalAISNeckSeverity1();
+		lfProb = 0.444583594;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 1の場合
 			iPartTrauma = 1;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.170319349;
-		lfProb += initSimParam.lfGetInternalAISNeckSeverity2();
+		lfProb += 0.170319349;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 2の場合
 			iPartTrauma = 2;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.221665623;
-		lfProb += initSimParam.lfGetInternalAISNeckSeverity3();
+		lfProb += 0.221665623;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 3の場合
 			iPartTrauma = 3;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.041953663;
-		lfProb += initSimParam.lfGetInternalAISNeckSeverity4();
+		lfProb += 0.041953663;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 4の場合
 			iPartTrauma = 4;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.023168441;
-		lfProb += initSimParam.lfGetInternalAISNeckSeverity5();
+		lfProb += 0.023168441;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 5の場合
 			iPartTrauma = 5;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.000626174;
-		lfProb += initSimParam.lfGetInternalAISNeckSeverity6();
+		lfProb += 0.000626174;
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		if( lfPrevProb <= lfRand )
 		{
@@ -1476,7 +1469,6 @@ public class ERPatientAgent extends Agent
 		}
 		lfPrevProb = lfProb;
 //		lfProb += 0.097683156;
-//		lfProb += initSimParam.lfGetInternalAISNeckSeverity7();
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 //		{
 //			// AIS 7の場合
@@ -1489,7 +1481,7 @@ public class ERPatientAgent extends Agent
 	 * <PRE>
 	 *   胸部AIS重症度の発生割合を算出します。
 	 * </PRE>
-	 * @return 胸部AIS重症度
+	 * @return 頸部AIS重症度
 	 */
 	double lfInternalAISThoraxSeverity()
 	{
@@ -1509,54 +1501,47 @@ public class ERPatientAgent extends Agent
 		else if( iInjuryRandomMode == 2 )
 		{
 //			lfRand	= weibullRand( 1.0, 0.05 );
-//			lfRand	= weibullRand( 1.0, 0.12 );			// 現在設定値
+			lfRand	= weibullRand( 1.0, 0.12 );
 //			lfRand	= weibullRand( 1.0, 0.375 );
-			lfRand	= weibullRand( initSimParam.lfGetInternalAISThoraxSeverityWeibullAlpha(), initSimParam.lfGetInternalAISThoraxSeverityWeibullBeta() );
 		}
 
 		lfPrevProb = 0.0;
-//		lfProb = 0.08801882;
-		lfProb = initSimParam.lfGetInternalAISThoraxSeverity1();
+		lfProb = 0.08801882;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 1の場合
 			iPartTrauma = 1;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.08435557;
-		lfProb += initSimParam.lfGetInternalAISThoraxSeverity2();
+		lfProb += 0.08435557;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 2の場合
 			iPartTrauma = 2;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.402621408;
-		lfProb += initSimParam.lfGetInternalAISThoraxSeverity3();
+		lfProb += 0.402621408;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 3の場合
 			iPartTrauma = 3;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.30159637;
-		lfProb += initSimParam.lfGetInternalAISThoraxSeverity4();
+		lfProb += 0.30159637;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 4の場合
 			iPartTrauma = 4;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.100420097;
-		lfProb += initSimParam.lfGetInternalAISThoraxSeverity5();
+		lfProb += 0.100420097;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 5の場合
 			iPartTrauma = 5;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.014518568;
-		lfProb += initSimParam.lfGetInternalAISThoraxSeverity6();
+		lfProb += 0.014518568;
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		if( lfPrevProb <= lfRand )
 		{
@@ -1565,7 +1550,6 @@ public class ERPatientAgent extends Agent
 		}
 		lfPrevProb = lfProb;
 //		lfProb += 0.008469165;
-//		lfProb += initSimParam.lfGetInternalAISThoraxSeverity7();
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 //		{
 //			// AIS 7の場合
@@ -1652,53 +1636,46 @@ public class ERPatientAgent extends Agent
 		else if( iInjuryRandomMode == 2 )
 		{
 //			lfRand	= weibullRand( 1.0, 0.05 );
-//			lfRand	= weibullRand( 1.0, 0.12 );		// 現在設定値
-			lfRand	= weibullRand( initSimParam.lfGetInternalAISAbdomenSeverityWeibullAlpha(), initSimParam.lfGetInternalAISAbdomenSeverityWeibullBeta() );
+			lfRand	= weibullRand( 1.0, 0.12 );
 		}
 
 		lfPrevProb = 0.0;
-//		lfProb = 0.1235307;
-		lfProb = initSimParam.lfGetInternalAISAbdomenSeverity1();
+		lfProb = 0.1235307;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 1の場合
 			iPartTrauma = 1;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.311747098;
-		lfProb += initSimParam.lfGetInternalAISAbdomenSeverity2();
+		lfProb += 0.311747098;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 2の場合
 			iPartTrauma = 2;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.031075803;
-		lfProb += initSimParam.lfGetInternalAISAbdomenSeverity3();
+		lfProb += 0.031075803;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 3の場合
 			iPartTrauma = 3;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.013322522;
-		lfProb += initSimParam.lfGetInternalAISAbdomenSeverity4();
+		lfProb += 0.013322522;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 4の場合
 			iPartTrauma = 4;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.013322522;
-		lfProb += initSimParam.lfGetInternalAISAbdomenSeverity5();
+		lfProb += 0.013322522;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 5の場合
 			iPartTrauma = 5;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.00613273;
-		lfProb += initSimParam.lfGetInternalAISAbdomenSeverity6();
+		lfProb += 0.00613273;
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		if( lfPrevProb <= lfRand )
 		{
@@ -1707,7 +1684,6 @@ public class ERPatientAgent extends Agent
 		}
 		lfPrevProb = lfProb;
 //		lfProb += 0.0;
-//		lfProb += initSimParam.lfGetInternalAISAbdomenSeverity7();
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 //		{
 //			// AIS 7の場合
@@ -1795,53 +1771,46 @@ public class ERPatientAgent extends Agent
 		else if( iInjuryRandomMode == 2 )
 		{
 //			lfRand	= weibullRand( 1.0, 0.05 );
-//			lfRand	= weibullRand( 1.0, 0.12 );		// 現在設定値
-			lfRand	= weibullRand( initSimParam.lfGetInternalAISSpineSeverityWeibullAlpha(), initSimParam.lfGetInternalAISSpineSeverityWeibullBeta() );
+			lfRand	= weibullRand( 1.0, 0.12 );
 		}
 
 		lfPrevProb = 0.0;
-//		lfProb = 0.059034454;
-		lfProb = initSimParam.lfGetInternalAISSpineSeverity1();
+		lfProb = 0.059034454;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 1の場合
 			iPartTrauma = 1;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.431013875;
-		lfProb += initSimParam.lfGetInternalAISSpineSeverity2();
+		lfProb += 0.431013875;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 2の場合
 			iPartTrauma = 2;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.264667671;
-		lfProb += initSimParam.lfGetInternalAISSpineSeverity3();
+		lfProb += 0.264667671;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 3の場合
 			iPartTrauma = 3;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.167957179;
-		lfProb += initSimParam.lfGetInternalAISSpineSeverity4();
+		lfProb += 0.167957179;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 4の場合
 			iPartTrauma = 4;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.056799875;
-		lfProb += initSimParam.lfGetInternalAISSpineSeverity5();
+		lfProb += 0.056799875;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 5の場合
 			iPartTrauma = 5;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.016213688;
-		lfProb += initSimParam.lfGetInternalAISSpineSeverity6();
+		lfProb += 0.016213688;
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		if( lfPrevProb <= lfRand )
 		{
@@ -1850,7 +1819,6 @@ public class ERPatientAgent extends Agent
 		}
 		lfPrevProb = lfProb;
 //		lfProb += 0.004313257;
-//		lfProb += initSimParam.lfGetInternalAISSpineSeverity7();
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 //		{
 //			// AIS 7の場合
@@ -1938,53 +1906,46 @@ public class ERPatientAgent extends Agent
 		else if( iInjuryRandomMode == 2 )
 		{
 //			lfRand	= weibullRand( 1.0, 0.05 );
-//			lfRand	= weibullRand( 1.0, 0.12 );		// 現在設定値
-			lfRand	= weibullRand( initSimParam.lfGetInternalAISUpperExtremitySeverityWeibullAlpha(), initSimParam.lfGetInternalAISUpperExtremitySeverityWeibullBeta() );
+			lfRand	= weibullRand( 1.0, 0.12 );
 		}
 
 		lfPrevProb = 0.0;
-//		lfProb = 0.249148761;
-		lfProb = initSimParam.lfGetInternalAISUpperExtremitySeverity1();
+		lfProb = 0.249148761;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 1の場合
 			iPartTrauma = 1;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.515087472;
-		lfProb += initSimParam.lfGetInternalAISUpperExtremitySeverity2();
+		lfProb += 0.515087472;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 2の場合
 			iPartTrauma = 2;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.235489805;
-		lfProb += initSimParam.lfGetInternalAISUpperExtremitySeverity3();
+		lfProb += 0.235489805;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 3の場合
 			iPartTrauma = 3;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.0;
-		lfProb += initSimParam.lfGetInternalAISUpperExtremitySeverity4();
+		lfProb += 0.0;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 4の場合
 			iPartTrauma = 4;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.0;
-		lfProb += initSimParam.lfGetInternalAISUpperExtremitySeverity5();
+		lfProb += 0.0;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 5の場合
 			iPartTrauma = 5;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.0;
-		lfProb += initSimParam.lfGetInternalAISUpperExtremitySeverity6();
+		lfProb += 0.0;
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		if( lfPrevProb <= lfRand )
 		{
@@ -1993,7 +1954,6 @@ public class ERPatientAgent extends Agent
 		}
 		lfPrevProb = lfProb;
 //		lfProb += 0.000273962;
-//		lfProb += initSimParam.lfGetInternalAISUpperExtremitySeverity7();
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 //		{
 //			// AIS 7の場合
@@ -2081,53 +2041,46 @@ public class ERPatientAgent extends Agent
 		else if( iInjuryRandomMode == 2 )
 		{
 //			lfRand	= weibullRand( 1.0, 0.05 );
-//			lfRand	= weibullRand( 1.0, 0.12 );		// 現在設定値
-			lfRand	= weibullRand( initSimParam.lfGetInternalAISLowerExtremitySeverityWeibullAlpha(), initSimParam.lfGetInternalAISLowerExtremitySeverityWeibullBeta() );
+			lfRand	= weibullRand( 1.0, 0.12 );
 		}
 
 		lfPrevProb = 0.0;
-//		lfProb = 0.122111167;
-		lfProb = initSimParam.lfGetInternalAISLowerExtremitySeverity1();
+		lfProb = 0.122111167;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 1の場合
 			iPartTrauma = 1;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.205613192;
-		lfProb += initSimParam.lfGetInternalAISLowerExtremitySeverity2();
+		lfProb += 0.205613192;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 2の場合
 			iPartTrauma = 2;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.591915486;
-		lfProb += initSimParam.lfGetInternalAISLowerExtremitySeverity3();
+		lfProb += 0.591915486;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 3の場合
 			iPartTrauma = 3;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.043269231;
-		lfProb += initSimParam.lfGetInternalAISLowerExtremitySeverity4();
+		lfProb += 0.043269231;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 4の場合
 			iPartTrauma = 4;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.036795715;
-		lfProb += initSimParam.lfGetInternalAISLowerExtremitySeverity5();
+		lfProb += 0.036795715;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 5の場合
 			iPartTrauma = 5;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.00613273;
-		lfProb += initSimParam.lfGetInternalAISLowerExtremitySeverity6();
+		lfProb += 0.00613273;
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		if( lfPrevProb <= lfRand )
 		{
@@ -2136,7 +2089,6 @@ public class ERPatientAgent extends Agent
 		}
 		lfPrevProb = lfProb;
 //		lfProb += 0.000295209;
-//		lfProb += initSimParam.lfGetInternalAISLowerExtremitySeverity7();
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 //		{
 //			// AIS 7の場合
@@ -2225,53 +2177,46 @@ public class ERPatientAgent extends Agent
 		else if( iInjuryRandomMode == 2 )
 		{
 //			lfRand	= weibullRand( 1.0, 0.05 );
-//			lfRand	= weibullRand( 1.0, 0.12 );		// 現在設定値
-			lfRand	= weibullRand( initSimParam.lfGetInternalAISUnspecifiedSeverityWeibullAlpha(), initSimParam.lfGetInternalAISUnspecifiedSeverityWeibullBeta() );
+			lfRand	= weibullRand( 1.0, 0.12 );
 		}
 
 		lfPrevProb = 0.0;
-//		lfProb = 0.686300463;
-		lfProb = initSimParam.lfGetInternalAISUnspecifiedSeverity1();
+		lfProb = 0.686300463;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 1の場合
 			iPartTrauma = 1;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.072931833;
-		lfProb += initSimParam.lfGetInternalAISUnspecifiedSeverity2();
+		lfProb += 0.072931833;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 2の場合
 			iPartTrauma = 2;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.100198544;
-		lfProb += initSimParam.lfGetInternalAISUnspecifiedSeverity3();
+		lfProb += 0.100198544;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 3の場合
 			iPartTrauma = 3;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.047782925;
-		lfProb += initSimParam.lfGetInternalAISUnspecifiedSeverity4();
+		lfProb += 0.047782925;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 4の場合
 			iPartTrauma = 4;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.081535407;
-		lfProb += initSimParam.lfGetInternalAISUnspecifiedSeverity5();
+		lfProb += 0.081535407;
 		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		{
 			// AIS 5の場合
 			iPartTrauma = 5;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0.011250827;
-		lfProb += initSimParam.lfGetInternalAISUnspecifiedSeverity6();
+		lfProb += 0.011250827;
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 		if( lfPrevProb <= lfRand )
 		{
@@ -2279,8 +2224,7 @@ public class ERPatientAgent extends Agent
 			iPartTrauma = 6;
 		}
 		lfPrevProb = lfProb;
-//		lfProb += 0;
-//		lfProb += initSimParam.lfGetInternalAISUnspecifiedSeverity7();
+		lfProb += 0;
 //		if( lfPrevProb <= lfRand && lfRand < lfProb )
 //		{
 //			// AIS 7の場合
@@ -5420,11 +5364,5 @@ public class ERPatientAgent extends Agent
 			csvWriteAgentStartData.vWrite( strData );
 			csvWriteAgentStartData.vClose();
 		}
-	}
-
-	public void vSetInitParam(InitSimParam initparam)
-	{
-		// TODO 自動生成されたメソッド・スタブ
-		initSimParam = initparam;
 	}
 }
