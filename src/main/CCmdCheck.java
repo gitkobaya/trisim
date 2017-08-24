@@ -1,3 +1,13 @@
+/**
+ * @file CCmdCheck.java
+ * @brief コマンドライン解析クラスです。
+ *        コマンドを入力するとコマンドを解析して、必要なパラメータを取得します。<br>
+ *        lCCmdCheck関数を呼び出し、コマンドを解析して必要に応じてGet関数によりパラメータを取得します。
+ *        コマンドが合わない場合や未知のコマンドが入力されると-1を返却します。
+ * @date  2017/08/18
+ * @author kobayashi
+ */
+
 package main;
 import inverse.optimization.objectivefunction.ObjectiveFunctionInterface;
 
@@ -62,6 +72,7 @@ public class CCmdCheck
 	private int iFileWriteMode;									// 長時間シミュレーション用ファイル出力
 
 	private int iPatientArrivalMode;							// 患者の到達モード(0:通常, 1:災害)
+	private int iGenerationPatientMode;							// 患者生成モード(0:シミュレーション開始前にあらかじめ生成　1:別スレッドから生成)
 
 	CCmdCheck()
 	{
@@ -72,6 +83,7 @@ public class CCmdCheck
 		iPatientRandomMode = 0;									// 一様乱数
 		iFileWriteMode = 0;
 		iPatientArrivalMode = 0;
+		iGenerationPatientMode = 0;
 	}
 
 	/**
@@ -426,6 +438,14 @@ public class CCmdCheck
 				lRet = lCommandErrorCheck( args[i] );
 				if( lRet != 0 ) return lRet;
 				strEvaluationIndexCompMode = args[i+1];
+				i++;
+			}
+			/* 患者生成モード(0:シミュレーション開始時に生成 1:別スレッドからリアルタイムに生成) */
+			else if( args[i].equals("-gap") == true )
+			{
+				lRet = lCommandErrorCheck( args[i] );
+				if( lRet != 0 ) return lRet;
+				iGenerationPatientMode = Integer.parseInt(args[i+1]);
 				i++;
 			}
 			else
@@ -1019,6 +1039,17 @@ public class CCmdCheck
 	public String strGetEvaluationIndexCompMode()
 	{
 		return strEvaluationIndexCompMode;
+	}
+
+	/**
+	 * <PRE>
+	 *    患者生成モードの取得をします。
+	 * </PRE>
+	 * @return 患者生成モード
+	 */
+	public int iGetGenerationPatientMode()
+	{
+		return iGenerationPatientMode;
 	}
 }
 

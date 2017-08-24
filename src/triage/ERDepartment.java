@@ -164,7 +164,9 @@ public class ERDepartment extends Agent
 
 	private boolean iFinishAgentFlag;						// 各エージェントの処理がすべて終了したことを表すフラグ
 
-	private int iPatientArrivalMode;								// 災害モードフラグ
+	private int iPatientArrivalMode;						// 災害モードフラグ
+
+	private int iGenerationPatientMode;						// 別スレッドからの患者到達制御フラグ
 
 	public ERDepartment()
 	{
@@ -225,6 +227,7 @@ public class ERDepartment extends Agent
 		lfMaxEdWorkScore = -Double.MAX_VALUE;					// 1シミュレーション中の最大ED Work Score
 
 		iFinishAgentFlag = false;
+		iGenerationPatientMode = 0;
 	}
 
 	/**
@@ -368,11 +371,15 @@ public class ERDepartment extends Agent
 			lfEndLogicalTime = lfEndTime/3600.0;
 			vSetRandom( rnd );
 
-			double lfSecond = 0.0;
-			for( lfSecond = 0.0; lfSecond < lfEndLogicalTime; lfSecond += 1.0/3600.0 )
+			// 別スレッドからの患者到達モードでない場合はこちらであらかじめ患者がどのタイミングで到達するのか設定します。
+			if( iGenerationPatientMode == 0 )
 			{
-				// 患者を到達分布にしたがって生成します。(午前8時30分を0秒とする。)
-				erWaitingRoom.vArrivalPatient( lfSecond, erEngine, iRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, initparam );
+				double lfSecond = 0.0;
+				for( lfSecond = 0.0; lfSecond < lfEndLogicalTime; lfSecond += 1.0/3600.0 )
+				{
+					// 患者を到達分布にしたがって生成します。(午前8時30分を0秒とする。)
+					erWaitingRoom.vArrivalPatient( lfSecond, erEngine, iRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, initparam );
+				}
 			}
 			erWaitingRoom.vSetSimulationEndTime( lfEndTime );
 			// テスト用
@@ -10287,5 +10294,11 @@ public class ERDepartment extends Agent
 //				System.out.println( str );
 //			}
 //		}
+	}
+
+	public void vSetGenerationPatientMode(int iGenPatientMode )
+	{
+		// TODO 自動生成されたメソッド・スタブ
+		iGenerationPatientMode = iGenPatientMode;
 	}
 }

@@ -4135,7 +4135,7 @@ public class ERDoctorAgent extends Agent{
 	 *    正規乱数を発生させます。-1.0以下、1.0以上が乱数を発生させた結果出力された場合、
 	 *    再度乱数を発生させます。乱数発生回数の繰り返し回数は100回とします。
 	 * </PRE>
-	 * @return	正規乱数の結果(-1.0 \leq rand \leq 1.0)
+	 * @return	正規乱数の結果(-1.0 &lt;= rand &lt;= 1.0)
 	 */
 	public double normalRand()
 	{

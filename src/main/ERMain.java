@@ -1,3 +1,17 @@
+/**
+ * @file ERMain.java
+ * @brief main関数を定義しています。
+ *        Trisimの実行するためのソースコードを記載しています。<br>
+ *
+ *        Trisimは3パターンモードがあり、コンソールモード、guiモード、逆シミュレーションモードがあります。<br>
+ *        コマンドラインオプションに指定しないで実行すると、guiモードで起動します。
+ *        gui以外はオプションの-modeで0を指定すると通常シミュレーションモード
+ *        2を指定すると逆シミュレーションモードとして動作します。
+ *
+ * @date  2017/08/18
+ * @author kobayashi
+ */
+
 package main;
 import inverse.InverseSimulationEngine;
 import inverse.optimization.constraintcondition.ConstraintCondition;
@@ -107,6 +121,7 @@ public class ERMain
 		ERDepartment erDepartment;
 		CCmdCheck cmd;
 		ObjectiveFunctionInterface objFuncInterface;
+		ERDepartmentArrivalPatient erThreadArrivalPatient = null;
 //		ERDepartmentAdditionPanel panel = new ERDepartmentAdditionPanel();
 
 		FusePanelSimpleMesh[] pt2d = null;
@@ -173,7 +188,7 @@ public class ERMain
 					vInitialize( cmd, erDepartment, cTRISimLogger, strNodeLinkFileName, csCriticalSection, initSimParam );
 
 					// 患者エージェントを別スレッドから登場させるようにします。
-//					vThreadInvoke( cmd, engine, erDepartment );
+					vThreadInvoke( cmd, engine, erDepartment, erThreadArrivalPatient, cTRISimLogger, csCriticalSection, initSimParam );
 
 					// シミュレーションを開始します。
 					vStart( cmd.iGetSimulationTimeStep(), engine );
@@ -216,7 +231,7 @@ public class ERMain
 //					invSimEngine.vInstallCallbackFunction(interfaceObjFunc);
 
 					// 患者エージェントを別スレッドから登場させるようにします。
-//					vThreadInvoke( cmd, engine, invSimEngine.erGetERDepartments );
+//					vThreadInvoke( cmd, engine, invSimEngine.erGetERDepartments, erThreadArrivalPatient, initSimParam );
 
 					// シミュレーションを開始します。
 					vStartInvSim( cmd.iGetSimulationTimeStep(), cmd.iGetInverseSimulationIntervalNumber() );
@@ -269,7 +284,7 @@ public class ERMain
 //				vSetVisible3D( window3d );
 
 				// 患者エージェントを別スレッドから登場させるようにします。
-//				vThreadInvoke( engine, erDepartment );
+//				vThreadInvoke( engine, erDepartment, erThreadArrivalPatient, initSimParam );
 
 				// シミュレーションを開始します。
 				vStart( iTimeStep, engine );
@@ -735,17 +750,27 @@ public class ERMain
 	 * @param engine					FUSEシミュレーションエンジン
 	 * @param erDepartment				救急部門インスタンス
 	 * @param erThreadArrivalPatient	患者到達分布生成用スレッド
+	 * @param cLogData					ログ出力インスタンス
+	 * @param cObject					クリティカルセクション用のハンドル
+	 * @param initparam					初期設定パラメータ
 	 */
-	private static void vThreadInvoke( CCmdCheck cmd, SimulationEngine engine, ERDepartment erDepartment, ERDepartmentArrivalPatient erThreadArrivalPatient )
+	private static void vThreadInvoke( CCmdCheck cmd, SimulationEngine engine, ERDepartment erDepartment, ERDepartmentArrivalPatient erThreadArrivalPatient, Logger cLogData, Object cObject, InitSimParam initparam )
 	{
-		erThreadArrivalPatient = new ERDepartmentArrivalPatient();
-		erThreadArrivalPatient.vSetSimulationEngine( engine );
-		erThreadArrivalPatient.vSetWaitingRoom( erDepartment.erGetWaitingRoom() );
-		erThreadArrivalPatient.vSetRandomMode(cmd.iGetPatientRandomMode() );
-		erThreadArrivalPatient.vSetInverseSimFlag( cmd.iGetExecMode() );
-		erThreadArrivalPatient.vSetFileWriteMode( cmd.iGetFileWriteMode() );
-		erThreadArrivalPatient.vSetPatientArrivalMode( cmd.iGetPatientArrivalMode() );
-//		erThreadArrivalPatient.start();
+		erDepartment.vSetGenerationPatientMode( cmd.iGetGenerationPatientMode() );
+		if( cmd.iGetGenerationPatientMode() == 1 )
+		{
+			erThreadArrivalPatient = new ERDepartmentArrivalPatient();
+			erThreadArrivalPatient.vSetSimulationEngine( engine );
+			erThreadArrivalPatient.vSetWaitingRoom( erDepartment.erGetWaitingRoom() );
+			erThreadArrivalPatient.vSetRandomMode(cmd.iGetPatientRandomMode() );
+			erThreadArrivalPatient.vSetInverseSimFlag( cmd.iGetExecMode() );
+			erThreadArrivalPatient.vSetFileWriteMode( cmd.iGetFileWriteMode() );
+			erThreadArrivalPatient.vSetPatientArrivalMode( cmd.iGetPatientArrivalMode() );
+			erThreadArrivalPatient.vSetInitSimParam( initparam );
+			erThreadArrivalPatient.vSetLogger( cLogData );
+			erThreadArrivalPatient.vSetCriticalSection( cObject );
+			erThreadArrivalPatient.start();
+		}
 	}
 
 	/**
@@ -756,19 +781,32 @@ public class ERMain
 	 * @param cmd						コマンドライン解析クラス
 	 * @param engine					FUSEシミュレーションエンジン
 	 * @param erThreadArrivalPatient	患者到達分布生成用スレッド
+	 * @param cLogData					ログ出力インスタンス
+	 * @param cObject					クリティカルセクション用のハンドル
+	 * @param initparam					初期設定パラメータ
 	 */
-	private static void vThreadInvoke( CCmdCheck cmd, SimulationEngine engine, ERDepartmentArrivalPatient erThreadArrivalPatient )
+	private static void vThreadInvoke( CCmdCheck cmd, SimulationEngine engine, ERDepartmentArrivalPatient erThreadArrivalPatient, Logger cLogData, Object cObject, InitSimParam initparam )
 	{
 		for( int i = 0; i < invSimEngine.erGetERDepartments().length; i++ )
 		{
-			erThreadArrivalPatient = new ERDepartmentArrivalPatient();
-			erThreadArrivalPatient.vSetSimulationEngine( engine );
-			erThreadArrivalPatient.vSetWaitingRoom( invSimEngine.erGetERDepartments()[i].erGetWaitingRoom() );
-			erThreadArrivalPatient.vSetRandomMode(cmd.iGetPatientRandomMode() );
-			erThreadArrivalPatient.vSetInverseSimFlag( cmd.iGetExecMode() );
-			erThreadArrivalPatient.vSetFileWriteMode( cmd.iGetFileWriteMode() );
-			erThreadArrivalPatient.vSetPatientArrivalMode( cmd.iGetPatientArrivalMode() );
-//			erThreadArrivalPatient.start();
+			invSimEngine.erGetERDepartments()[i].vSetGenerationPatientMode( cmd.iGetGenerationPatientMode() );
+		}
+		if( cmd.iGetGenerationPatientMode() == 1 )
+		{
+			for( int i = 0; i < invSimEngine.erGetERDepartments().length; i++ )
+			{
+				erThreadArrivalPatient = new ERDepartmentArrivalPatient();
+				erThreadArrivalPatient.vSetSimulationEngine( engine );
+				erThreadArrivalPatient.vSetWaitingRoom( invSimEngine.erGetERDepartments()[i].erGetWaitingRoom() );
+				erThreadArrivalPatient.vSetRandomMode(cmd.iGetPatientRandomMode() );
+				erThreadArrivalPatient.vSetInverseSimFlag( cmd.iGetExecMode() );
+				erThreadArrivalPatient.vSetFileWriteMode( cmd.iGetFileWriteMode() );
+				erThreadArrivalPatient.vSetPatientArrivalMode( cmd.iGetPatientArrivalMode() );
+				erThreadArrivalPatient.vSetLogger( cLogData );
+				erThreadArrivalPatient.vSetCriticalSection( cObject );
+				erThreadArrivalPatient.vSetInitSimParam( initparam );
+				erThreadArrivalPatient.start();
+			}
 		}
 	}
 
