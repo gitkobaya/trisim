@@ -8,8 +8,22 @@
  * @author kobayashi
  */
 
-package main;
+package utility.cmd;
+
 import inverse.optimization.objectivefunction.ObjectiveFunctionInterface;
+
+/**
+ * コマンドライン解析クラスです。
+ * コマンドを入力するとコマンドを解析して、必要なパラメータを取得します。<br>
+ * lCCmdCheck関数を呼び出し、コマンドを解析して必要に応じてGet関数によりパラメータを取得します。
+ * コマンドが合わない場合や未知のコマンドが入力されると-1を返却します。
+ *
+ * 使用方法は以下の次の通りです。<br>
+ * コマンド解析　lCCmdCheck　<br>
+ * 解析後　　　　Get関数を使用してパラメータを取得。<br>
+ *
+ * @author kobayashi
+ */
 
 public class CCmdCheck
 {
@@ -74,7 +88,12 @@ public class CCmdCheck
 	private int iPatientArrivalMode;							// 患者の到達モード(0:通常, 1:災害)
 	private int iGenerationPatientMode;							// 患者生成モード(0:シミュレーション開始前にあらかじめ生成　1:別スレッドから生成)
 
-	CCmdCheck()
+	private int iInitIntensiveCareUnitPatientNum;				// 初期からいるICUの患者数
+	private int iInitHighCareUnitPatientNum;					// 初期からいるHCUの患者数
+	private int iInitGeneralWardPatientNum;						// 初期からいる一般病棟の患者数
+
+
+	public CCmdCheck()
 	{
 		iEndSimulationTime = 178000;							// シミュレーション終了時間
 		iExecMode = 1;											// TRISimの実行モード（CUIかGUIか）
@@ -448,6 +467,30 @@ public class CCmdCheck
 				iGenerationPatientMode = Integer.parseInt(args[i+1]);
 				i++;
 			}
+			/* 初期一般病棟の患者生成人数 */
+			else if( args[i].equals("-gwpn") == true )
+			{
+				lRet = lCommandErrorCheck( args[i] );
+				if( lRet != 0 ) return lRet;
+				iInitGeneralWardPatientNum = Integer.parseInt(args[i+1]);
+				i++;
+			}
+			/* 初期集中治療室の患者生成人数 */
+			else if( args[i].equals("-icupn") == true )
+			{
+				lRet = lCommandErrorCheck( args[i] );
+				if( lRet != 0 ) return lRet;
+				iInitIntensiveCareUnitPatientNum = Integer.parseInt(args[i+1]);
+				i++;
+			}
+			/* 初期高度治療室の患者生成人数 */
+			else if( args[i].equals("-hcupn") == true )
+			{
+				lRet = lCommandErrorCheck( args[i] );
+				if( lRet != 0 ) return lRet;
+				iInitHighCareUnitPatientNum = Integer.parseInt(args[i+1]);
+				i++;
+			}
 			else
 			{
 				lRet = CCMD_ERROR_INVALID_DATA;
@@ -514,7 +557,11 @@ public class CCmdCheck
 			arg.equals( "-ifw" ) == true	||
 			arg.equals( "-pam" ) == true	||
 			arg.equals( "-ei" ) == true		||
-			arg.equals( "-eic" ) == true	)
+			arg.equals( "-eic" ) == true	||
+			arg.equals( "-gap" ) == true	||
+			arg.equals( "-gwpn" ) == true	||
+			arg.equals( "-icupn" ) == true	||
+			arg.equals( "-hcupn" ) == true )
 		{
 			lRet = 0;
 		}
@@ -1050,6 +1097,42 @@ public class CCmdCheck
 	public int iGetGenerationPatientMode()
 	{
 		return iGenerationPatientMode;
+	}
+
+	/**
+	 * <PRE>
+	 *    初期化時のICU患者数を取得をします。
+	 * </PRE>
+	 * @return 初期からいるICUの患者数
+	 */
+	public int iGetInitIntensiveCareUnitPatientNum()
+	{
+		// 初期からいるICUの患者数
+		return iInitIntensiveCareUnitPatientNum;
+	}
+
+	/**
+	 * <PRE>
+	 *    初期化時のHCU患者数を取得をします。
+	 * </PRE>
+	 * @return 初期からいるHCUの患者数
+	 */
+	public int iGetInitHighCareUnitPatientNum()
+	{
+		// 初期からいるHCUの患者数
+		return iInitHighCareUnitPatientNum;
+	}
+
+	/**
+	 * <PRE>
+	 *    初期化時の一般病棟患者数を取得をします。
+	 * </PRE>
+	 * @return 初期からいる一般病棟の患者数
+	 */
+	public int iGetInitGeneralWardPatientNum()
+	{
+		// 初期からいる一般病棟の患者数
+		return iInitGeneralWardPatientNum;
 	}
 }
 

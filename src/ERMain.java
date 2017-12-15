@@ -12,7 +12,6 @@
  * @author kobayashi
  */
 
-package main;
 import inverse.InverseSimulationEngine;
 import inverse.optimization.constraintcondition.ConstraintCondition;
 import inverse.optimization.constraintcondition.ConstraintConditionInterface;
@@ -45,6 +44,7 @@ import jp.ac.nihon_u.cit.su.furulab.fuse.gui.FuseWindow;
 import triage.ERDepartment;
 import triage.ERDepartmentArrivalPatient;
 import triage.ERDepartmentDraw2D;
+import triage.ERTriageDebugWindowKeyAndMouseListner;
 import triage.agent.ERClinicalEngineerAgent;
 import triage.agent.ERDoctorAgent;
 import triage.agent.ERDoctorAgentException;
@@ -86,6 +86,7 @@ import triage.room.draw.ERSevereInjuryObservationRoomDraw2D;
 import triage.room.draw.ERStairsDraw2D;
 import triage.room.draw.ERWaitingRoomDraw2D;
 import triage.room.draw.ERXRayRoomDraw2D;
+import utility.cmd.CCmdCheck;
 import utility.initparam.InitGUISimParam;
 import utility.initparam.InitInverseSimParam;
 import utility.initparam.InitSimParam;
@@ -93,6 +94,17 @@ import utility.logger.CustomLogFormatter;
 import utility.sfmt.Rand;
 
 
+/**
+ * main関数を定義しています。
+ * Trisimの実行するためのソースコードを記載しています。<br>
+ *
+ * Trisimは3パターンモードがあり、コンソールモード、guiモード、逆シミュレーションモードがあります。<br>
+ * コマンドラインオプションに指定しないで実行すると、guiモードで起動します。
+ * gui以外はオプションの-modeで0を指定すると通常シミュレーションモード
+ * 2を指定すると逆シミュレーションモードとして動作します。
+ *
+ * @author kobayashi
+ */
 public class ERMain
 {
 
@@ -125,7 +137,7 @@ public class ERMain
 //		ERDepartmentAdditionPanel panel = new ERDepartmentAdditionPanel();
 
 		FusePanelSimpleMesh[] pt2d = null;
-		KeyAndMouseListner2D[] ptKam2d = null;
+		ERTriageDebugWindowKeyAndMouseListner[] ptKam2d = null;
 		FuseWindow[] ptWindow2d = null;
 
 		FusePanelSimpleMesh3D[] pt3d = null;
@@ -159,7 +171,7 @@ public class ERMain
 			vInitLogger( cTRISimLogger, initSimParam );
 
 			pt2d = new FusePanelSimpleMesh[1];
-			ptKam2d = new KeyAndMouseListner2D[1];
+			ptKam2d = new ERTriageDebugWindowKeyAndMouseListner[1];
 			ptWindow2d = new FuseWindow[1];
 
 			pt3d = new FusePanelSimpleMesh3D[1];
@@ -217,7 +229,7 @@ public class ERMain
 					initInvSimParam.readInitSettingFile();
 
 //					// 初期化を実行します。
-					vInitialize( cmd, cTRISimLogger, strNodeLinkFileName, csCriticalSection, initSimParam );
+					vInitialize( cmd, cTRISimLogger, strNodeLinkFileName, csCriticalSection, initSimParam, initInvSimParam );
 
 					// 最適化手法の初期化を行います。
 					vInitializeInvSimEngine( cmd );
@@ -269,6 +281,7 @@ public class ERMain
 				// エージェントの描画方法の初期化をします。
 				// ２次元表示
 				vInitDraw2D( engine, pt2d, ptKam2d, ptWindow2d );
+				ptKam2d[0].vSetERTriageNodeManager(erDepartment.getERTriageNodeManager());
 				// ３次元表示
 //				vInitDraw3D( engine, p3d, kam3d, window3d );
 
@@ -290,7 +303,7 @@ public class ERMain
 				vStart( iTimeStep, engine );
 
 				// 終了処理を実行します。
-				vTerminate( erDepartment );
+//				vTerminate( erDepartment );
 			}
 			// テストモード
 			else if( cmd.iGetExecMode() == 3 )
@@ -576,7 +589,7 @@ public class ERMain
 				cmd.strGetHighCareUnitPath(), cmd.strGetGeneralWardPath(), cmd.strGetWaitingRoomPath(), cmd.strGetXRayRoomPath(),
 				cmd.strGetCTRoomPath(), cmd.strGetMRIRoomPath(), cmd.strGetAngiographyRoomPath(), cmd.strGetFastRoomPath(),
 				cmd.lfGetPatientPepole(), cmd.iGetPatientRandomMode(), cmd.iGetExecMode(), cmd.iGetFileWriteMode(),
-				cmd.iGetPatientArrivalMode(), random, initParam );
+				cmd.iGetPatientArrivalMode(), random, initParam, cmd.iGetInitGeneralWardPatientNum(), cmd.iGetInitIntensiveCareUnitPatientNum(), cmd.iGetInitHighCareUnitPatientNum() );
 		erDepartment.vSetAllLog( log );
 		erDepartment.vSetCriticalSection( cs );
 //		erDepartment.vReadNodeManager( strNodeLinkFileName );
@@ -596,9 +609,10 @@ public class ERMain
 	 * @param strNodeLinkFileName		FUSEノードリンクのファイル名
 	 * @param cs						クリティカルセクションのインスタンス
 	 * @param initParam					初期設定ファイルのインスタンス
+	 * @param initInvParam				逆シミュレーション用初期設定ファイルのインスタンス
 	 * @throws IOException				java標準エラー
 	 */
-	private static void vInitialize( CCmdCheck cmd, Logger log, String strNodeLinkFileName, Object cs, InitSimParam initParam ) throws IOException
+	private static void vInitialize( CCmdCheck cmd, Logger log, String strNodeLinkFileName, Object cs, InitSimParam initParam, InitInverseSimParam initInvParam  ) throws IOException
 	{
 		// 地形の作成(縦横のメッシュの数を指定。)
 		geo = new SimpleMeshGeometry(300, 300);
@@ -623,7 +637,8 @@ public class ERMain
 			cmd.strGetSevereInjuryObservationRoomPath(), cmd.strGetIntensiveCareUnitPath(),
 			cmd.strGetHighCareUnitPath(), cmd.strGetGeneralWardPath(), cmd.strGetWaitingRoomPath(), cmd.strGetXRayRoomPath(),
 			cmd.strGetCTRoomPath(), cmd.strGetMRIRoomPath(), cmd.strGetAngiographyRoomPath(), cmd.strGetFastRoomPath(),
-			log, cs, random, cmd.lfGetPatientPepole(), cmd.iGetPatientRandomMode(), cmd.iGetExecMode(), cmd.iGetFileWriteMode(),cmd.iGetPatientArrivalMode(), initParam );
+			log, cs, random, cmd.lfGetPatientPepole(), cmd.iGetPatientRandomMode(), cmd.iGetExecMode(), cmd.iGetFileWriteMode(),cmd.iGetPatientArrivalMode(), initParam, initInvParam,
+			cmd.iGetInitGeneralWardPatientNum(), cmd.iGetInitIntensiveCareUnitPatientNum(), cmd.iGetInitHighCareUnitPatientNum() );
 
 		if( cmd.iGetExecMode() == 1 )
 		{
@@ -698,14 +713,16 @@ public class ERMain
 		lfEndTime = initGuiSimParam.iGetEndSimulationTime();
 
 		// 救急部門を構成します。
+		//< 一般病棟、ICU、HCUに関しての初期入院患者設定に関してはGUIモードでは動作しないように設定。
+		//< 今後動作させるように修正予定。
 		erDepartment.vSetSimulationEndTime( lfEndTime );
 		erDepartment.vInitialize( engine, env, strEmergencyDepartmentPath, strConsultationRoomPath,
 				strOperationRoomPath, strEmergencyRoomPath, strObservationRoomPath,
 				strSevereInjuryObservationRoomPath, strIntensiveCareUnitPath,
 				strHighCareUnitPath, strGeneralWardPath, strWaitingRoomPath, strXRayRoomPath,
 				strCTRoomPath, strMRIRoomPath, strAngiographyRoomPath, strFastRoomPath,
-				lfPatientPepole, iPatientRandomMode, 0, iFileWriteModeFlag,
-				iPatientArrivalMode, random, initParam );
+				lfPatientPepole, iPatientRandomMode, 1, iFileWriteModeFlag,
+				iPatientArrivalMode, random, initParam, 0, 0, 0 );
 
 		// ログインスタンス及びクリティカルセクションインスタンスを設定します。
 		erDepartment.vSetAllLog( log );
@@ -739,7 +756,11 @@ public class ERMain
 				strMRIRoomAxisPath, strAngiographyRoomAxisPath, strFastRoomAxisPath,
 				strStairsAxisPath, strElevatorAxisPath, strOtherRoomAxisPath );
 		erDepartment.vReadNodeManager( strNodeLinkFileName );
-	}
+
+		// 描画用初期設定ファイルクラスの設定を行います。
+		ERDepartmentDraw2D.vSetInitGuiSimParam( initGuiSimParam );
+		ERTriageDebugWindowKeyAndMouseListner.vSetInitGuiSimParam( initGuiSimParam );
+}
 
 	/**
 	 * <PRE>
@@ -819,13 +840,13 @@ public class ERMain
 	 * @param ptKam			キーリスナーインスタンス
 	 * @param ptWindow		描画ウィンドウのインスタンス
 	 */
-	private static void vInitDraw2D( SimulationEngine erEngine, FusePanelSimpleMesh[] pt2d, KeyAndMouseListner2D[] ptKam, FuseWindow[] ptWindow )
+	private static void vInitDraw2D( SimulationEngine erEngine, FusePanelSimpleMesh[] pt2d, ERTriageDebugWindowKeyAndMouseListner[] ptKam, FuseWindow[] ptWindow )
 	{
 		AltitudeColor colorManager;
 		// シミュレーション画面の設定を行います。
 		// 2D表示
 		pt2d[0] = new FusePanelSimpleMesh( erEngine );
-		ptKam[0] = new KeyAndMouseListner2D(pt2d[0]);
+		ptKam[0] = new ERTriageDebugWindowKeyAndMouseListner(pt2d[0]);
 		pt2d[0].setKAMListner(ptKam[0]);
 		ptWindow[0] = new FuseWindow(pt2d[0]);
 
@@ -965,15 +986,19 @@ public class ERMain
 	 */
 	private static void vStartInvSim( int iTimeStep, int iIntervalNum ) throws GenAlgException, IOException
 	{
+		double lfRes = 0.0;
 		// 開始時間を取得します。
 		invSimEngine.vGetStartTime();
 		for(int i = 0;i < iIntervalNum; i++ )
 		{
 			// 逆シミュレーションを実行します。
-			invSimEngine.vImplement( iTimeStep );
+			lfRes = invSimEngine.lfImplement( iTimeStep );
 
 			// 世代毎に時間を計測していきます。
 			invSimEngine.vGetCurrentTime();
+
+			// 10^-8以下になったら終了とします。
+			if( lfRes <= 0.00000001 ) break;
 		}
 		// 最終出力結果を出力します。
 		invSimEngine.vOutput(1);

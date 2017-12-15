@@ -67,7 +67,7 @@ public class ERDepartmentArrivalPatient extends Thread
 				cEngine.pause();
 				for( i = 0;i < iCount; i++ )
 				{
-					erWaitingRoom.vArrivalPatient( lfSecond, cEngine, iPatientRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, initSimParam );
+					erWaitingRoom.vArrivalPatient( lfSecond, (double)iCount/3600.0, cEngine, iPatientRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, initSimParam );
 					int iSize = erWaitingRoom.erGetPatientAgents().size();
 					// 追加でログ出力及びクリティカルセクションの設定をします。
 					// 設定の関係上でnull値になっているため。

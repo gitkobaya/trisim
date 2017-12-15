@@ -120,8 +120,6 @@ public class Abc
 		pcPowell = null;
 	}
 
-
-
 	/**
 	 * <PRE>
 	 * 　人口蜂コロニーの初期化を実行します。(コンストラクタ)

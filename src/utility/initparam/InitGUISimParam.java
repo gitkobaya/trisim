@@ -66,6 +66,9 @@ public class InitGUISimParam extends InitSettingFileRead
 	// ノード及びリンクの設定をします。
 	private String strNodeLinkFileName = "./parameter/TriageNodeLinkTable.txt";
 
+	// デバックモードの設定をします。
+	private int iDebugMode = 0;
+
 	/**
 	 * <PRE>
 	 *	*.iniファイルに設定するパラメーターのデフォルト値を設定します。
@@ -560,6 +563,13 @@ public class InitGUISimParam extends InitSettingFileRead
 			/* 範囲外を指定した場合はエラーを出力します。*/
 			throw(new IllegalArgumentException("density of random patient is less than 0"));
 		}
+
+		iDebugMode = (int)GetInitDataInt( strInitParamSectionName, "DebugMode", 0, strIniFullPath );
+		if( iDebugMode < 0 || iDebugMode > 1 )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("debug mode parameter is out of range"));
+		}
 	}
 
 	/**
@@ -1049,5 +1059,18 @@ public class InitGUISimParam extends InitSettingFileRead
 	public int iGetMeshHeight()
 	{
 		return iMeshHeight;
+	}
+
+	/**
+	 * <PRE>
+	 *    GUI用のデバックモードを設定します。
+	 *    0 通常モード
+	 *    1 デバックモード
+	 * </PRE>
+	 * @return デバックモードの状態
+	 */
+	public int iGetDebugMode()
+	{
+		return iDebugMode;
 	}
 }

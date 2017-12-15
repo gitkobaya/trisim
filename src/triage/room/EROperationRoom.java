@@ -14,8 +14,35 @@ import utility.node.ERTriageNode;
 import utility.node.ERTriageNodeManager;
 import utility.sfmt.Rand;
 
-public class EROperationRoom extends Agent{
-
+/**
+ * 病院の手術室を表すクラスです。
+ * このプログラムではこのクラスを含めすべての部屋をエージェントとして定義しています。<br>
+ * そのようにすることにより、いろいろと都合がよいためそのようにしております。<br>
+ * 手術室では登録された患者に対して、処置を実施します。<br>
+ * 処置はAIS重症度をある値改善させます。
+ * 改善後、重症度に応じて一般病棟、ICU、HCUへ移動します。
+ * 移動先の部屋は次の通りです。<br>
+ * １一般病棟<br>
+ * ２HCU<br>
+ * ３ICU<br>
+ *
+ * 使用方法は次の通りです。<br>
+ * 初期化　　　　　　vInitialize　<br>
+ * エージェント作成　vCreateDoctorAgents<br>
+ * 　　　　　　　　　vCreateNurseAgents<br>
+ * 設定　　　　　　　vSetDoctorAgentParameter<br>
+ * 　　　　　　　　　vSetNurseAgentParameter<br>
+ * 　　　　　　　　　vSetSurgeonDoctorAgent<br>
+ * 　　　　　　　　　vSetReadWriteFileForAgents<br>
+ * 診断　　　　　　　vImplementOperation<br>
+ * 実行　　　　　　　action　<br>
+ * 終了処理　　　　　　vTerminate　<br>
+ *
+ * @author kobayashi
+ *
+ */
+public class EROperationRoom extends Agent
+{
 	private static final long serialVersionUID = 6752789447289814127L;
 
 	private ArrayList<ERDoctorAgent> ArrayListDoctorAgents;						// 手術室で見ている医師エージェント

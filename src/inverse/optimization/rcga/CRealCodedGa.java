@@ -16,6 +16,15 @@ import inverse.optimization.rankt.Rank_t;
 import utility.sfmt.Sfmt;
 
 
+/**
+ * 実数値GAを実行するためのベースクラスです。
+ * 実数値GAを実行するために最低限必要と思われる関数と変数を用意したクラスです。<br>
+ *
+ * これを基に実数値GAアルゴリズムを構築していきます。<br>
+ * 実数値GAはこれを継承して実装してください。
+ *
+ * @author kobayashi
+ */
 public class CRealCodedGa
 {
 	protected int iGenerationNumber;

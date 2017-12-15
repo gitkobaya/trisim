@@ -153,6 +153,43 @@ public class InitInverseSimParam extends InitSettingFileRead
 	private double iFastRoomClinicalEngineerNumMaxWeight;		// FAST室に所属する看護師の最大範囲
 	private double iFastRoomClinicalEngineerNumMinWeight;		// FAST室に所属する看護師の最小範囲
 
+	private int iConsultationRoomNum;							// 診察室数
+	private int iConsultationRoomDoctorNum;							// 診察室医師数
+	private int iConsultationRoomNurseNum;							// 診察室看護師数
+	private int iXRayRoomNum;									// X線室数
+	private int iCTRoomNum;										// CT室数
+	private int iMRIRoomNum = 1;
+	private int iAngiographyRoomNum = 1;
+	private int iFastRoomNum = 1;
+	private int iXRayRoomClinicalEngineerNum = 3;
+	private int iCTRoomClinicalEngineerNum = 3;
+	private int iMRIRoomClinicalEngineerNum = 3;
+	private int iAngiographyRoomClinicalEngineerNum = 3;
+	private int iFastRoomClinicalEngineerNum = 3;
+	private int iEmergencyRoomNum = 2;
+	private int iEmergencyRoomDoctorNum = 3;
+	private int iEmergencyRoomNurseNum = 6;
+	private int iEmergencyRoomClinicalEngineerNum = 2;
+	private int iOperationRoomNum = 2;
+	private int iOperationRoomDoctorNum = 2;
+	private int iOperationRoomNurseNum = 4;
+	private int iObservationRoomNum = 4;
+	private int iObservationRoomNurseNum = 8;
+	private int iHighCareUnitNum = 4;
+	private int iHighCareUnitDoctorNum = 2;
+	private int iHighCareUnitNurseNum = 4;
+	private int iIntensiveCareUnitNum = 6;
+	private int iIntensiveCareUnitDoctorNum = 2;
+	private int iIntensiveCareUnitNurseNum = 4;
+	private int iGeneralWardNum = 10;
+	private int iGeneralWardDoctorNum = 1;
+	private int iGeneralWardNurseNum = 4;
+	private int iSevereInjuryObservationRoomNum = 4;
+	private int iSevereInjuryObservationRoomNurseNum = 8;
+	private int iWaitingRoomNum = 1;
+	private int iWaitingRoomNurseNum = 3;
+	private int iInitializeGenerateMode = 0;
+
 	/**
 	 * <PRE>
 	 *	*.iniファイルに設定するパラメーターのデフォルト値を設定します。
@@ -189,6 +226,8 @@ public class InitInverseSimParam extends InitSettingFileRead
 		String strMRIRoomSectionName						= "MRIRoom";
 		String strAngiographyRoomSectionName				= "AngiographyRoom";
 		String strFastRoomSectionName						= "FastRoom";
+		String strERDepartmentSectionName					= "ERDepartment";
+		String strInitializationSectionName					= "Initialization";
 		String strParam;
 
 		long lRet = 0L;
@@ -1109,6 +1148,266 @@ public class InitInverseSimParam extends InitSettingFileRead
 			/* 範囲外を指定した場合はエラーを出力します。*/
 			throw(new IllegalArgumentException("max weight of clinical engineer in the fast room is out of range"));
 		}
+
+
+		// 診察室数を取得します。
+		iConsultationRoomNum = (int)GetInitDataInt( strInitializationSectionName, "ConsultationRoomNum", -1, strIniFullPath );
+		if( 0 > iConsultationRoomNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("consultation room number is out of range"));
+		}
+		// 診察室の医師数を取得します。
+		iConsultationRoomDoctorNum = (int)GetInitDataInt( strInitializationSectionName, "ConsultationRoomDoctorNum", -1, strIniFullPath );
+		if( 0 > iConsultationRoomNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of doctor in a consultation room is out of range"));
+		}
+		// 診察室の看護師数を取得します。
+		iConsultationRoomNurseNum = (int)GetInitDataInt( strInitializationSectionName, "ConsultationRoomNurseNum", -1, strIniFullPath );
+		if( 0 > iConsultationRoomNurseNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of nurse in a consultation room is out of range"));
+		}
+
+		// 手術室数を取得します。
+		iOperationRoomNum = (int)GetInitDataInt( strInitializationSectionName, "OperationRoomNum", -1, strIniFullPath );
+		if( 0 > iOperationRoomNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("operation room number is out of range"));
+		}
+		// 手術室の医師数を取得します。
+		iOperationRoomDoctorNum = (int)GetInitDataInt( strInitializationSectionName, "OperationRoomDoctorNum", -1, strIniFullPath );
+		if( 0 > iOperationRoomNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of doctor in an operation room is out of range"));
+		}
+		// 手術室の看護師数を取得します。
+		iOperationRoomNurseNum = (int)GetInitDataInt( strInitializationSectionName, "OperationRoomNurseNum", -1, strIniFullPath );
+		if( 0 > iOperationRoomNurseNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of nurse in an operation room is out of range"));
+		}
+
+		// 初療室数を取得します。
+		iEmergencyRoomNum = (int)GetInitDataInt( strInitializationSectionName, "EmergencyRoomNum", -1, strIniFullPath );
+		if( 0 > iEmergencyRoomNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("emergency room number is out of range"));
+		}
+		// 初療室の医師数を取得します。
+		iEmergencyRoomDoctorNum = (int)GetInitDataInt( strInitializationSectionName, "EmergencyRoomDoctorNum", -1, strIniFullPath );
+		if( 0 > iEmergencyRoomDoctorNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of doctor in an emergency room is out of range"));
+		}
+		// 初療室の看護師数を取得します。
+		iEmergencyRoomNurseNum = (int)GetInitDataInt( strInitializationSectionName, "EmergencyRoomNurseNum", -1, strIniFullPath );
+		if( 0 > iEmergencyRoomNurseNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of nurse in an emergency room is out of range"));
+		}
+		// 初療室の医療技師数を取得します。
+		iEmergencyRoomClinicalEngineerNum = (int)GetInitDataInt( strInitializationSectionName, "EmergencyRoomClinicalEngineerNum", -1, strIniFullPath );
+		if( 0 > iEmergencyRoomNurseNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of clinical engineer in an emergency room is out of range"));
+		}
+
+		// 観察室数を取得します。
+		iObservationRoomNum = (int)GetInitDataInt( strInitializationSectionName, "ObservationRoomNum", -1, strIniFullPath );
+		if( 0 > iObservationRoomNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("observation room number is out of range"));
+		}
+		// 観察室数の看護師数を取得します。
+		iObservationRoomNurseNum = (int)GetInitDataInt( strInitializationSectionName, "ObservationRoomNurseNum", -1, strIniFullPath );
+		if( 0 > iObservationRoomNurseNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of nurse in an observation room is out of range"));
+		}
+
+		// 重症観察室数を取得します。
+		iSevereInjuryObservationRoomNum = (int)GetInitDataInt( strInitializationSectionName, "SevereInjuryObservationRoomNum", -1, strIniFullPath );
+		if( 0 > iSevereInjuryObservationRoomNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("severe injury observation room number is out of range"));
+		}
+		// 重症観察室数の看護師数を取得します。
+		iSevereInjuryObservationRoomNurseNum = (int)GetInitDataInt( strInitializationSectionName, "SevereInjuryObservationRoomNurseNum", -1, strIniFullPath );
+		if( 0 > iSevereInjuryObservationRoomNurseNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of nurse in an severe injury observation room is out of range"));
+		}
+
+		// ICU数を取得します。
+		iIntensiveCareUnitNum = (int)GetInitDataInt( strInitializationSectionName, "IntensiveCareUnitNum", -1, strIniFullPath );
+		if( 0 > iIntensiveCareUnitNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("icu number is out of range"));
+		}
+		// ICU室の医師数を取得します。
+		iIntensiveCareUnitDoctorNum = (int)GetInitDataInt( strInitializationSectionName, "IntensiveCareUnitDoctorNum", -1, strIniFullPath );
+		if( 0 > iIntensiveCareUnitDoctorNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of doctor in an icu is out of range"));
+		}
+		// ICU室の看護師数を取得します。
+		iIntensiveCareUnitNurseNum = (int)GetInitDataInt( strInitializationSectionName, "IntensiveCareUnitNurseNum", -1, strIniFullPath );
+		if( 0 > iIntensiveCareUnitNurseNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of nurse in an icu is out of range"));
+		}
+
+		// HCU数を取得します。
+		iHighCareUnitNum = (int)GetInitDataInt( strInitializationSectionName, "HighCareUnitNum", -1, strIniFullPath );
+		if( 0 > iHighCareUnitNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("hcu number is out of range"));
+		}
+		// HCUの医師数を取得します。
+		iHighCareUnitDoctorNum = (int)GetInitDataInt( strInitializationSectionName, "HighCareUnitDoctorNum", -1, strIniFullPath );
+		if( 0 > iHighCareUnitDoctorNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of doctor in an hcu is out of range"));
+		}
+		// HCUの看護師数を取得します。
+		iHighCareUnitNurseNum = (int)GetInitDataInt( strInitializationSectionName, "HighCareUnitNurseNum", -1, strIniFullPath );
+		if( 0 > iHighCareUnitNurseNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of nurse in an hcu is out of range"));
+		}
+
+		// 一般病棟数を取得します。
+		iGeneralWardNum = (int)GetInitDataInt( strInitializationSectionName, "GeneralWardNum", -1, strIniFullPath );
+		if( 0 > iGeneralWardNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("general ward number is out of range"));
+		}
+		// 一般病棟の医師数を取得します。
+		iGeneralWardDoctorNum = (int)GetInitDataInt( strInitializationSectionName, "GeneralWardDoctorNum", -1, strIniFullPath );
+		if( 0 > iGeneralWardDoctorNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of doctor in a general ward is out of range"));
+		}
+		// 一般病棟の看護師数を取得します。
+		iGeneralWardNurseNum = (int)GetInitDataInt( strInitializationSectionName, "GeneralWardNurseNum", -1, strIniFullPath );
+		if( 0 > iGeneralWardNurseNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of nurse in a general ward is out of range"));
+		}
+
+		// 待合室数を取得します。
+		iWaitingRoomNum = (int)GetInitDataInt( strInitializationSectionName, "WaitingRoomNum", -1, strIniFullPath );
+		if( 0 > iWaitingRoomNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("waiting number is out of range"));
+		}
+		// 待合室数の看護師数を取得します。
+		iWaitingRoomNurseNum = (int)GetInitDataInt( strInitializationSectionName, "WaitingRoomNurseNum", -1, strIniFullPath );
+		if( 0 > iWaitingRoomNurseNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of nurse in an waiting room is out of range"));
+		}
+
+		// X線室数を取得します。
+		iXRayRoomNum = (int)GetInitDataInt( strInitializationSectionName, "XRayRoomNum", -1, strIniFullPath );
+		if( 0 > iXRayRoomNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("x-ray number is out of range"));
+		}
+		// X線室数の医療技師数を取得します。
+		iXRayRoomClinicalEngineerNum = (int)GetInitDataInt( strInitializationSectionName, "XRayRoomClinicalEngineerNum", -1, strIniFullPath );
+		if( 0 > iXRayRoomClinicalEngineerNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of clinical engineer in an x-ray room is out of range"));
+		}
+
+		// CT室数を取得します。
+		iCTRoomNum = (int)GetInitDataInt( strInitializationSectionName, "CTRoomNum", -1, strIniFullPath );
+		if( 0 > iCTRoomNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("ct room number is out of range"));
+		}
+		// CT室数の医療技師数を取得します。
+		iCTRoomClinicalEngineerNum = (int)GetInitDataInt( strInitializationSectionName, "CTRoomClinicalEngineerNum", -1, strIniFullPath );
+		if( 0 > iCTRoomClinicalEngineerNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of clinical engineer in a ct room is out of range"));
+		}
+
+		// MRI室数を取得します。
+		iMRIRoomNum = (int)GetInitDataInt( strInitializationSectionName, "MRIRoomNum", -1, strIniFullPath );
+		if( 0 > iMRIRoomNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("MRI room number is out of range"));
+		}
+		// MRI室数の医療技師数を取得します。
+		iMRIRoomClinicalEngineerNum = (int)GetInitDataInt( strInitializationSectionName, "MRIRoomClinicalEngineerNum", -1, strIniFullPath );
+		if( 0 > iMRIRoomClinicalEngineerNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of clinical engineer in a MRI room is out of range"));
+		}
+
+		// Fast室数を取得します。
+		iFastRoomNum = (int)GetInitDataInt( strInitializationSectionName, "FastRoomNum", -1, strIniFullPath );
+		if( 0 > iFastRoomNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("Fast room number is out of range"));
+		}
+		// Fast室数の医療技師数を取得します。
+		iFastRoomClinicalEngineerNum = (int)GetInitDataInt( strInitializationSectionName, "FastRoomClinicalEngineerNum", -1, strIniFullPath );
+		if( 0 > iFastRoomClinicalEngineerNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of clinical engineer in a Fast room is out of range"));
+		}
+
+		// 血管造影室数を取得します。
+		iAngiographyRoomNum = (int)GetInitDataInt( strInitializationSectionName, "AngiographyRoomNum", -1, strIniFullPath );
+		if( 0 > iAngiographyRoomNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("angiography room number is out of range"));
+		}
+		// 血管造影室数の医療技師数を取得します。
+		iAngiographyRoomClinicalEngineerNum = (int)GetInitDataInt( strInitializationSectionName, "AngiographyRoomClinicalEngineerNum", -1, strIniFullPath );
+		if( 0 > iAngiographyRoomClinicalEngineerNum )
+		{
+			/* 範囲外を指定した場合はエラーを出力します。*/
+			throw(new IllegalArgumentException("number of clinical engineer in an angiography room is out of range"));
+		}
 	}
 
 	public int iGetConsultationRoomNumMax()
@@ -1645,4 +1944,183 @@ public class InitInverseSimParam extends InitSettingFileRead
 		return iFastRoomClinicalEngineerNumMaxWeight;
 	}
 
+	public int iGetInitializeGenerateMode()
+	{
+		return iInitializeGenerateMode;
+	}
+
+	public int iGetConsultationRoomNum()
+	{
+		return iConsultationRoomNum;
+	}
+
+	public int iGetConsultationRoomDoctorNum()
+	{
+		return iConsultationRoomDoctorNum;
+	}
+
+	public int iGetConsultationRoomNurseNum()
+	{
+		return iConsultationRoomNurseNum;
+	}
+
+	public int iGetOperationRoomNum()
+	{
+		return iOperationRoomNum;
+	}
+
+	public int iGetOperationRoomDoctorNum()
+	{
+		return iOperationRoomDoctorNum;
+	}
+
+	public int iGetOperationRoomNurseNum()
+	{
+		return iOperationRoomNurseNum;
+	}
+
+	public int iGetEmergencyRoomNum()
+	{
+		return iEmergencyRoomNum;
+	}
+
+	public int iGetEmergencyRoomDoctorNum()
+	{
+		return iEmergencyRoomDoctorNum;
+	}
+
+	public int iGetEmergencyRoomNurseNum()
+	{
+		return iEmergencyRoomNurseNum;
+	}
+
+	public int iGetEmergencyRoomClinicalEngineerNum()
+	{
+		return iEmergencyRoomClinicalEngineerNum;
+	}
+
+	public int iGetObservationRoomNum()
+	{
+		return iObservationRoomNum;
+	}
+
+	public int iGetObservationRoomNurseNum()
+	{
+		return iObservationRoomNurseNum;
+	}
+
+	public int iGetSevereInjuryObservationRoomNum()
+	{
+		return iSevereInjuryObservationRoomNum;
+	}
+
+	public int iGetSevereInjuryObservationRoomNurseNum()
+	{
+		return iSevereInjuryObservationRoomNurseNum;
+	}
+
+	public int iGetIntensiveCareUnitNum()
+	{
+		return iIntensiveCareUnitNum;
+	}
+
+	public int iGetIntensiveCareUnitDoctorNum()
+	{
+		return iIntensiveCareUnitDoctorNum;
+	}
+
+	public int iGetIntensiveCareUnitNurseNum()
+	{
+		return iIntensiveCareUnitNurseNum;
+	}
+
+	public int iGetHighCareUnitNum()
+	{
+		return iHighCareUnitNum;
+	}
+
+	public int iGetHighCareUnitDoctorNum()
+	{
+		return iHighCareUnitDoctorNum;
+	}
+
+	public int iGetHighCareUnitNurseNum()
+	{
+		return iHighCareUnitNurseNum;
+	}
+
+	public int iGetGeneralWardNum()
+	{
+		return iGeneralWardNum;
+	}
+
+	public int iGetGeneralWardDoctorNum()
+	{
+		return iGeneralWardDoctorNum;
+	}
+
+	public int iGetGeneralWardNurseNum()
+	{
+		return iGeneralWardNurseNum;
+	}
+
+	public int iGetWaitingRoomNum()
+	{
+		return iWaitingRoomNum;
+	}
+
+	public int iGetWaitingRoomNurseNum()
+	{
+		return iWaitingRoomNurseNum;
+	}
+
+	public int iGetXRayRoomNum()
+	{
+		return iXRayRoomNum;
+	}
+
+	public int iGetXRayRoomClinicalEngineerNum()
+	{
+		return iXRayRoomClinicalEngineerNum;
+	}
+
+	public int iGetCTRoomNum()
+	{
+		return iCTRoomNum;
+	}
+
+	public int iGetCTRoomClinicalEngineerNum()
+	{
+		return iCTRoomClinicalEngineerNum;
+	}
+
+	public int iGetMRIRoomNum()
+	{
+		return iMRIRoomNum;
+	}
+
+	public int iGetMRIRoomClinicalEngineerNum()
+	{
+		return iMRIRoomClinicalEngineerNum;
+	}
+
+	public int iGetAngiographyRoomNum()
+	{
+		return iAngiographyRoomNum;
+	}
+
+	public int iGetAngiographyRoomClinicalEngineerNum()
+	{
+		return iAngiographyRoomClinicalEngineerNum;
+	}
+
+	public int iGetFastRoomNum()
+	{
+		return iFastRoomNum;
+	}
+
+	public int iGetFastRoomClinicalEngineerNum()
+	{
+		return iFastRoomClinicalEngineerNum;
+	}
 }

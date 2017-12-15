@@ -280,6 +280,7 @@ public class CCsv
 				strWriteData += ",";
 			}
 			pwCsvWriteFilePointer.println( strWriteData );
+			strWriteData = "";
 		}
 	}
 
@@ -303,6 +304,7 @@ public class CCsv
 				strWriteData += ",";
 			}
 			pwCsvWriteFilePointer.println( strWriteData );
+			strWriteData = "";
 		}
 	}
 
@@ -326,6 +328,7 @@ public class CCsv
 				strWriteData += ",";
 			}
 			pwCsvWriteFilePointer.println( strWriteData );
+			strWriteData = "";
 		}
 	}
 
@@ -349,6 +352,7 @@ public class CCsv
 				strWriteData += ",";
 			}
 			pwCsvWriteFilePointer.println( strWriteData );
+			strWriteData = "";
 		}
 	}
 
@@ -372,6 +376,7 @@ public class CCsv
 				strWriteData += ",";
 			}
 			pwCsvWriteFilePointer.println( strWriteData );
+			strWriteData = "";
 		}
 	}
 
@@ -395,6 +400,7 @@ public class CCsv
 				strWriteData += ",";
 			}
 			pwCsvWriteFilePointer.println( strWriteData );
+			strWriteData = "";
 		}
 	}
 

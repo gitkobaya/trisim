@@ -7,10 +7,11 @@ import java.util.logging.Logger;
 import jp.ac.nihon_u.cit.su.furulab.fuse.Environment;
 import jp.ac.nihon_u.cit.su.furulab.fuse.SimulationEngine;
 import jp.ac.nihon_u.cit.su.furulab.fuse.models.Agent;
-import main.ERFinisher;
+import jp.ac.nihon_u.cit.su.furulab.fuse.models.collision.TreeSpaceManagerBinary;
 import triage.agent.ERClinicalEngineerAgentException;
 import triage.agent.ERDoctorAgentException;
 import triage.agent.ERNurseAgentException;
+import triage.agent.ERPatientAgent;
 import triage.room.ERConsultationRoom;
 import triage.room.ERElevator;
 import triage.room.EREmergencyRoom;
@@ -24,15 +25,35 @@ import triage.room.ERHighCareUnitRoom;
 import triage.room.ERIntensiveCareUnitRoom;
 import triage.room.ERObservationRoom;
 import triage.room.EROperationRoom;
+import triage.room.EROutside;
 import triage.room.ERSevereInjuryObservationRoom;
 import triage.room.ERStairs;
 import triage.room.ERWaitingRoom;
 import utility.csv.CCsv;
+import utility.initparam.InitInverseSimParam;
 import utility.initparam.InitSimParam;
 import utility.node.ERTriageNode;
 import utility.node.ERTriageNodeManager;
 import utility.sfmt.Rand;
 
+/**
+ * 病院の救急部門を表すクラスです。
+ * このプログラムではこのクラスを含めすべての部屋をエージェントとして定義しています。
+ * そのようにすることにより、いろいろと都合がよいためそのようにしております。
+ * 各部屋、各構成エージェントすべてがこのクラスにまとまっています。
+ * 逆シミュレーションではこれを複数インスタンスを生成して各１個体として生成します。
+ * 使用方法は次の通りです。<br>
+ * 初期化　　vInitialize　<br>
+ * 実行　　　action　<br>
+ * 終了処理　vTerminate　<br>
+ * 初期化で読み込みファイル（各部屋数、部屋を構成するエージェントのパラメータ）、
+ * シミュレーションエンジン、ログ、クリティカルセクション、各種パラメータを指定します。
+ * 指定すると、それらをすべて読み込み、患者エージェントを生成します。
+ *
+ *
+ * @author kobayashi
+ *
+ */
 public class ERDepartment extends Agent
 {
 	private static final long serialVersionUID = -7012846720434796778L;
@@ -89,6 +110,7 @@ public class ERDepartment extends Agent
 	private ArrayList<ERStairs> ArrayListStairs;
 	private ArrayList<ERElevator> ArrayListElevators;
 //	private ArrayList<EROtherRoom> ArrayListOtherRooms;
+	private EROutside erOutside;
 
 	private ArrayList<Long> ArrayListDoctorAgentIds;
 	private ArrayList<Long> ArrayListNurseAgentIds;
@@ -168,6 +190,20 @@ public class ERDepartment extends Agent
 
 	private int iGenerationPatientMode;						// 別スレッドからの患者到達制御フラグ
 
+	private InitSimParam initSimParam;						// 初期設定ファイル操作用変数
+
+	private ArrayList<ERPatientAgent> ArrayListPatientAgents;// 来院する患者エージェントのインスタンス
+
+	private int iMonthCount = 0;								// 患者出現分布用１ヶ月換算
+	private int iDayCount = 0;									// 患者出現分布用１日換算
+	private int iYearCount = 0;									// 患者出現分布用1年換算
+
+	private double lfOneWeekArrivalPatientPepole = 1.0;				// 患者の1日単位での分布
+	private double lfOneMonthArrivalPatientPepole = 1.0;			// 患者の1ヶ月単位での分布
+	private double lfOneYearArrivalPatientPepole = 1.0;				// 患者の1年単位での分布
+	private double lfArrivalPatientPepole;						// 患者到達人数
+
+
 	public ERDepartment()
 	{
 		vInitialize();
@@ -200,6 +236,7 @@ public class ERDepartment extends Agent
 		ArrayListDoctorAgentIds = new ArrayList<Long>();
 		ArrayListNurseAgentIds = new ArrayList<Long>();
 		ArrayListClinicalEngineerAgentIds = new ArrayList<Long>();
+		ArrayListPatientAgents = new ArrayList<ERPatientAgent>();
 		lfTotalTime = 0.0;
 		lfEndTime = 24.0*3600.0;
 		iFileWriteModeFlag = 0;
@@ -272,6 +309,9 @@ public class ERDepartment extends Agent
 	 * @param iPatientArrivalMode 					患者到達モード（0:通常,1:災害）
 	 * @param sfmtRandom 							メルセンヌツイスターのインスタンス
 	 * @param initparam								初期設定パラメータ（合わせ込み用）
+	 * @param iInitGeneralWardPatientNum			一般病棟の初期患者数
+	 * @param iInitIntensiveCareUnitPatientNum		集中治療室の初期患者数
+	 * @param iInitHighCareUnitPatientNum			高度治療室の初期患者数
 	 * @throws IOException 							java標準のIO例外クラス
 	 */
 	public void vInitialize( SimulationEngine engine,
@@ -296,7 +336,10 @@ public class ERDepartment extends Agent
 			int iFileWriteMode,
 			int iPatientArrivalMode,
 			Rand sfmtRandom,
-			InitSimParam initparam ) throws IOException
+			InitSimParam initparam,
+			int iInitGeneralWardPatientNum,
+			int iInitIntensiveCareUnitPatientNum,
+			int iInitHighCareUnitPatientNum) throws IOException
 	{
 		int i,j;
 		double lfEndLogicalTime = 0.0;
@@ -305,6 +348,8 @@ public class ERDepartment extends Agent
 		{
 			iInverseSimMode = iInverseSimFlag;
 			iFileWriteModeFlag = iFileWriteMode;
+			initSimParam = initparam;
+			lfArrivalPatientPepole = lfPatientPepole;
 			ERDepartmentLog.warning( "クラス名" + "," + this.getClass() + "," + "メソッド名" + "," + "vInitialize" + "," + "," + "ファイル出力開始" + "," );
 			vSetConsultationRooms(iConsultationRoomNum, strConsultationRoomPath, engine, sfmtRandom );
 			vSetEmergencyRooms(iEmergencyRoomNum, strEmergencyRoomPath, engine, sfmtRandom );
@@ -320,6 +365,7 @@ public class ERDepartment extends Agent
 			vSetExaminationMRIRooms(iMRIRoomNum, strMRIRoomPath, engine, sfmtRandom );
 			vSetExaminationAngiographyRooms(iAngiographyRoomNum, strAngiographyRoomPath, engine, sfmtRandom );
 			vSetExaminationFastRooms(iFastRoomNum, strFastRoomPath, engine, sfmtRandom );
+			vSetOutside(1, lfPatientPepole, engine, sfmtRandom );
 
 			// 逆シミュレーションモードを設定します。
 			vSetInverseSimMode( iInverseSimFlag );
@@ -371,23 +417,89 @@ public class ERDepartment extends Agent
 			lfEndLogicalTime = lfEndTime/3600.0;
 			vSetRandom( rnd );
 
+	/*-------------------------------------患者を生成するタイミング(開始)----------------------------------------*/
+
 			// 別スレッドからの患者到達モードでない場合はこちらであらかじめ患者がどのタイミングで到達するのか設定します。
 			if( iGenerationPatientMode == 0 )
 			{
-				double lfSecond = 0.0;
-				for( lfSecond = 0.0; lfSecond < lfEndLogicalTime; lfSecond += 1.0/3600.0 )
-				{
-					// 患者を到達分布にしたがって生成します。(午前8時30分を0秒とする。)
-					erWaitingRoom.vArrivalPatient( lfSecond, erEngine, iRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, initparam );
-				}
+				// 平時の場合の患者発生分布により患者を生成します。
+				// 一日の分布です。
+//				double lfSecond = 0.0;
+//				for( lfSecond = 0.0; lfSecond < lfEndLogicalTime; lfSecond += 1.0/3600.0 )
+//				{
+//					// 患者を到達分布にしたがって生成します。(午前8時30分を0秒とする。)
+////					erWaitingRoom.vArrivalPatient( lfSecond, 1.0/3600.0, erEngine, iRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, initparam );
+//					vArrivalPatient( lfSecond, 1.0/3600.0, erEngine, iRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, initparam );
+//				}
+				erOutside.vGeneratePatientAgents( lfEndLogicalTime, 1.0/3600.0, erEngine, iRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, initparam );
+				erOutside.vSetErDepartmentPatientAgents( this );
 			}
 			erWaitingRoom.vSetSimulationEndTime( lfEndTime );
 			// テスト用
 //			erWaitingRoom.vArrivalAlonePatient( engine );
 
+			// 一般病棟、ICU、HCUにあらかじめ患者が入院しているという前提の場合に患者を追加します。
+			// 一般病棟に指定人数患者を生成します。
+			if( iInitGeneralWardPatientNum > 0 )
+			{
+				int iPatientNumPerRoom = iInitGeneralWardPatientNum / ArrayListGeneralWardRooms.size();
+				if( iPatientNumPerRoom > 0 )
+				{
+					for( i = 0;i < ArrayListGeneralWardRooms.size(); i++ )
+						for( j = 0;j < iPatientNumPerRoom; j++ )
+							ArrayListGeneralWardRooms.get(i).vGeneratePatient( erEngine, iRandomMode, iInverseSimFlag, iFileWriteMode, initparam, ERDepartmentLog, csErDepartmentCriticalSection );
+				}
+				// 初期にいる患者の人数よりも部屋数のほうが多い場合
+				else
+				{
+					// 1部屋目にすべての患者を入れるということにする。
+					for( j = 0;j < iInitGeneralWardPatientNum; j++ )
+						ArrayListGeneralWardRooms.get(0).vGeneratePatient( erEngine, iRandomMode, iInverseSimFlag, iFileWriteMode, initparam, ERDepartmentLog, csErDepartmentCriticalSection );
+				}
+			}
+			if( iInitIntensiveCareUnitPatientNum > 0 )
+			{
+				// ICUに指定人数生成します。
+				int iPatientNumPerRoom = iInitIntensiveCareUnitPatientNum / ArrayListIntensiveCareUnitRooms.size();
+				if( iPatientNumPerRoom > 0 )
+				{
+					for( i = 0;i < ArrayListIntensiveCareUnitRooms.size(); i++ )
+						for( j = 0;j < iPatientNumPerRoom; j++ )
+							ArrayListIntensiveCareUnitRooms.get(i).vGeneratePatient( erEngine, iRandomMode, iInverseSimFlag, iFileWriteMode, initparam, ERDepartmentLog, csErDepartmentCriticalSection );
+				}
+				// 初期にいる患者の人数よりも部屋数のほうが多い場合
+				else
+				{
+					// 1部屋目にすべての患者を入れるということにする。
+					for( j = 0;j < iInitIntensiveCareUnitPatientNum; j++ )
+						ArrayListIntensiveCareUnitRooms.get(0).vGeneratePatient( erEngine, iRandomMode, iInverseSimFlag, iFileWriteMode, initparam, ERDepartmentLog, csErDepartmentCriticalSection );
+				}
+			}
+			if( iInitHighCareUnitPatientNum > 0 )
+			{
+				// HCUに指定人数生成します。
+				int iPatientNumPerRoom = iInitHighCareUnitPatientNum / ArrayListHighCareUnitRooms.size();
+				if( iPatientNumPerRoom > 0 )
+				{
+					for( i = 0;i < ArrayListHighCareUnitRooms.size(); i++ )
+						for( j = 0;j < iPatientNumPerRoom; j++ )
+							ArrayListHighCareUnitRooms.get(i).vGeneratePatient( erEngine, iRandomMode, iInverseSimFlag, iFileWriteMode, initparam, ERDepartmentLog, csErDepartmentCriticalSection );
+				}
+				// 初期にいる患者の人数よりも部屋数のほうが多い場合
+				else
+				{
+					// 1部屋目にすべての患者を入れるということにする。
+					for( j = 0;j < iInitHighCareUnitPatientNum; j++ )
+						ArrayListHighCareUnitRooms.get(0).vGeneratePatient( erEngine, iRandomMode, iInverseSimFlag, iFileWriteMode, initparam, ERDepartmentLog, csErDepartmentCriticalSection );
+				}
+			}
 			// 救急部門に到達する人数を取得します。
-			iTotalPatientNum = erWaitingRoom.iGetTotalPatientNum();
+			iTotalPatientNum = erWaitingRoom.iGetTotalPatientNum()+iInitGeneralWardPatientNum+iInitIntensiveCareUnitPatientNum+iInitHighCareUnitPatientNum;
 			lfSurvivalProbability = erWaitingRoom.lfCalcInitialAvgSurvivalProbability();
+//			iTotalPatientNum = erOutside.iGetTotalPatientNum()+iInitGeneralWardPatientNum+iInitIntensiveCareUnitPatientNum+iInitHighCareUnitPatientNum;
+//			lfSurvivalProbability = erOutside.lfCalcInitialAvgSurvivalProbability();
+
+	/*-------------------------------------患者を生成するタイミング(終了)---------------------------------------*/
 
 			// 初期設定ファイル操作用クラスの設定をします。
 			vSetAllInitParam( initparam );
@@ -458,6 +570,9 @@ public class ERDepartment extends Agent
 	 * @param iPatientArrivalMode 					患者到達モード(0:通常, 1:災害)
 	 * @param sfmtRandom 							メルセンヌツイスターのインスタンス
 	 * @param initparam								初期設定パrメータ（合わせ込み用）
+	 * @param iInitGeneralWardPatientNum			一般病棟の初期患者数
+	 * @param iInitIntensiveCareUnitPatientNum		集中治療室の初期患者数
+	 * @param iInitHighCareUnitPatientNum			高度治療室の初期患者数
 	 */
 	public void vInitialize( SimulationEngine engine,
 			Environment env,
@@ -482,10 +597,11 @@ public class ERDepartment extends Agent
 			int iFileWriteMode,
 			int iPatientArrivalMode,
 			Rand sfmtRandom,
-			InitSimParam initparam )
+			InitSimParam initparam,
+			int iInitGeneralWardPatientNum,
+			int iInitIntensiveCareUnitPatientNum,
+			int iInitHighCareUnitPatientNum)
 	{
-		int i,j;
-
 		try
 		{
 
@@ -552,7 +668,9 @@ public class ERDepartment extends Agent
 					strObservationRoomPath, strSevereInjuryObservationRoomPath, strIntensiveCareUnitPath,
 					strHighCareUnitPath, strGeneralWardPath, strWaitingRoomPath, strXRayRoomPath,
 					strCTRoomPath, strMRIRoomPath, strAngiographyRoomPath, strFastRoomPath,
-					lfPatientPepole, iRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, sfmtRandom, initparam );
+					lfPatientPepole, iRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode,
+					sfmtRandom, initparam, iInitGeneralWardPatientNum, iInitIntensiveCareUnitPatientNum,
+					iInitHighCareUnitPatientNum );
 		}
 		catch( IOException ioe )
 		{
@@ -958,6 +1076,11 @@ public class ERDepartment extends Agent
 				ArrayListExaminationFastRooms.get(i).cGetClinicalEngineerAgent(j).vSetInitParam( initparam );
 			}
 		}
+//		// 病室外
+//		for( i =0;i < erOutside.erGetPatientAgents().size(); i++ )
+//		{
+//			erOutside.erGetPatientAgent(i).vSetInitParam(initparam);
+//		}
 	}
 
 	/**
@@ -1134,6 +1257,12 @@ public class ERDepartment extends Agent
 			}
 			ArrayListExaminationFastRooms.get(i).vSetLog( log );
 		}
+		// 病院外
+		erOutside.vSetLog( log );
+		for( i = 0;i < erOutside.erGetPatientAgents().size(); i++ )
+		{
+			erOutside.erGetPatientAgent(i).vSetLog( log );
+		}
 	}
 
 	/**
@@ -1301,6 +1430,12 @@ public class ERDepartment extends Agent
 				ArrayListExaminationFastRooms.get(i).cGetClinicalEngineerAgent(j).vSetCriticalSection( csErDepartmentCriticalSection );
 			}
 			ArrayListExaminationFastRooms.get(i).vSetCriticalSection( csErDepartmentCriticalSection );
+		}
+		// 病院外
+		erOutside.vSetCriticalSection( csErDepartmentCriticalSection );
+		for( i = 0;i < erOutside.erGetPatientAgents().size(); i++ )
+		{
+			erOutside.erGetPatientAgent(i).vSetCriticalSection( csErDepartmentCriticalSection );
 		}
 	}
 
@@ -1471,6 +1606,8 @@ public class ERDepartment extends Agent
 			}
 			ArrayListExaminationFastRooms.get(i).vSetRandom( sfmtErDepartmentRandom );
 		}
+		// 病院外
+		erOutside.vSetRandom( sfmtErDepartmentRandom );
 	}
 
 	/**
@@ -1552,6 +1689,8 @@ public class ERDepartment extends Agent
 		{
 			ArrayListExaminationFastRooms.get(i).vSetInverseSimMode( iInverseSimMode );
 		}
+		// 病院外(患者生成時に設定します。)
+		erOutside.vSetPatientInverseSimMode( iInverseSimMode );
 	}
 
 	/**
@@ -1567,7 +1706,7 @@ public class ERDepartment extends Agent
 	 */
 	public void vSetReadWriteFile( String strERDirectory, String strDoctorAgentDirectory, String strNurseAgentDirectory, String strClinicalEngineerAgentDirectory, int iFileWriteMode ) throws IOException
 	{
-		int i,j;
+		int i;
 
 		// 救急部門
 		vSetReadWriteFile( strERDirectory, iFileWriteMode );
@@ -1709,40 +1848,57 @@ public class ERDepartment extends Agent
 	 * </PRE>
 	 * @param iRandomMode				ランダムモード（未使用）
 	 */
-	public void vSetRandomEmergencyDepartment( int iRandomMode )
+	public void vSetRandomEmergencyDepartment( InitInverseSimParam initparam )
 	{
 		// 一様乱数により発生させます。
-		if( iRandomMode == 1 )
+		if( initparam.iGetInitializeGenerateMode() == 1 )
 		{
-//			iConsultationRoomNum 			= rnd.NextInt( 1 )+1;
-//			iOperationRoomNum 				= rnd.NextInt( 1 )+1;
-//			iEmergencyRoomNum 				= rnd.NextInt( 1 )+1;
-//			iObservationRoomNum 			= rnd.NextInt( 1 )+1;
-//			iHighCareUnitRoomNum			= rnd.NextInt( 1 )+1;
-//			iIntensiveCareUnitRoomNum 		= rnd.NextInt( 1 )+1;
-//			iGeneralWardRoomNum 			= rnd.NextInt( 1 )+1;
-//			iSevereInjuryObservationRoomNum = rnd.NextInt( 1 )+1;
-//			iWaitingRoomNum 				= 1;
-//			iXRayRoomNum		 			= rnd.NextInt( 1 )+1;
-//			iCTRoomNum 						= rnd.NextInt( 1 )+1;
-//			iMRIRoomNum 					= rnd.NextInt( 1 )+1;
-//			iAngiographyRoomNum 			= rnd.NextInt( 1 )+1;
-//			iFastRoomNum		 			= rnd.NextInt( 1 )+1;
+			// パラメータの設定をします。
+			iConsultationRoomNum			= rnd.NextInt( initparam.iGetConsultationRoomNum() ) + 1;
+			iOperationRoomNum				= rnd.NextInt( initparam.iGetOperationRoomNum() ) + 1;
+			iEmergencyRoomNum				= rnd.NextInt( initparam.iGetEmergencyRoomNum() ) + 1;
+			iObservationRoomNum				= rnd.NextInt( initparam.iGetObservationRoomNum() ) + 1;
+			iSevereInjuryObservationRoomNum = rnd.NextInt( initparam.iGetSevereInjuryObservationRoomNum() ) + 1;
+			iIntensiveCareUnitRoomNum		= rnd.NextInt( initparam.iGetIntensiveCareUnitNum() ) + 1;
+			iHighCareUnitRoomNum			= rnd.NextInt( initparam.iGetHighCareUnitNum() ) + 1;
+			iGeneralWardRoomNum				= rnd.NextInt( initparam.iGetGeneralWardNum() ) + 1;
+			iXRayRoomNum					= rnd.NextInt( initparam.iGetXRayRoomNum() ) + 1;
+			iCTRoomNum						= rnd.NextInt( initparam.iGetCTRoomNum() ) + 1;
+			iMRIRoomNum						= rnd.NextInt( initparam.iGetMRIRoomNum() ) + 1;
+			iAngiographyRoomNum				= rnd.NextInt( initparam.iGetAngiographyRoomNum() ) + 1;
+			iFastRoomNum					= rnd.NextInt( initparam.iGetFastRoomNum() ) + 1;
+		}
+		else
+		{
+			iConsultationRoomNum			= initparam.iGetConsultationRoomNum();
+			iOperationRoomNum				= initparam.iGetOperationRoomNum();
+			iEmergencyRoomNum				= initparam.iGetEmergencyRoomNum();
+			iObservationRoomNum				= initparam.iGetObservationRoomNum();
+			iSevereInjuryObservationRoomNum = initparam.iGetSevereInjuryObservationRoomNum();
+			iIntensiveCareUnitRoomNum		= initparam.iGetIntensiveCareUnitNum();
+			iHighCareUnitRoomNum			= initparam.iGetHighCareUnitNum();
+			iGeneralWardRoomNum				= initparam.iGetGeneralWardNum();
+			iXRayRoomNum					= initparam.iGetXRayRoomNum();
+			iCTRoomNum						= initparam.iGetCTRoomNum();
+			iMRIRoomNum						= initparam.iGetMRIRoomNum();
+			iAngiographyRoomNum				= initparam.iGetAngiographyRoomNum();
+			iFastRoomNum					= initparam.iGetFastRoomNum();
+
 			// 聖隷浜松病院用
-			iConsultationRoomNum 			= 12;
-			iOperationRoomNum 				= 15;
-			iEmergencyRoomNum 				= 8;
-			iObservationRoomNum 			= 0;
-			iSevereInjuryObservationRoomNum = 0;
-			iHighCareUnitRoomNum			= 1;
-			iIntensiveCareUnitRoomNum 		= 1;
-			iGeneralWardRoomNum 			= 1;
-			iWaitingRoomNum 				= 1;
-			iXRayRoomNum		 			= 5;
-			iCTRoomNum 						= 4;
-			iMRIRoomNum 					= 5;
-			iAngiographyRoomNum 			= 2;
-			iFastRoomNum		 			= 1;
+//			iConsultationRoomNum 			= 12;
+//			iOperationRoomNum 				= 15;
+//			iEmergencyRoomNum 				= 8;
+//			iObservationRoomNum 			= 0;
+//			iSevereInjuryObservationRoomNum = 0;
+//			iHighCareUnitRoomNum			= 1;
+//			iIntensiveCareUnitRoomNum 		= 1;
+//			iGeneralWardRoomNum 			= 1;
+//			iWaitingRoomNum 				= 1;
+//			iXRayRoomNum		 			= 5;
+//			iCTRoomNum 						= 4;
+//			iMRIRoomNum 					= 5;
+//			iAngiographyRoomNum 			= 2;
+//			iFastRoomNum		 			= 1;
 		}
 	}
 
@@ -1876,75 +2032,78 @@ public class ERDepartment extends Agent
 	 * </PRE>
 	 * @param iRandomMode				ランダム発生モード（未使用）
 	 */
-	public void vSetRandomEmergencyDepartmentAgents( int iRandomMode )
+	public void vSetRandomEmergencyDepartmentAgents( InitInverseSimParam initparam )
 	{
 		// 一様乱数により発生させます。
-		if( iRandomMode == 1 )
+		if( initparam.iGetInitializeGenerateMode() == 1 )
 		{
 			// パラメータの設定をします。
-//			iConsultationDoctorNum = rnd.NextInt( 10 )+1;
-//			iConsultationNurseNum = rnd.NextInt( 10 )+1;
-//			iOperationDoctorNum = rnd.NextInt( 10 )+1;
-//			iOperationNurseNum = rnd.NextInt( 10 )+1;
-//			iEmergencyDoctorNum = rnd.NextInt( 10 )+1;
-//			iEmergencyNurseNum = rnd.NextInt( 10 )+1;
-//			iEmergencyClinicalEngineerNum = rnd.NextInt( 10 )+1;
-//			iObservationNurseNum = rnd.NextInt( 10 )+1;
-//			iSevereInjuryObservationNurseNum = rnd.NextInt( 10 )+1;
-//			iIntensiveCareUnitDoctorNum = rnd.NextInt( 10 )+1;
-//			iIntensiveCareUnitNurseNum = rnd.NextInt( 10 )+1;
-//			iHighCareUnitDoctorNum = rnd.NextInt( 10 )+1;
-//			iHighCareUnitNurseNum = rnd.NextInt( 10 )+1;
-//			iGeneralWardDoctorNum = rnd.NextInt( 10 )+1;
-//			iGeneralWardNurseNum = rnd.NextInt( 10 )+1;
-//			iXRayClinicalEngineerNum = rnd.NextInt( 10 )+1;
-//			iCTClinicalEngineerNum = rnd.NextInt( 10 )+1;
-//			iMRIClinicalEngineerNum = rnd.NextInt( 10 )+1;
-//			iAngiographyClinicalEngineerNum = rnd.NextInt( 10 )+1;
-//			iFastClinicalEngineerNum = rnd.NextInt( 10 )+1;
+			iConsultationDoctorNum = rnd.NextInt( initparam.iGetConsultationRoomDoctorNum() )+1;
+			iConsultationNurseNum = rnd.NextInt( initparam.iGetConsultationRoomNurseNum() )+1;
+			iOperationDoctorNum = rnd.NextInt( initparam.iGetOperationRoomDoctorNum() )+1;
+			iOperationNurseNum = rnd.NextInt( initparam.iGetOperationRoomNurseNum() )+1;
+			iEmergencyDoctorNum = rnd.NextInt( initparam.iGetEmergencyRoomDoctorNum() )+1;
+			iEmergencyNurseNum = rnd.NextInt( initparam.iGetEmergencyRoomNurseNum() )+1;
+			iEmergencyClinicalEngineerNum = rnd.NextInt( initparam.iGetEmergencyRoomClinicalEngineerNum() )+1;
+			iObservationNurseNum = rnd.NextInt( initparam.iGetObservationRoomNurseNum() )+1;
+			iSevereInjuryObservationNurseNum = rnd.NextInt( initparam.iGetSevereInjuryObservationRoomNurseNum() )+1;
+			iIntensiveCareUnitDoctorNum = rnd.NextInt( initparam.iGetIntensiveCareUnitDoctorNum() )+1;
+			iIntensiveCareUnitNurseNum = rnd.NextInt( initparam.iGetIntensiveCareUnitNurseNum() )+1;
+			iHighCareUnitDoctorNum = rnd.NextInt( initparam.iGetHighCareUnitDoctorNum() )+1;
+			iHighCareUnitNurseNum = rnd.NextInt( initparam.iGetHighCareUnitNurseNum() )+1;
+			iGeneralWardDoctorNum = rnd.NextInt( initparam.iGetGeneralWardDoctorNum() )+1;;
+			iGeneralWardNurseNum = rnd.NextInt( initparam.iGetGeneralWardNurseNum() )+1;
+			iXRayClinicalEngineerNum = rnd.NextInt( initparam.iGetXRayRoomClinicalEngineerNum() )+1;
+			iCTClinicalEngineerNum = rnd.NextInt( initparam.iGetCTRoomClinicalEngineerNum() )+1;
+			iMRIClinicalEngineerNum = rnd.NextInt( initparam.iGetMRIRoomClinicalEngineerNum() )+1;
+			iAngiographyClinicalEngineerNum = rnd.NextInt( initparam.iGetAngiographyRoomClinicalEngineerNum() )+1;
+			iFastClinicalEngineerNum = rnd.NextInt( initparam.iGetFastRoomClinicalEngineerNum() )+1;
+		}
+		else
+		{
+			iConsultationDoctorNum = initparam.iGetConsultationRoomDoctorNum();
+			iConsultationNurseNum = initparam.iGetConsultationRoomNurseNum();
+			iOperationDoctorNum = initparam.iGetOperationRoomDoctorNum();
+			iOperationNurseNum = initparam.iGetOperationRoomNurseNum();
+			iEmergencyDoctorNum = initparam.iGetEmergencyRoomDoctorNum();
+			iEmergencyNurseNum = initparam.iGetEmergencyRoomNurseNum();
+			iEmergencyClinicalEngineerNum = initparam.iGetEmergencyRoomClinicalEngineerNum();
+			iObservationNurseNum = initparam.iGetObservationRoomNurseNum();
+			iSevereInjuryObservationNurseNum = initparam.iGetSevereInjuryObservationRoomNurseNum();
+			iIntensiveCareUnitDoctorNum = initparam.iGetIntensiveCareUnitDoctorNum();
+			iIntensiveCareUnitNurseNum = initparam.iGetIntensiveCareUnitNurseNum();
+			iHighCareUnitDoctorNum = initparam.iGetHighCareUnitDoctorNum();
+			iHighCareUnitNurseNum = initparam.iGetHighCareUnitNurseNum();
+			iGeneralWardDoctorNum = initparam.iGetGeneralWardDoctorNum();;
+			iGeneralWardNurseNum = initparam.iGetGeneralWardNurseNum();
+			iXRayClinicalEngineerNum = initparam.iGetXRayRoomClinicalEngineerNum();
+			iCTClinicalEngineerNum = initparam.iGetCTRoomClinicalEngineerNum();
+			iMRIClinicalEngineerNum = initparam.iGetMRIRoomClinicalEngineerNum();
+			iAngiographyClinicalEngineerNum = initparam.iGetAngiographyRoomClinicalEngineerNum();
+			iFastClinicalEngineerNum = initparam.iGetFastRoomClinicalEngineerNum();
 
-//			iConsultationDoctorNum = rnd.NextInt( 1 )+1;
-//			iConsultationNurseNum = rnd.NextInt( 1 )+1;
-//			iOperationDoctorNum = rnd.NextInt( 1 )+1;
-//			iOperationNurseNum = rnd.NextInt( 1 )+1;
-//			iEmergencyDoctorNum = rnd.NextInt( 1 )+1;
-//			iEmergencyNurseNum = rnd.NextInt( 1 )+1;
-//			iEmergencyClinicalEngineerNum = rnd.NextInt( 1 )+1;
-//			iObservationNurseNum = rnd.NextInt( 1 )+1;
-//			iSevereInjuryObservationNurseNum = rnd.NextInt( 1 )+1;
-//			iIntensiveCareUnitDoctorNum = rnd.NextInt( 1 )+1;
-//			iIntensiveCareUnitNurseNum = rnd.NextInt( 1 )+1;
-//			iHighCareUnitDoctorNum = rnd.NextInt( 1 )+1;
-//			iHighCareUnitNurseNum = rnd.NextInt( 1 )+1;
-//			iGeneralWardDoctorNum = rnd.NextInt( 1 )+1;
-//			iGeneralWardNurseNum = rnd.NextInt( 1 )+1;
-//			iXRayClinicalEngineerNum = rnd.NextInt( 1 )+1;
-//			iCTClinicalEngineerNum = rnd.NextInt( 1 )+1;
-//			iMRIClinicalEngineerNum = rnd.NextInt( 1 )+1;
-//			iAngiographyClinicalEngineerNum = rnd.NextInt( 1 )+1;
-//			iFastClinicalEngineerNum = rnd.NextInt( 1 )+1;
 			// 聖隷浜松病院用
-			iConsultationDoctorNum = 1;
-			iConsultationNurseNum = 2;
-			iOperationDoctorNum = 2;
-			iOperationNurseNum = 4;
-			iEmergencyDoctorNum = 2;
-			iEmergencyNurseNum = 6;
-			iEmergencyClinicalEngineerNum = 0;
-			iObservationNurseNum = 0;
-			iSevereInjuryObservationNurseNum = 0;
-			iIntensiveCareUnitDoctorNum = 2;
-			iIntensiveCareUnitNurseNum = 22;
-			iHighCareUnitDoctorNum = 2;
-			iHighCareUnitNurseNum = 8;
-			iGeneralWardDoctorNum = 1;
-			iGeneralWardNurseNum = 744;
-			iWaitingNurseNum = 8;
-			iXRayClinicalEngineerNum = 1;
-			iCTClinicalEngineerNum = 1;
-			iMRIClinicalEngineerNum = 1;
-			iAngiographyClinicalEngineerNum = 1;
-			iFastClinicalEngineerNum = 1;
+//			iConsultationDoctorNum = 1;
+//			iConsultationNurseNum = 2;
+//			iOperationDoctorNum = 2;
+//			iOperationNurseNum = 4;
+//			iEmergencyDoctorNum = 2;
+//			iEmergencyNurseNum = 6;
+//			iEmergencyClinicalEngineerNum = 0;
+//			iObservationNurseNum = 0;
+//			iSevereInjuryObservationNurseNum = 0;
+//			iIntensiveCareUnitDoctorNum = 2;
+//			iIntensiveCareUnitNurseNum = 22;
+//			iHighCareUnitDoctorNum = 2;
+//			iHighCareUnitNurseNum = 8;
+//			iGeneralWardDoctorNum = 1;
+//			iGeneralWardNurseNum = 744;
+//			iWaitingNurseNum = 8;
+//			iXRayClinicalEngineerNum = 1;
+//			iCTClinicalEngineerNum = 1;
+//			iMRIClinicalEngineerNum = 1;
+//			iAngiographyClinicalEngineerNum = 1;
+//			iFastClinicalEngineerNum = 1;
 		}
 	}
 
@@ -2052,6 +2211,20 @@ public class ERDepartment extends Agent
 				}
 			}
 		}
+		// 逆シミュレーションモードの場合
+		else
+		{
+			// 部屋数が0以下の場合はすべて0にして終了する。
+			if( this.iConsultationRoomNum <= 0 )
+			{
+				this.iConsultationRoomNum = 0;
+				iConsultationNurseNum = 0;
+				iConsultationDoctorNum = 0;
+				ArrayListConsultationRooms = new ArrayList<ERConsultationRoom>();
+				return ;
+			}
+		}
+
 
 		if( ArrayListConsultationRooms == null )
 		{
@@ -2373,6 +2546,20 @@ public class ERDepartment extends Agent
 				}
 			}
 		}
+		// 逆シミュレーションモードの場合
+		else
+		{
+			// 部屋数が0以下の場合はすべて0にして終了する。
+			if( this.iOperationRoomNum <= 0 )
+			{
+				this.iOperationRoomNum = 0;
+				iOperationNurseNum = 0;
+				iOperationDoctorNum = 0;
+				ArrayListOperationRooms = new ArrayList<EROperationRoom>();
+				return ;
+			}
+		}
+
 		alfNurseYearExperience			= new double[iOperationNurseNum];
 		alfNurseConExperience			= new double[iOperationNurseNum];
 		alfNurseExperienceRate1			= new double[iOperationNurseNum];
@@ -2792,6 +2979,21 @@ public class ERDepartment extends Agent
 				}
 			}
 		}
+		// 逆シミュレーションモードの場合
+		else
+		{
+			// 部屋数が0以下の場合はすべて0にして終了する。
+			if( this.iEmergencyRoomNum <= 0 )
+			{
+				this.iEmergencyRoomNum = 0;
+				iEmergencyNurseNum = 0;
+				iEmergencyDoctorNum = 0;
+				iEmergencyClinicalEngineerNum = 0;
+				ArrayListEmergencyRooms = new ArrayList<EREmergencyRoom>();
+				return ;
+			}
+		}
+
 		alfNurseYearExperience			= new double[iEmergencyNurseNum];
 		alfNurseConExperience			= new double[iEmergencyNurseNum];
 		alfNurseExperienceRate1			= new double[iEmergencyNurseNum];
@@ -3292,6 +3494,18 @@ public class ERDepartment extends Agent
 				}
 			}
 		}
+		// 逆シミュレーションモードの場合
+		else
+		{
+			// 部屋数が0以下の場合はすべて0にして終了する。
+			if( this.iObservationRoomNum <= 0 )
+			{
+				this.iObservationRoomNum = 0;
+				iObservationNurseNum = 0;
+				ArrayListObservationRooms = new ArrayList<ERObservationRoom>();
+				return ;
+			}
+		}
 		alfNurseYearExperience			= new double[iObservationNurseNum];
 		alfNurseConExperience			= new double[iObservationNurseNum];
 		alfNurseExperienceRate1			= new double[iObservationNurseNum];
@@ -3557,6 +3771,17 @@ public class ERDepartment extends Agent
 
 					}
 				}
+			}
+		}
+		// 逆シミュレーションモードの場合
+		else
+		{
+			// 部屋数が0以下の場合はすべて0にして終了する。
+			if( this.iSevereInjuryObservationNurseNum <= 0 )
+			{
+				iSevereInjuryObservationNurseNum = 0;
+				ArrayListSevereInjuryObservationRooms = new ArrayList<ERSevereInjuryObservationRoom>();
+				return ;
 			}
 		}
 		alfNurseYearExperience			= new double[iSevereInjuryObservationNurseNum];
@@ -3849,6 +4074,19 @@ public class ERDepartment extends Agent
 //						iIntensiveCareUnitClinicalEngineerNum++;
 					}
 				}
+			}
+		}
+		// 逆シミュレーションモードの場合
+		else
+		{
+			// 部屋数が0以下の場合はすべて0にして終了する。
+			if( this.iIntensiveCareUnitRoomNum <= 0 )
+			{
+				this.iIntensiveCareUnitRoomNum = 0;
+				this.iIntensiveCareUnitDoctorNum = 0;
+				this.iIntensiveCareUnitNurseNum = 0;
+				ArrayListIntensiveCareUnitRooms = new ArrayList<ERIntensiveCareUnitRoom>();
+				return ;
 			}
 		}
 		alfNurseYearExperience			= new double[iIntensiveCareUnitNurseNum];
@@ -4251,6 +4489,19 @@ public class ERDepartment extends Agent
 //						iHighCareUnitClinicalEngineerNum++;
 					}
 				}
+			}
+		}
+		// 逆シミュレーションモードの場合
+		else
+		{
+			// 部屋数が0以下の場合はすべて0にして終了する。
+			if( this.iHighCareUnitRoomNum <= 0 )
+			{
+				this.iHighCareUnitRoomNum = 0;
+				this.iHighCareUnitDoctorNum = 0;
+				this.iHighCareUnitNurseNum = 0;
+				ArrayListHighCareUnitRooms = new ArrayList<ERHighCareUnitRoom>();
+				return ;
 			}
 		}
 		alfNurseYearExperience			= new double[iHighCareUnitNurseNum];
@@ -4662,6 +4913,19 @@ public class ERDepartment extends Agent
 				}
 			}
 		}
+		// 逆シミュレーションモードの場合
+		else
+		{
+			// 部屋数が0以下の場合はすべて0にして終了する。
+			if( this.iGeneralWardRoomNum <= 0 )
+			{
+				this.iGeneralWardRoomNum = 0;
+				this.iGeneralWardDoctorNum = 0;
+				this.iGeneralWardNurseNum = 0;
+				ArrayListGeneralWardRooms = new ArrayList<ERGeneralWardRoom>();
+				return ;
+			}
+		}
 
 		alfNurseYearExperience			= new double[iGeneralWardNurseNum];
 		alfNurseConExperience			= new double[iGeneralWardNurseNum];
@@ -4979,6 +5243,19 @@ public class ERDepartment extends Agent
 				}
 			}
 		}
+		// 逆シミュレーションモードの場合
+		else
+		{
+			// 部屋数が0以下の場合はすべて0にして終了する。
+			if( this.iXRayRoomNum <= 0 )
+			{
+				this.iXRayRoomNum = 0;
+				this.iXRayClinicalEngineerNum = 0;
+				ArrayListExaminationXRayRooms = new ArrayList<ERExaminationXRayRoom>();
+				return ;
+			}
+		}
+
 		alfClinicalEngineerYearExperience			= new double[iXRayClinicalEngineerNum];
 		alfClinicalEngineerConExperience			= new double[iXRayClinicalEngineerNum];
 		alfClinicalEngineerExperienceRate1			= new double[iXRayClinicalEngineerNum];
@@ -5202,6 +5479,18 @@ public class ERDepartment extends Agent
 						iCTClinicalEngineerNum++;
 					}
 				}
+			}
+		}
+		// 逆シミュレーションモードの場合
+		else
+		{
+			// 部屋数が0以下の場合はすべて0にして終了する。
+			if( this.iCTRoomNum <= 0 )
+			{
+				this.iCTRoomNum = 0;
+				this.iCTClinicalEngineerNum = 0;
+				ArrayListExaminationCTRooms = new ArrayList<ERExaminationCTRoom>();
+				return ;
 			}
 		}
 
@@ -5430,6 +5719,19 @@ public class ERDepartment extends Agent
 				}
 			}
 		}
+		// 逆シミュレーションモードの場合
+		else
+		{
+			// 部屋数が0以下の場合はすべて0にして終了する。
+			if( this.iMRIRoomNum <= 0 )
+			{
+				this.iMRIRoomNum = 0;
+				this.iMRIClinicalEngineerNum = 0;
+				ArrayListExaminationMRIRooms = new ArrayList<ERExaminationMRIRoom>();
+				return ;
+			}
+		}
+
 
 		alfClinicalEngineerYearExperience			= new double[iMRIClinicalEngineerNum];
 		alfClinicalEngineerConExperience			= new double[iMRIClinicalEngineerNum];
@@ -5654,6 +5956,18 @@ public class ERDepartment extends Agent
 						iAngiographyClinicalEngineerNum++;
 					}
 				}
+			}
+		}
+		// 逆シミュレーションモードの場合
+		else
+		{
+			// 部屋数が0以下の場合はすべて0にして終了する。
+			if( this.iAngiographyRoomNum <= 0 )
+			{
+				this.iAngiographyRoomNum = 0;
+				this.iAngiographyClinicalEngineerNum = 0;
+				ArrayListExaminationAngiographyRooms = new ArrayList<ERExaminationAngiographyRoom>();
+				return ;
 			}
 		}
 
@@ -5882,6 +6196,18 @@ public class ERDepartment extends Agent
 				}
 			}
 		}
+		// 逆シミュレーションモードの場合
+		else
+		{
+			// 部屋数が0以下の場合はすべて0にして終了する。
+			if( this.iFastRoomNum <= 0 )
+			{
+				this.iFastRoomNum = 0;
+				this.iFastClinicalEngineerNum = 0;
+				ArrayListExaminationFastRooms = new ArrayList<ERExaminationFastRoom>();
+				return ;
+			}
+		}
 
 		alfClinicalEngineerYearExperience			= new double[iFastClinicalEngineerNum];
 		alfClinicalEngineerConExperience			= new double[iFastClinicalEngineerNum];
@@ -6103,6 +6429,18 @@ public class ERDepartment extends Agent
 				}
 			}
 		}
+		// 逆シミュレーションモードの場合
+		else
+		{
+			// 部屋数が0以下の場合はすべて0にして終了する。
+			if( this.iWaitingRoomNum <= 0 )
+			{
+				this.iWaitingRoomNum = 0;
+				this.iWaitingNurseNum = 0;
+				erWaitingRoom = new ERWaitingRoom();
+				return ;
+			}
+		}
 
 		alfNurseYearExperience			= new double[iWaitingNurseNum];
 		alfNurseConExperience			= new double[iWaitingNurseNum];
@@ -6278,6 +6616,29 @@ public class ERDepartment extends Agent
 			erWaitingRoom.erGetNurseAgent(j).vSetSimulationEndTime( lfEndTime );
 		}
 		erWaitingRoom.vCreatePatientAgents();
+	}
+
+
+	/**
+	 * <PRE>
+	 *   病院外の状態を設定します。
+	 * </PRE>
+	 * @param iOutsideNum					病院外エージェント数
+	 * @param lfArrivalPatientPepoleData	来院患者数の設定
+	 * @param engine						FUSEエンジン
+	 * @param sfmtRandom					メルセンヌツイスターのインスタンス
+	 * @throws IOException					java標準のIO例外クラス
+	 * @since 2015/08/05
+	 */
+	private void vSetOutside(int iOutsideNum, double lfArrivalPatientPepoleData, SimulationEngine engine, utility.sfmt.Rand sfmtRandom ) throws IOException
+	{
+		if( erOutside == null )
+		{
+			erOutside = new EROutside();
+		}
+		erOutside.vSetArrivalPatientPepole( lfArrivalPatientPepoleData );
+		erOutside.vSetSimulationEngine( engine );
+		erOutside.vSetRandom( sfmtRandom );
 	}
 
 	/**
@@ -6707,6 +7068,18 @@ public class ERDepartment extends Agent
 //				ArrayListOtherRooms.get(i).setPosition( piX[i] + piWidth[i]/2, piY[i]+piHeight[i]/2, 0);
 //			}
 		}
+		else if( iLoc == -1 )
+		{
+			i = 0;
+			// 病院外の中心座標を設定します。
+			erOutside.vSetX( piX[i] );
+			erOutside.vSetY( piY[i] );
+			erOutside.vSetZ( piZ[i] );
+			erOutside.vSetWidth( piWidth[i] );
+			erOutside.vSetHeight( piHeight[i] );
+			erOutside.vSetF( piF[i] );
+			erOutside.setPosition( piX[i] + piWidth[i]/2, piY[i]+piHeight[i]/2, 0);
+		}
 		else
 		{
 
@@ -7125,6 +7498,15 @@ public class ERDepartment extends Agent
 				}
 				aiLoc[15]++;
 			}
+			// 外の場合、患者をそこに設定します。
+			else if( cCurNode.iGetLocation() == -1 )
+			{
+				// 外から患者が来院するものとして、患者を所定のノードに設定します。
+				erOutside.setPosition( cCurNode.getPosition() );
+				erOutside.vSetTriageNode( cCurNode );
+				erOutside.vSetERTriageNodeManager( cErNodeManager );
+				erOutside.vSetAffiliationAgentPosition();
+			}
 		}
 	}
 
@@ -7260,6 +7642,12 @@ public class ERDepartment extends Agent
 			lfZ = ArrayListExaminationFastRooms.get(i).getZ();
 			ArrayListERNode.add( new ERTriageNode( lfX, lfY, lfZ, 14, 2 ) );
 		}
+		// 病院外の中心座標を設定します。
+		lfX = erOutside.getX();
+		lfY = erOutside.getY();
+		lfZ = erOutside.getZ();
+		ArrayListERNode.add( new ERTriageNode( lfX, lfY, lfZ, -1, 1 ) );
+
 	// 各部屋間を移動する際に必要なノードを作成します。
 		for( ERTriageNode cCurNode:ArrayListERNode )
 		{
@@ -7282,6 +7670,30 @@ public class ERDepartment extends Agent
 			lfZ = cCurNode.getPosition().getZ();
 			cMinNode.getPosition().setPosition( (lfX1+lfX2)/2, lfY, lfZ );
 			cMinNode.vSetLocation( 0 );
+		}
+	}
+
+	/**
+	 * <PRE>
+	 *   患者エージェントの座標を設定します。
+	 * </PRE>
+	 */
+	public void vSetAffiliationAgentPosition()
+	{
+		// TODO 自動生成されたメソッド・スタブ
+		int i;
+
+		double lfX = 0.0;
+		double lfY = 0.0;
+		double lfZ = 0.0;
+
+		for( i = 0;i < ArrayListPatientAgents.size(); i++ )
+		{
+			// 患者エージェントの位置を設定します。
+			lfX = this.getPosition().getX()+(2*rnd.NextUnif()-1);
+			lfY = this.getPosition().getY()+(2*rnd.NextUnif()-1);
+			lfZ = this.getPosition().getZ()+(2*rnd.NextUnif()-1);
+			ArrayListPatientAgents.get(i).setPosition( lfX, lfY, lfZ );
 		}
 	}
 
@@ -10007,6 +10419,43 @@ public class ERDepartment extends Agent
 		return iFinishAgentFlag;
 	}
 
+	/**
+	 * <PRE>
+	 *    患者を生成する方式を変更します。
+	 *    0：初期化時にシーケンシャルに生成します。
+	 *    1：別スレッドからリアルタイムに生成します。
+	 * </PRE>
+	 * @param iGenPatientMode 患者生成モード
+	 */
+	public void vSetGenerationPatientMode(int iGenPatientMode )
+	{
+		// TODO 自動生成されたメソッド・スタブ
+		iGenerationPatientMode = iGenPatientMode;
+	}
+
+	/**
+	 * <PRE>
+	 *    TRISim用にカスタマイズしたFuseNodeLink用を返す関数
+	 * </PRE>
+	 * @returnm ノードマネージャを返す
+	 */
+	public ERTriageNodeManager getERTriageNodeManager()
+	{
+		return cErNodeManager;
+	}
+
+	/**
+	 * <PRE>
+	 *    初期設定ファイル用クラスのインスタンスを取得します。
+	 * </PRE>
+	 * @returnm 初期設定ファイルクラスインスタンス
+	 */
+	public InitSimParam cGetInitParam()
+	{
+		return initSimParam;
+	}
+
+
 	@Override
 	public void action(long timeStep)
 	{
@@ -10020,6 +10469,9 @@ public class ERDepartment extends Agent
 		try
 		{
 			lfSecond = timeStep / 1000.0;
+
+			// 生成した患者が出てきた場合、患者を待合室へ移動します。
+			erOutside.iImplementOutside(erWaitingRoom);
 
 			// 患者を到達分布にしたがって生成します。(午前8時30分を0秒とする。)
 //			erWaitingRoom.vArrivalPatient( lfSecond, erEngine );
@@ -10294,11 +10746,5 @@ public class ERDepartment extends Agent
 //				System.out.println( str );
 //			}
 //		}
-	}
-
-	public void vSetGenerationPatientMode(int iGenPatientMode )
-	{
-		// TODO 自動生成されたメソッド・スタブ
-		iGenerationPatientMode = iGenPatientMode;
 	}
 }

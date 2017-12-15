@@ -14,6 +14,27 @@ import utility.node.ERTriageNode;
 import utility.node.ERTriageNodeManager;
 import utility.sfmt.Rand;
 
+/**
+ * 病院の重症観察室を表すクラスです。
+ * このプログラムではこのクラスを含めすべての部屋をエージェントとして定義しています。<br>
+ * そのようにすることにより、いろいろと都合がよいためそのようにしております。<br>
+ * 重症観察室では初療室が満員で処置できていない患者を受け入れて定期的にトリアージを実施する病室です。<br>
+ * 初療室が空き次第、優先度に応じて患者を初療室へ移動させます。<br>
+ * 次に行く場所は以下の通りです。<br>
+ * １初療室<br>
+ *
+ * 使用方法は次の通りです。<br>
+ * 初期化　　　　　　vInitialize　<br>
+ * エージェント作成　vCreateNurseAgents<br>
+ * 設定　　　　　　　vSetNurseAgentParameter<br>
+ * 　　　　　　　　　vSetReadWriteFileForAgents<br>
+ * 定期観察　　　　　vImplementSevereInjuryObservationRoom<br>
+ * 実行　　　　　　　action　<br>
+ * 終了処理　　　　　　vTerminate　<br>
+ *
+ * @author kobayashi
+ *
+ */
 public class ERSevereInjuryObservationRoom extends Agent{
 
 	private static final long serialVersionUID = 7755016215439137014L;
@@ -721,8 +742,11 @@ public class ERSevereInjuryObservationRoom extends Agent{
 					erNurseAgent.vSetAttending( 0 );
 
 					// 対応を受けた患者エージェントを削除します。
-					vRemovePatientAgent( erPAgent, ArrayListNursePatientLoc.get(iLoc) );
-					ArrayListNursePatientLoc.set( iLoc, -1 );
+					if( iLoc > -2 )
+					{
+						vRemovePatientAgent( erPAgent, ArrayListNursePatientLoc.get(iLoc) );
+						ArrayListNursePatientLoc.set( iLoc, -1 );
+					}
 
 					// 初療室で担当する医師エージェントを設定します。(初療室対応患者が抜け落ちる現象の修正)
 					ArrayListEmergencyRooms.get(i).cGetSurgeonDoctorAgent().vSetSurgeon(1);
@@ -817,7 +841,7 @@ public class ERSevereInjuryObservationRoom extends Agent{
 		for( i = 0;i < ArrayListNurseAgents.size(); i++ )
 		{
 			// 所属看護師が全員対応中の場合、空いていないとします。
-			if( ArrayListNurseAgents.get(i).iGetAttending() == 1 )
+			if( ArrayListNurseAgents.get(i).iGetAttending() == 1 || ArrayListNursePatientLoc.get(i) > -1 )
 			{
 				iCount++;
 			}
@@ -1717,9 +1741,11 @@ public class ERSevereInjuryObservationRoom extends Agent{
 				erTempNurseAgent.vSetAttending( 0 );
 
 				// 対応を受けた患者エージェントを削除します。
-				erWaitingRoom.vRemovePatientAgent( erTempAgent, iTargetPatientLoc );
-				erWaitingRoom.vSetArrayListNursePatientLoc( iTargetNursePatientLoc, -1 );
-
+				if( iLoc > -2 )
+				{
+					erWaitingRoom.vRemovePatientAgent( erTempAgent, iTargetPatientLoc );
+					erWaitingRoom.vSetArrayListNursePatientLoc( iTargetNursePatientLoc, -1 );
+				}
 				// 初療室で担当する医師エージェントを設定します。(初療室対応患者が抜け落ちる現象の修正)
 				ArrayListEmergencyRooms.get(i).cGetSurgeonDoctorAgent().vSetSurgeon(1);
 				ArrayListEmergencyRooms.get(i).cGetSurgeonDoctorAgent().vSetAttending(1);
@@ -2037,18 +2063,27 @@ public class ERSevereInjuryObservationRoom extends Agent{
 	 * </PRE>
 	 * @return	診重症観察室のノード
 	 */
-	public ERTriageNode erGetTriageNode()
+	public synchronized ERTriageNode erGetTriageNode()
 	{
 		int i;
 		ERTriageNode erNode = null;
 		// 割り当てられていない看護師エージェントを調べて、そこに移動するように設定します。
-		for( i = 0;i < ArrayListNursePatientLoc.size(); i++ )
+		synchronized( csSevereInjuryObservationRoomCriticalSection )
 		{
-			if( ArrayListNursePatientLoc.get(i) == -1 )
+			for( i = 0;i < ArrayListNursePatientLoc.size(); i++ )
 			{
-				erNode = ArrayListNurseAgents.get(i).erGetTriageNode();
-				break;
+				if( ArrayListNursePatientLoc.get(i) == -1 )
+				{
+					erNode = ArrayListNurseAgents.get(i).erGetTriageNode();
+					break;
+				}
 			}
+//			// デバック用
+//			for( i = 0;i < ArrayListNursePatientLoc.size(); i++ )
+//			{
+//				System.out.print( ArrayListNursePatientLoc.get(i) +"," );
+//			}
+//			System.out.println("");
 		}
 		return erNode;
 //		return erTriageNode;
@@ -2208,17 +2243,21 @@ public class ERSevereInjuryObservationRoom extends Agent{
 	 * @author kobayashi
 	 * @since 2016/07/27
 	 */
-	public int iGetTriageCategoryPatientNum( int iCategory )
+	public synchronized int iGetTriageCategoryPatientNum( int iCategory )
 	{
 		int i;
 		int iCategoryPatientNum = 0;
-		if( ArrayListPatientAgents != null )
+
+		synchronized( csSevereInjuryObservationRoomCriticalSection )
 		{
-			for( i = 0;i < ArrayListPatientAgents.size(); i++ )
+			if( ArrayListPatientAgents != null )
 			{
-				if( iCategory == (ArrayListPatientAgents.get(i).iGetEmergencyLevel()-1) )
+				for( i = 0;i < ArrayListPatientAgents.size(); i++ )
 				{
-					iCategoryPatientNum++;
+					if( iCategory == (ArrayListPatientAgents.get(i).iGetEmergencyLevel()-1) )
+					{
+						iCategoryPatientNum++;
+					}
 				}
 			}
 		}
@@ -2246,19 +2285,23 @@ public class ERSevereInjuryObservationRoom extends Agent{
 	 * </PRE>
 	 * @return		最も長く病院に在院する患者の在院時間
 	 */
-	public double lfGetLongestStayPatient()
+	public synchronized double lfGetLongestStayPatient()
 	{
 		int i;
 		double lfLongestStayTime = -Double.MAX_VALUE;
-		if( ArrayListPatientAgents != null )
+
+		synchronized( csSevereInjuryObservationRoomCriticalSection )
 		{
-			for( i = 0;i < ArrayListPatientAgents.size(); i++ )
+			if( ArrayListPatientAgents != null )
 			{
-				if( ArrayListPatientAgents.get(i).lfGetTimeCourse() > 0.0 )
+				for( i = 0;i < ArrayListPatientAgents.size(); i++ )
 				{
-					if( lfLongestStayTime < ArrayListPatientAgents.get(i).lfGetTimeCourse() )
+					if( ArrayListPatientAgents.get(i).lfGetTimeCourse() > 0.0 )
 					{
-						lfLongestStayTime = ArrayListPatientAgents.get(i).lfGetTimeCourse();
+						if( lfLongestStayTime < ArrayListPatientAgents.get(i).lfGetTimeCourse() )
+						{
+							lfLongestStayTime = ArrayListPatientAgents.get(i).lfGetTimeCourse();
+						}
 					}
 				}
 			}
@@ -2272,27 +2315,31 @@ public class ERSevereInjuryObservationRoom extends Agent{
 	 *    NEDOCS算出に使用するパラメータです。
 	 * </PRE>
 	 */
-	public void vLastBedTime()
+	public synchronized void vLastBedTime()
 	{
 		int i;
 		double lfLongestTime = -1000000000.0;
 		double lfLastTime = -100000000000.0;
-		if( ArrayListPatientAgents != null )
+
+		synchronized( csSevereInjuryObservationRoomCriticalSection )
 		{
-			for( i = 0;i < ArrayListPatientAgents.size(); i++ )
+			if( ArrayListPatientAgents != null )
 			{
-				if( ArrayListPatientAgents.get(i).lfGetTimeCourse() > 0.0 )
+				for( i = 0;i < ArrayListPatientAgents.size(); i++ )
 				{
-					if( lfLongestTime < ArrayListPatientAgents.get(i).lfGetTotalTime() && ArrayListPatientAgents.get(i).lfGetHospitalStayTime() > 0.0 )
+					if( ArrayListPatientAgents.get(i).lfGetTimeCourse() > 0.0 )
 					{
-						lfLongestTime = ArrayListPatientAgents.get(i).lfGetTotalTime();
-						lfLastTime = ArrayListPatientAgents.get(i).lfGetTimeCourse()-ArrayListPatientAgents.get(i).lfGetHospitalStayTime();
-					}
-					// 入院していない場合は0とします。
-					if( ArrayListPatientAgents.get(i).lfGetHospitalStayTime() == 0.0 )
-					{
-						lfLastTime = 0.0;
-						lfLongestTime = 0.0;
+						if( lfLongestTime < ArrayListPatientAgents.get(i).lfGetTotalTime() && ArrayListPatientAgents.get(i).lfGetHospitalStayTime() > 0.0 )
+						{
+							lfLongestTime = ArrayListPatientAgents.get(i).lfGetTotalTime();
+							lfLastTime = ArrayListPatientAgents.get(i).lfGetTimeCourse()-ArrayListPatientAgents.get(i).lfGetHospitalStayTime();
+						}
+						// 入院していない場合は0とします。
+						if( ArrayListPatientAgents.get(i).lfGetHospitalStayTime() == 0.0 )
+						{
+							lfLastTime = 0.0;
+							lfLongestTime = 0.0;
+						}
 					}
 				}
 			}

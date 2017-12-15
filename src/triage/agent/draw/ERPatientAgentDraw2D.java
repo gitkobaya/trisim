@@ -41,19 +41,22 @@ public class ERPatientAgentDraw2D  extends ObjectDrawer2D
 
 		if( erPatientAgent.lfGetTimeCourse() > 0.0 )
 		{
+			// 患者エージェントが亡くなられている場合で、ループ終了前に描画に繰るタイミングがあり、
+			// その場合は描画しません。
+			if( erPatientAgent.iGetSurvivalFlag() == 0 ) return;
+
 			// 患者の現在位置を取得します。
 			lfCurX = erPatientAgent.getPosition().getX();
 			lfCurY = erPatientAgent.getPosition().getY();
 			lfCurZ = erPatientAgent.getPosition().getZ();
-
 			// スクリーンの拡大幅を取得し、それに合わせて幅高さを設定します。
 			lfDots = panel.getDotsByMeter();
 
 			// ○表示をします。
 			iX=(int)panel.getScreenX( lfCurX );
 			iY=(int)panel.getScreenY( lfCurY );
-			iWidth = (int)(iPatientAgentWidth*lfDots);
-			iHeight = (int)(iPatientAgentHeight*lfDots);
+			iWidth = (int)(erPatientAgent.lfGetWidth()*lfDots);
+			iHeight = (int)(erPatientAgent.lfGetHeight()*lfDots);
 
 			// 楕円を作成します。
 //			g.drawOval(iX, iY, iPatientAgentWidth, iPatientAgentHeight );

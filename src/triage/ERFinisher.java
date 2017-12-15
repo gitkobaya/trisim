@@ -1,4 +1,13 @@
-package main;
+/**
+ * @file ERFinisher.java
+ * @brief 終了条件を定義しています。
+ *        FUSEの機構である終了条件を定義したクラスです。<br>
+ *        これを利用してFUSEを停止させます。
+ * @date  2017/08/24
+ * @author kobayashi
+ */
+
+package triage;
 import java.util.ArrayList;
 
 import triage.room.ERConsultationRoom;

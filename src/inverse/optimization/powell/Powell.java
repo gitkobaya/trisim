@@ -2,6 +2,15 @@ package inverse.optimization.powell;
 
 import inverse.optimization.objectivefunction.ObjectiveFunctionInterface;
 
+/**
+ *   最適化計算アルゴリズムの一つであるPowellの方法を実行するアルゴリズム。
+ *   ここで実装したものはニューメリカルレシピインシーに記載されている変形Powell法を実装。
+ *   具体的にはPowell ABC法を実装するために作成したが、論文と結果が合わず実装のみ。
+ *   これを単独で使用することも可。
+ *
+ * @author kobayashi
+ *
+ */
 public class Powell
 {
 	private	double[] plfXt;

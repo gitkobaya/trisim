@@ -52,6 +52,14 @@ public class ERWaitingRoom extends Agent
 	private double lfLastBedTime;
 	private double lfLongestTotalTime;
 
+	private int iMonthCount = 0;								// 患者出現分布用１ヶ月換算
+	private int iDayCount = 0;									// 患者出現分布用１日換算
+	private int iYearCount = 0;									// 患者出現分布用1年換算
+
+	private double lfOneWeekArrivalPatientPepole = 1.0;				// 患者の1日単位での分布
+	private double lfOneMonthArrivalPatientPepole = 1.0;			// 患者の1ヶ月単位での分布
+	private double lfOneYearArrivalPatientPepole = 1.0;				// 患者の1年単位での分布
+
 	public ERWaitingRoom()
 	{
 		vInitialize();
@@ -72,6 +80,11 @@ public class ERWaitingRoom extends Agent
 //		rnd = new Sfmt( (int)seed );
 
 		iInverseSimFlag = 0;
+
+		iMonthCount = 0;								// 患者出現分布用１ヶ月換算
+		iDayCount = 0;									// 患者出現分布用１日換算
+		iYearCount = 0;									// 患者出現分布用1年換算
+
 	}
 
 	public void vInitialize( int iNurseAgentNumData )
@@ -564,7 +577,8 @@ public class ERWaitingRoom extends Agent
 	 *    通常は独歩来院用発生分布、救急車来院用発生分布です。
 	 *    災害時は災害時用の発生分布を使用します。
 	 * </PRE>
-	 * @param lfTime			経過時間[秒]
+	 * @param lfTime			経過時間[時間]
+	 * @param lfStepTime		時間間隔[時間]
 	 * @param engine			シミュレーションエンジン
 	 * @param iRandomMode		乱数モード
 	 * @param iInverseSimMode	逆シミュレーションモード
@@ -575,14 +589,48 @@ public class ERWaitingRoom extends Agent
 	 * @author kobayashi
 	 * @since 2015/08/07
 	 */
-	public void vArrivalPatient( double lfTime, SimulationEngine engine, int iRandomMode, int iInverseSimMode, int iFileWriteMode, int iDisasterFlag, InitSimParam initSimParam ) throws IOException
+	public void vArrivalPatient( double lfTime, double lfStepTime, SimulationEngine engine, int iRandomMode, int iInverseSimMode, int iFileWriteMode, int iDisasterFlag, InitSimParam initSimParam ) throws IOException
 	{
 		double lfProb1 = 0.0;
 		double lfProb2 = 0.0;
 		double lfRand1,lfRand2;
 		double lfX,lfY,lfZ;
+		double lfOneDay = 24.0;
+		double lfPrevOneDay = 24.0;
+		double lfMonth = 24.0*31.0;
+		double lfPrevOneMonth = 24.0*31.0;
+		double lfYear = 365.0*24.0;
+		double lfPrevOneYear = 24.0*365.0;
 		if( iDisasterFlag == 0 )
 		{
+			// 1年単位での分布を計算します。
+			if( (lfTime % lfYear) < lfStepTime )
+			{
+				vCalcArrivalDensityWalkOneYear( (double)iYearCount );
+				vCalcArrivalDensityAmbulanceOneYear( (double)iYearCount );
+				// 1ヶ月終了したら0に戻す。
+				if( iYearCount == 365 ) iYearCount = 0;
+				iYearCount++;
+			}
+			// 1ヶ月単位での分布を計算します。
+			if( (lfTime % lfMonth) < lfStepTime )
+			{
+				vCalcArrivalDensityWalkOneMonth( (double)iMonthCount );
+				vCalcArrivalDensityAmbulanceOneMonth( (double)iMonthCount );
+				// 1ヶ月終了したら0に戻す。
+				if( iMonthCount == 31 ) iMonthCount = 0;
+				iMonthCount++;
+			}
+			// １日単位の分布を計算します。
+			if( (lfTime % lfOneDay) < lfStepTime )
+			{
+				vCalcArrivalDensityWalkOneWeek( (double)iDayCount );
+				vCalcArrivalDensityAmbulanceOneWeek( (double)iDayCount );
+				// 1週間経過したら終了したら0に戻す。
+				if( iDayCount == 7 ) iDayCount = 0;
+				iDayCount++;
+			}
+			// 1秒単位の分布の計算をします。
 			lfProb1 = lfCalcArrivalDensityWalk( lfTime );
 			lfProb2 = lfCalcArrivalDensityAmbulance( lfTime );
 			lfRand1 = rnd.NextUnif();
@@ -590,6 +638,24 @@ public class ERWaitingRoom extends Agent
 		}
 		else
 		{
+			// 1ヶ月単位での分布を計算します。
+			if( (lfTime % lfMonth) < lfStepTime )
+			{
+				vCalcArrivalDensityDisasterOneMonth( (double)iMonthCount );
+				// 1ヶ月終了したら0に戻す。
+				if( iMonthCount == 31 ) iMonthCount = 0;
+				iMonthCount++;
+			}
+			// １日単位の分布を計算します。
+			if( (lfTime % lfOneDay) < lfStepTime )
+			{
+				vCalcArrivalDensityDisasterOneWeek( (double)iDayCount );
+				// 1週間経過したら終了したら0に戻す。
+				if( iDayCount == 7 ) iDayCount = 0;
+				iDayCount++;
+			}
+			lfPrevOneDay = lfTime % lfOneDay;
+			// 1秒単位の分布の計算をします。
 			lfProb1 = lfCalcArrivalDensityDisaster( lfTime );
 			lfRand1 = rnd.NextUnif();
 			lfRand2 = rnd.NextUnif();
@@ -3333,9 +3399,11 @@ public class ERWaitingRoom extends Agent
 				erTempNurseAgent.vSetAttending( 0 );
 
 				// 対応を受けた患者エージェントを削除します。
-				ArrayListObservationRooms.get( iTargetRoomLoc ).vRemovePatientAgent( erTempAgent, iTargetPatientLoc );
-				ArrayListObservationRooms.get( iTargetRoomLoc ).vSetArrayListNursePatientLoc( iTargetNursePatientLoc, -1 );
-
+				if( iLoc > -2 )
+				{
+					ArrayListObservationRooms.get( iTargetRoomLoc ).vRemovePatientAgent( erTempAgent, iTargetPatientLoc );
+					ArrayListObservationRooms.get( iTargetRoomLoc ).vSetArrayListNursePatientLoc( iTargetNursePatientLoc, -1 );
+				}
 				cWaitingRoomLog.info(erTempAgent.getId() + "," + "初療室へ移動準備終了" + "," + "観察室");
 				if( iInverseSimFlag == 1 )
 				{
@@ -4020,11 +4088,74 @@ public class ERWaitingRoom extends Agent
 		double lfS		= 4;
 		double lfExp	= 0.0;
 
-		if( lfTime > 24.0 )	lfTime = 0.0;
+		if( lfTime >= 24.0 )	lfTime = 0.0;
 
 		lfExp = Math.exp( -(lfTime-lfMu)/lfS );
 		lfProb = lfExp/(lfS*(1.0+lfExp)*(1.0+lfExp));
-		return lfProb/lfArrivalPatientPepole;
+		return lfProb/lfArrivalPatientPepole*lfOneWeekArrivalPatientPepole*lfOneMonthArrivalPatientPepole*lfOneYearArrivalPatientPepole;
+	}
+
+	/**
+	 * <PRE>
+	 *    独歩で外来した患者の到達分布を算出します。(1日単位)
+	 *    出展元
+	 * </PRE>
+	 * @param lfTime 経過時間[単位は日]
+	 */
+	private void vCalcArrivalDensityWalkOneWeek( double lfTime )
+	{
+		double lfProb	= 0.0;
+		double lfMu		= 11.75;
+		double lfS		= 4;
+		double lfExp	= 0.0;
+		double lfOneWeek = 7.0;
+
+		if( lfTime >= 7.0 )	lfTime = lfTime % lfOneWeek;
+
+		lfOneWeekArrivalPatientPepole = 1.0;
+	}
+
+	/**
+	 * <PRE>
+	 *    独歩で外来した患者の到達分布を算出します。(1ヶ月単位)
+	 *    出展元
+	 * </PRE>
+	 * @param lfTime 経過時間[単位は日]
+	 */
+	private void vCalcArrivalDensityWalkOneMonth( double lfTime )
+	{
+		double lfProb	= 0.0;
+		double lfMu		= 11.75;
+		double lfS		= 4;
+		double lfExp	= 0.0;
+		double lfOneMonth = 31.0;
+
+		if( lfTime >= 31.0 )	lfTime = lfTime % lfOneMonth;
+
+		lfOneMonthArrivalPatientPepole = 1;
+
+	}
+
+	/**
+	 * <PRE>
+	 *    独歩で外来した患者の到達分布を算出します。(年間単位)
+	 *    exp(-(t-μ)/s)/(s*(1+exp(-(t-μ)/s))*(1+exp(-(t-μ)/s)))
+	 *    μ = 11.75, s = 4
+	 *    出展元、聖隷浜松病院のデータを基に推測
+	 * </PRE>
+	 * @param lfTime 経過時間[単位は日]
+	 */
+	private void vCalcArrivalDensityWalkOneYear( double lfTime )
+	{
+		double lfProb	= 0.0;
+		double lfMu		= 11.75;
+		double lfS		= 4;
+		double lfExp	= 0.0;
+		double lfOneYear = 365.0;
+
+		if( lfTime >= 365.0 )	lfTime = lfTime % lfOneYear;
+
+		lfOneYearArrivalPatientPepole = 1.0;
 	}
 
 	/**
@@ -4048,15 +4179,79 @@ public class ERWaitingRoom extends Agent
 
 		lfExp = Math.exp( -(lfTime-lfMu)/lfS );
 		lfProb = lfExp/(lfS*(1.0+lfExp)*(1.0+lfExp));
-		return lfProb/lfArrivalPatientPepole;
+		return lfProb/lfArrivalPatientPepole*lfOneWeekArrivalPatientPepole*lfOneMonthArrivalPatientPepole*lfOneYearArrivalPatientPepole;
 	}
 
 	/**
 	 * <PRE>
-	 *    災害発生時に外来した患者の到達分布を算出します。
-	 *    exp(-(t-μ)/s)/(s*(1+exp(-(t-μ)/s))*(1+exp(-(t-μ)/s)))
+	 *    救急車搬送されて到達した患者の到達分布を算出します。(1週間単位)
+	 *    出展元
+	 * </PRE>
+	 * @param lfTime 経過時間[単位は日]
+	 */
+	private void vCalcArrivalDensityAmbulanceOneWeek( double lfTime )
+	{
+		double lfProb	= 0.0;
+		double lfMu		= 9.5;
+		double lfS		= 3.8;
+		double lfExp	= 0.0;
+		double lfOneWeek = 7.0;
+
+		if( lfTime >= 7.0 ) lfTime = lfTime % lfOneWeek;
+
+		lfOneWeekArrivalPatientPepole = 1.0;
+	}
+
+	/**
+	 * <PRE>
+	 *    救急車搬送されて到達した患者の到達分布を算出します。(1ヶ月単位)
+	 *    出展元
+	 * </PRE>
+	 * @param lfTime 経過時間[単位は日]
+	 */
+	private void vCalcArrivalDensityAmbulanceOneMonth( double lfTime )
+	{
+		double lfProb	= 0.0;
+		double lfMu		= 9.5;
+		double lfS		= 3.8;
+		double lfExp	= 0.0;
+		double lfOneMonth = 31.0;
+
+		if( lfTime >= 31.0 ) lfTime = lfTime % lfOneMonth;
+
+		lfOneMonthArrivalPatientPepole = 1.0;
+	}
+
+	/**
+	 * <PRE>
+	 *    救急車搬送されて到達した患者の到達分布を算出します。(1年単位)
+	 *    出展元
+	 * </PRE>
+	 * @param lfTime 経過時間[単位は日]
+	 */
+	private void vCalcArrivalDensityAmbulanceOneYear( double lfTime )
+	{
+		double lfProb	= 0.0;
+		double lfMu		= 9.5;
+		double lfS		= 3.8;
+		double lfExp	= 0.0;
+		double lfOneYear = 365.0;
+
+		if( lfTime >= 365.0 ) lfTime = lfTime % lfOneYear;
+
+		lfOneYearArrivalPatientPepole = 1.0;
+	}
+
+	/**
+	 * <PRE>
+	 *    災害発生時に外来した患者の到達分布を算出します。(1日単位)
+	 *    Γ(t,α,β)から算出。tは時間。
 	 *    λ = 2.259, α = 2.18
-	 *   出展元、
+	 *   出展元
+	 *   池内淳子,矢田雅子,権丈（武井）英理子,東原紘道
+	 *   大規模地震災害時における病院間の傷病者搬送に関する考察-阪神・淡路大震災時における分析を通して-
+	 *   地域安全学会論文集 No.19, 2012.3
+	 *   これの西病院を参照。
 	 * </PRE>
 	 * @param lfTime 経過時間[単位は時間]
 	 * @return	患者到達確率
@@ -4067,11 +4262,60 @@ public class ERWaitingRoom extends Agent
 		double lfAlpha = 2.18;
 		double lfBeta = 2.2259;
 
-		if( lfTime > 24.0 )	lfTime = 0.0;
+		if( lfTime >= 24.0 )	lfTime = 0.0;
 
 		lfProb = lfGammaDensity( lfTime, lfAlpha, lfBeta );
+		return lfProb*lfOneWeekArrivalPatientPepole*lfOneMonthArrivalPatientPepole/lfArrivalPatientPepole;
+	}
+
+	/**
+	 * <PRE>
+	 *    災害発生時に外来した患者の到達分布を算出します。(1週間単位)
+	 *    平成７年６月阪神淡路大震災災害医療実態アンケート調査結果をもとに算出。
+	 *
+	 * </PRE>
+	 * @param lfTime 経過時間[単位は1日]
+	 */
+	private void vCalcArrivalDensityDisasterOneWeek( double lfTime )
+	{
+		double lfProb	= 0.0;
+		double lfAlpha = 2.18;
+		double lfBeta = 2.2259;
+		double lfOneWeek = 7.0;
+
+		if( lfTime >= 7.0 )	lfTime = lfTime % lfOneWeek;
+
+		if( lfTime >= 6.0 ) lfOneWeekArrivalPatientPepole = 0.814751449;
+		else if( lfTime >= 5.0 ) lfOneWeekArrivalPatientPepole = 0.262522574;
+		else if( lfTime >= 4.0 ) lfOneWeekArrivalPatientPepole = 0.562589107;
+		else if( lfTime >= 3.0 ) lfOneWeekArrivalPatientPepole = 0.723315274;
+		else if( lfTime >= 2.0 ) lfOneWeekArrivalPatientPepole = 0.695276114;
+		else if( lfTime >= 1.0 ) lfOneWeekArrivalPatientPepole = 0.756201882;
+		else if( lfTime >= 0.0 ) lfOneWeekArrivalPatientPepole = 1;
+
+
 //		System.out.println(lfProb);
-		return lfProb*lfArrivalPatientPepole;
+
+	}
+
+	/**
+	 * <PRE>
+	 *    災害発生時に外来した患者の到達分布を算出します。(1ヶ月単位)
+	 *    データがないため1として実質動かないようにする。
+	 *
+	 * </PRE>
+	 * @param lfTime 経過時間[単位は1ヶ月]
+	 */
+	private void vCalcArrivalDensityDisasterOneMonth( double lfTime )
+	{
+		double lfProb	= 0.0;
+		double lfAlpha = 2.18;
+		double lfBeta = 2.2259;
+		double lfOneMonth = 31.0;
+
+		if( lfTime >= 31.0 )	lfTime = lfTime % lfOneMonth;
+
+		lfOneMonthArrivalPatientPepole = 1.0;
 	}
 
 	/**
@@ -4167,55 +4411,12 @@ public class ERWaitingRoom extends Agent
 					{
 						if( ArrayListPatientAgents.get(i).iGetSurvivalFlag() == 0 )
 						{
-							for( j = 0;j < ArrayListNursePatientLoc.size(); j++ )
-							{
-								if( ArrayListNursePatientLoc.get(j)  == i )
-								{
-									cWaitingRoomLog.info(ArrayListPatientAgents.get(i).getId() + "," + "WaitRoom通ったよ～");
-									ArrayListNursePatientLoc.set( j, -1 );
-									iLoc = i;
-								}
-							}
-							// なくなられたエージェントが配列上いた位置を削除するため、それ以降のデータがすべて1繰り下がるので、
-							// それに対応する。そうしないと配列サイズを超えて参照したエラーが発生します。
-							for( j = 0;j < ArrayListNursePatientLoc.size(); j++ )
-							{
-								if( iLoc < ArrayListNursePatientLoc.get(j) )
-								{
-									ArrayListNursePatientLoc.set( j, ArrayListNursePatientLoc.get(j)-1 );
-								}
-							}
 							ArrayListPatientAgents.set(i, null);
 							ArrayListPatientAgents.remove(i);
 							break;
 						}
 						else if( ArrayListPatientAgents.get(i).iGetDisChargeFlag() == 1 )
 						{
-	//						System.out.println("退院する患者");
-	//						for( j = 0;j < ArrayListNursePatientLoc.size(); j++ )
-	//						{
-	//							if( ArrayListNursePatientLoc.get(j)  == i )
-	//							{
-	//								cWaitingRoomLog.info(ArrayListPatientAgents.get(i).getId() + "," + "WaitRoom通ったよ～");
-	//								ArrayListNursePatientLoc.set( j, -1 );
-	//								iLoc = i;
-	//							}
-	//						}
-	//						// なくなられたエージェントが配列上いた位置を削除するため、それ以降のデータがすべて1繰り下がるので、
-	//						// それに対応する。そうしないと配列サイズを超えて参照したエラーが発生します。
-	//						for( j = 0;j < ArrayListNursePatientLoc.size(); j++ )
-	//						{
-	//							if( iLoc < ArrayListNursePatientLoc.get(j) )
-	//							{
-	//								ArrayListNursePatientLoc.set( j, ArrayListNursePatientLoc.get(j)-1 );
-	//							}
-	//						}
-	//						ArrayListPatientAgents.get(i).getEngine().addExitAgent(ArrayListPatientAgents.get(i));
-	//						cWaitingRoomLog.info("待合室：退院しました！。");
-	//						// 退院数をカウントします。
-	//						iDisChargeNum++;
-	//						ArrayListPatientAgents.set(i, null);
-	//						ArrayListPatientAgents.remove(i);
 							break;
 						}
 						// 登録されているエージェントで離脱したエージェントがいるかどうかを判定します。
