@@ -1,7 +1,6 @@
 package triage;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import triage.room.ERWaitingRoom;
 import utility.initparam.InitSimParam;
@@ -20,9 +19,6 @@ public class ERDepartmentArrivalPatient extends Thread
 
 	private InitSimParam initSimParam;
 
-	private Object csCriticalSection;
-	private Logger cLogERDepartmentArrivalPatient;
-
 	public ERDepartmentArrivalPatient()
 	{
 		cEngine = null;
@@ -37,58 +33,36 @@ public class ERDepartmentArrivalPatient extends Thread
 	public void run()
 	{
 		int i = 0;
-		long iCount = 0;
 		double lfSecond = 0.0;
-		double lfPrevSecond = 0.0;
-		try
+		for(;;)
 		{
-			for(;;)
+			if( cEngine != null )
 			{
-				Thread.sleep(100);
-				// シミュレーションエンジンインスタンスが生成されていないときは患者を発生させません。
-				if( cEngine == null ) continue;
 				// シミュレーションが停止しているときは患者を発生させません。
-				if( cEngine.isPaused() == true && cEngine.getLogicalTime() == 0 ) continue;
-				// シミュレーションが実行状態でないときは動作しません。
-				if( cEngine.getLatestTimeStep() == 0 ) continue;
-				// 患者到達分布確率に従って患者を発生させます。
-				//シミュレーションの現在時刻を取得します。
-				lfSecond = cEngine.getLogicalTime()/cEngine.getLatestTimeStep();
-				iCount = cEngine.getLatestTimeStep()/1000L;
-				lfSecond /= (3600.0/(double)iCount);
-				if( lfSecond == lfPrevSecond )
-				{
-					iCount = 0;
-					lfPrevSecond = lfSecond;
+				if( cEngine.isPaused() == true && cEngine.getLogicalTime() == 0 )
 					continue;
-				}
-				// 患者を到達分布にしたがって生成します。(午前8時30分を0秒とする。)
-				// 一端停止してから再実行します。
-				cEngine.pause();
-				for( i = 0;i < iCount; i++ )
+				// シミュレーションが実行状態のとき
+				if( cEngine.getLatestTimeStep() != 0 )
 				{
-					erWaitingRoom.vArrivalPatient( lfSecond, (double)iCount/3600.0, cEngine, iPatientRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, initSimParam );
-					int iSize = erWaitingRoom.erGetPatientAgents().size();
-					// 追加でログ出力及びクリティカルセクションの設定をします。
-					// 設定の関係上でnull値になっているため。
-					if( iSize > 0 )
+					// 患者到達分布確率に従って患者を発生させます。
+					if( cEngine.isPaused() == false )
 					{
-						erWaitingRoom.erGetPatientAgent(iSize-1).vSetLog(cLogERDepartmentArrivalPatient);
-						erWaitingRoom.erGetPatientAgent(iSize-1).vSetCriticalSection(csCriticalSection);
+						//シミュレーションの現在時刻を取得します。
+						lfSecond = cEngine.getLogicalTime()/cEngine.getLatestTimeStep()*0.001;
+
+						// 患者を到達分布にしたがって生成します。(午前8時30分を0秒とする。)
+						// 一端停止してから再実行します。
+						cEngine.pause();
+						try{
+						erWaitingRoom.vArrivalPatient( lfSecond, cEngine, iPatientRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, initSimParam );
+						}
+						catch( IOException ioe ){
+							ioe.printStackTrace();
+						}
+						cEngine.resume();
 					}
 				}
-				iCount = 0;
-				cEngine.resume();
-				lfPrevSecond = lfSecond;
 			}
-		}
-		catch( IOException ioe )
-		{
-			ioe.printStackTrace();
-		}
-		catch( InterruptedException ite )
-		{
-			ite.printStackTrace();
 		}
 	}
 
@@ -166,30 +140,8 @@ public class ERDepartmentArrivalPatient extends Thread
 	 * </PRE>
 	 * @param initparam 初期設定パラメータクラス
 	 */
-	public void vSetInitSimParam(InitSimParam initparam)
+	public void vSetInitSimParma(InitSimParam initparam)
 	{
 		this.initSimParam = initparam;
-	}
-
-	/**
-	 * <PRE>
-	 *    ログ出力クラスのインスタンスを設定します。
-	 * </PRE>
-	 * @param cLogData ログ出力クラスインスタンス
-	 */
-	public void vSetLogger(Logger cLogData)
-	{
-		cLogERDepartmentArrivalPatient = cLogData;
-	}
-
-	/**
-	 * <PRE>
-	 *    クリティカルセクションのインスタンスを設定します。
-	 * </PRE>
-	 * @param cObject クリティカルセクションインスタンス
-	 */
-	public void vSetCriticalSection(Object cObject)
-	{
-		csCriticalSection = cObject;
 	}
 }

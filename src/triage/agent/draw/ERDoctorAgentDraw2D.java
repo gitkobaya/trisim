@@ -39,9 +39,8 @@ public class ERDoctorAgentDraw2D extends ObjectDrawer2D
 
 		// □表示をします。
 	// スクリーンの座標系に変換します。
-		// 中心になるように表示します。
-		iX = panel.getScreenX(erDoctorAgent.getX()-iDoctorAgentWidth/2);
-		iY = panel.getScreenY(erDoctorAgent.getY()-iDoctorAgentHeight/2);
+		iX = panel.getScreenX(erDoctorAgent.getX()-10);
+		iY = panel.getScreenY(erDoctorAgent.getY()-10);
 		iWidth = (int)(iDoctorAgentWidth*lfDots);
 		iHeight = (int)(iDoctorAgentHeight*lfDots);
 

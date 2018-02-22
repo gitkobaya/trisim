@@ -14,27 +14,6 @@ import utility.node.ERTriageNode;
 import utility.node.ERTriageNodeManager;
 import utility.sfmt.Rand;
 
-/**
- * 病院の観察室を表すクラスです。
- * このプログラムではこのクラスを含めすべての部屋をエージェントとして定義しています。<br>
- * そのようにすることにより、いろいろと都合がよいためそのようにしております。<br>
- * 観察室では診察室が満員で診察できていない患者を受け入れて定期的にトリアージを実施する病室です。<br>
- * 診察室が空き次第、優先度に応じて患者を診察室へ移動させます。<br>
- * 次に行く場所は以下の通りです。<br>
- * １診察室<br>
- *
- * 使用方法は次の通りです。<br>
- * 初期化　　　　　　vInitialize　<br>
- * エージェント作成　vCreateNurseAgents<br>
- * 設定　　　　　　　vSetNurseAgentParameter<br>
- * 　　　　　　　　　vSetReadWriteFileForAgents<br>
- * 定期観察　　　　　vImplementObservationRoom<br>
- * 実行　　　　　　　action　<br>
- * 終了処理　　　　　　vTerminate　<br>
- *
- * @author kobayashi
- *
- */
 public class ERObservationRoom extends Agent
 {
 
@@ -2870,7 +2849,7 @@ public class ERObservationRoom extends Agent
 		for( i = 0;i < ArrayListNurseAgents.size(); i++ )
 		{
 			// 所属看護師が全員対応中の場合、空いていないとします。
-			if( ArrayListNurseAgents.get(i).iGetAttending() == 1 || ArrayListNursePatientLoc.get(i) > -1 )
+			if( ArrayListNurseAgents.get(i).iGetAttending() == 1 )
 			{
 				iCount++;
 			}
@@ -3378,21 +3357,17 @@ public class ERObservationRoom extends Agent
 	 * @author kobayashi
 	 * @since 2016/07/27
 	 */
-	public synchronized int iGetTriageCategoryPatientNum( int iCategory )
+	public int iGetTriageCategoryPatientNum( int iCategory )
 	{
 		int i;
 		int iCategoryPatientNum = 0;
-
-		synchronized( csObservationRoomCriticalSection )
+		if( ArrayListPatientAgents != null )
 		{
-			if( ArrayListPatientAgents != null )
+			for( i = 0;i < ArrayListPatientAgents.size(); i++ )
 			{
-				for( i = 0;i < ArrayListPatientAgents.size(); i++ )
+				if( iCategory == (ArrayListPatientAgents.get(i).iGetEmergencyLevel()-1) )
 				{
-					if( iCategory == (ArrayListPatientAgents.get(i).iGetEmergencyLevel()-1) )
-					{
-						iCategoryPatientNum++;
-					}
+					iCategoryPatientNum++;
 				}
 			}
 		}
@@ -3422,23 +3397,19 @@ public class ERObservationRoom extends Agent
 	 * </PRE>
 	 * @return		最も長く病院に在院する患者の在院時間
 	 */
-	public synchronized double lfGetLongestStayPatient()
+	public double lfGetLongestStayPatient()
 	{
 		int i;
 		double lfLongestStayTime = -Double.MAX_VALUE;
-
-		synchronized( csObservationRoomCriticalSection )
+		if( ArrayListPatientAgents != null )
 		{
-			if( ArrayListPatientAgents != null )
+			for( i = 0;i < ArrayListPatientAgents.size(); i++ )
 			{
-				for( i = 0;i < ArrayListPatientAgents.size(); i++ )
+				if( ArrayListPatientAgents.get(i).lfGetTimeCourse() > 0.0 )
 				{
-					if( ArrayListPatientAgents.get(i).lfGetTimeCourse() > 0.0 )
+					if( lfLongestStayTime < ArrayListPatientAgents.get(i).lfGetTimeCourse() )
 					{
-						if( lfLongestStayTime < ArrayListPatientAgents.get(i).lfGetTimeCourse() )
-						{
-							lfLongestStayTime = ArrayListPatientAgents.get(i).lfGetTimeCourse();
-						}
+						lfLongestStayTime = ArrayListPatientAgents.get(i).lfGetTimeCourse();
 					}
 				}
 			}
@@ -3452,31 +3423,27 @@ public class ERObservationRoom extends Agent
 	 *    現在、最後に病床に入った患者の到着から入院までの時間を算出します。
 	 * </PRE>
 	 */
-	public synchronized void vLastBedTime()
+	public void vLastBedTime()
 	{
 		int i;
 		double lfLongestTime = -Double.MAX_VALUE;
 		double lfLastTime = -Double.MAX_VALUE;
-
-		synchronized( csObservationRoomCriticalSection )
+		if( ArrayListPatientAgents != null )
 		{
-			if( ArrayListPatientAgents != null )
+			for( i = 0;i < ArrayListPatientAgents.size(); i++ )
 			{
-				for( i = 0;i < ArrayListPatientAgents.size(); i++ )
+				if( ArrayListPatientAgents.get(i).lfGetTimeCourse() > 0.0 )
 				{
-					if( ArrayListPatientAgents.get(i).lfGetTimeCourse() > 0.0 )
+					if( lfLongestTime < ArrayListPatientAgents.get(i).lfGetTotalTime() && ArrayListPatientAgents.get(i).lfGetHospitalStayTime() > 0.0 )
 					{
-						if( lfLongestTime < ArrayListPatientAgents.get(i).lfGetTotalTime() && ArrayListPatientAgents.get(i).lfGetHospitalStayTime() > 0.0 )
-						{
-							lfLongestTime = ArrayListPatientAgents.get(i).lfGetTotalTime();
-							lfLastTime = ArrayListPatientAgents.get(i).lfGetTimeCourse()-ArrayListPatientAgents.get(i).lfGetHospitalStayTime();
-						}
-						// 入院していない場合は0とします。
-						if( ArrayListPatientAgents.get(i).lfGetHospitalStayTime() == 0.0 )
-						{
-							lfLastTime = 0.0;
-							lfLongestTime = 0.0;
-						}
+						lfLongestTime = ArrayListPatientAgents.get(i).lfGetTotalTime();
+						lfLastTime = ArrayListPatientAgents.get(i).lfGetTimeCourse()-ArrayListPatientAgents.get(i).lfGetHospitalStayTime();
+					}
+					// 入院していない場合は0とします。
+					if( ArrayListPatientAgents.get(i).lfGetHospitalStayTime() == 0.0 )
+					{
+						lfLastTime = 0.0;
+						lfLongestTime = 0.0;
 					}
 				}
 			}

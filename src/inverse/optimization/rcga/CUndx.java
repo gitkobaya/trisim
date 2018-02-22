@@ -8,18 +8,6 @@ import java.util.Comparator;
 
 import utility.sfmt.Sfmt;
 
-/**
-*    実数値遺伝的アルゴリズムのMGG+UNDXを扱うクラスです。
-*    UNDXのアルゴリズムの詳細は論文を参照してください。
-*    MGGアルゴリズムに関しましても同様に論文を参照してください。
-*    初期化    vInitialize()
-*    実行      vImplement()
-*    終了処理  vTerminate()
-*    という流れで使用します。
-*
-* @author kobayashi
-*
-*/
 public class CUndx extends CRealCodedGa
 {
 	private	int iCrossOverNum;

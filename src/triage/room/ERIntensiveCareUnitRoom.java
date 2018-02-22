@@ -10,37 +10,10 @@ import triage.agent.ERDoctorAgent;
 import triage.agent.ERDoctorAgentException;
 import triage.agent.ERNurseAgent;
 import triage.agent.ERPatientAgent;
-import utility.initparam.InitSimParam;
 import utility.node.ERTriageNode;
 import utility.node.ERTriageNodeManager;
 import utility.sfmt.Rand;
 
-/**
- * 病院の集中治療室(ICU)を表すクラスです。
- * このプログラムではこのクラスを含めすべての部屋をエージェントとして定義しています。<br>
- * そのようにすることにより、いろいろと都合がよいためそのようにしております。<br>
- * HCUでは重症度がHCUよりも高い患者が入院する病棟です。<br>
- * 日本外傷データバンク及び厚生労働省が出している統計を元に入院日数を算出し、その日までに
- * 所定の閾値まで下がるようにし、下がったら退院するような流れとなっています。<br>
- * 次に行く場所は以下の通りです。
- * １一般病棟<br>
- * ２HCU<br>
- * ５手術室<br>
- *
- * 使用方法は次の通りです。<br>
- * 初期化　　　　　　vInitialize　<br>
- * エージェント作成　vCreateDoctorAgents<br>
- * 　　　　　　　　　vCreateNurseAgents<br>
- * 設定　　　　　　　vSetDoctorAgentParameter<br>
- * 　　　　　　　　　vSetNurseAgentParameter<br>
- * 　　　　　　　　　vSetReadWriteFileForAgents<br>
- * 入院　　　　　　　vImplementIntensiveCareUnitRoom<br>
- * 実行　　　　　　　action　<br>
- * 終了処理　　　　　　vTerminate　<br>
- *
- * @author kobayashi
- *
- */
 public class ERIntensiveCareUnitRoom extends Agent
 {
 	private static final long serialVersionUID = 8418917849426728061L;
@@ -2056,21 +2029,17 @@ public class ERIntensiveCareUnitRoom extends Agent
 	 * @author kobayashi
 	 * @since 2016/07/27
 	 */
-	public synchronized int iGetTriageCategoryPatientNum( int iCategory )
+	public int iGetTriageCategoryPatientNum( int iCategory )
 	{
 		int i;
 		int iCategoryPatientNum = 0;
-
-		synchronized( csIntensiveCareUnitCriticalSection )
+		if( ArrayListPatientAgents != null )
 		{
-			if( ArrayListPatientAgents != null )
+			for( i = 0;i < ArrayListPatientAgents.size(); i++ )
 			{
-				for( i = 0;i < ArrayListPatientAgents.size(); i++ )
+				if( iCategory == (ArrayListPatientAgents.get(i).iGetEmergencyLevel()-1) )
 				{
-					if( iCategory == (ArrayListPatientAgents.get(i).iGetEmergencyLevel()-1) )
-					{
-						iCategoryPatientNum++;
-					}
+					iCategoryPatientNum++;
 				}
 			}
 		}
@@ -2099,23 +2068,19 @@ public class ERIntensiveCareUnitRoom extends Agent
 	 * </PRE>
 	 * @return		最も長く病院に在院する患者の在院時間
 	 */
-	public synchronized double lfGetLongestStayPatient()
+	public double lfGetLongestStayPatient()
 	{
 		int i;
 		double lfLongestStayTime = -Double.MAX_VALUE;
-
-		synchronized( csIntensiveCareUnitCriticalSection )
+		if( ArrayListPatientAgents != null )
 		{
-			if( ArrayListPatientAgents != null )
+			for( i = 0;i < ArrayListPatientAgents.size(); i++ )
 			{
-				for( i = 0;i < ArrayListPatientAgents.size(); i++ )
+				if( ArrayListPatientAgents.get(i).lfGetTimeCourse() > 0.0 )
 				{
-					if( ArrayListPatientAgents.get(i).lfGetTimeCourse() > 0.0 )
+					if( lfLongestStayTime < ArrayListPatientAgents.get(i).lfGetTimeCourse() )
 					{
-						if( lfLongestStayTime < ArrayListPatientAgents.get(i).lfGetTimeCourse() )
-						{
-							lfLongestStayTime = ArrayListPatientAgents.get(i).lfGetTimeCourse();
-						}
+						lfLongestStayTime = ArrayListPatientAgents.get(i).lfGetTimeCourse();
 					}
 				}
 			}
@@ -2129,31 +2094,27 @@ public class ERIntensiveCareUnitRoom extends Agent
 	 *    現在、最後に病床に入った患者の到着から入院までの時間を算出します。
 	 * </PRE>
 	 */
-	public synchronized void vLastBedTime()
+	public void vLastBedTime()
 	{
 		int i;
 		double lfLongestTime = -Double.MAX_VALUE;
 		double lfLastTime = -Double.MAX_VALUE;
-
-		synchronized( csIntensiveCareUnitCriticalSection )
+		if( ArrayListPatientAgents != null )
 		{
-			if( ArrayListPatientAgents != null )
+			for( i = 0;i < ArrayListPatientAgents.size(); i++ )
 			{
-				for( i = 0;i < ArrayListPatientAgents.size(); i++ )
+				if( ArrayListPatientAgents.get(i).lfGetTimeCourse() > 0.0 )
 				{
-					if( ArrayListPatientAgents.get(i).lfGetTimeCourse() > 0.0 )
+					if( lfLongestTime < ArrayListPatientAgents.get(i).lfGetTotalTime() && ArrayListPatientAgents.get(i).lfGetHospitalStayTime() > 0.0 )
 					{
-						if( lfLongestTime < ArrayListPatientAgents.get(i).lfGetTotalTime() && ArrayListPatientAgents.get(i).lfGetHospitalStayTime() > 0.0 )
-						{
-							lfLongestTime = ArrayListPatientAgents.get(i).lfGetTotalTime();
-							lfLastTime = ArrayListPatientAgents.get(i).lfGetTimeCourse()-ArrayListPatientAgents.get(i).lfGetHospitalStayTime();
-						}
-						// 入院していない場合は0とします。
-						if( ArrayListPatientAgents.get(i).lfGetHospitalStayTime() == 0.0 )
-						{
-							lfLastTime = 0.0;
-							lfLongestTime = 0.0;
-						}
+						lfLongestTime = ArrayListPatientAgents.get(i).lfGetTotalTime();
+						lfLastTime = ArrayListPatientAgents.get(i).lfGetTimeCourse()-ArrayListPatientAgents.get(i).lfGetHospitalStayTime();
+					}
+					// 入院していない場合は0とします。
+					if( ArrayListPatientAgents.get(i).lfGetHospitalStayTime() == 0.0 )
+					{
+						lfLastTime = 0.0;
+						lfLongestTime = 0.0;
 					}
 				}
 			}
@@ -2182,112 +2143,5 @@ public class ERIntensiveCareUnitRoom extends Agent
 	public double lfGetLastBedTime()
 	{
 		return lfLastBedTime;
-	}
-
-	/**
-	 * <PRE>
-	 *   ICUの患者を生成します。
-	 * </PRE>
-	 * @param erEngine			シミュレーションエンジン
-	 * @param iRandomMode		傷病状態発生方法
-	 * @param iInverseSimMode	シミュレーションモード
-	 * @param iFileWriteMode	ファイル出力方法
-	 * @param initparam			初期設定ファイルインスタンス
-	 * @param cLog				ログ出力
-	 * @param csObject			クリティカルセクション
-	 * @throws IOException		ファイル出力例外
-	 */
-	public void vGeneratePatient(SimulationEngine erEngine, int iRandomMode, int iInverseSimMode, int iFileWriteMode, InitSimParam initparam, Logger cLog, Object csObject ) throws IOException
-	{
-		int i;
-		double lfX,lfY,lfZ;
-		double lfInitAIS = 0.0;
-		double lfHospitalStayDay = 0.0;
-		double lfAISRevisedSeries = 0.0;
-	// 患者エージェント生成
-		erEngine.pause();
-		cIntensiveCareUnitLog = cLog;
-		ArrayListPatientAgents.add( new ERPatientAgent() );
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetLog( cLog );
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetCriticalSection( csObject );
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetInitParam( initparam );
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetRandom( rnd );
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetPatientRandomMode( iRandomMode );
-		// ランダムに患者の容体を割り当てます。
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1).vSetRandom();
-//		engine.addAgent(ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ));
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1).vSetSimulationEngine(erEngine);
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetMoveRoomFlag( 1 );
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetMoveWaitingTime( 181 );
-		// 集中治療室なので6とします。
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetLocation( 6 );
-		// 逆シミュレーションモードでなければ以下を実行します。
-		iInverseSimFlag = iInverseSimMode;
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetInverseSimMode( iInverseSimFlag );
-		// 通常モード及びGUIモードの場合ログ出力します。
-		if( iInverseSimFlag == 0 || iInverseSimFlag == 1 )
-		{
-			ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetReadWriteFile( iFileWriteMode );
-		}
-	// 患者エージェントの位置を設定します。
-		lfX = this.getPosition().getX()+10*(2*rnd.NextUnif()-1);
-		lfY = this.getPosition().getY()+10*(2*rnd.NextUnif()-1);
-		lfZ = this.getPosition().getZ()+10*(2*rnd.NextUnif()-1);
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).setPosition( lfX, lfY, lfZ );
-
-	// 医師、看護師の割り当てを行います。
-		if( ArrayListPatientAgents.isEmpty() == false )
-		{
-			// 各看護師の観察を実行します。
-			for( i = 0 ;i < ArrayListNurseAgents.size(); i++ )
-			{
-				if( ArrayListNursePatientLoc.get(i) >= 0 )
-				{
-					// マルチスレッドによる齟齬への対処
-					if( ArrayListPatientAgents.size() <= 0 ) 										continue;
-					if( ArrayListPatientAgents.size() <= ArrayListNursePatientLoc.get(i) ) 			continue;
-					if( ArrayListPatientAgents.get( ArrayListNursePatientLoc.get( i ) ) == null )	continue;
-
-					// 医師エージェントの対応を実施します。
-					erIntensiveCareUnitDoctorAgent.vSetAttending( 1 );
-
-					// 看護師エージェントの対応を実施します。
-					ArrayListNurseAgents.get( i ).vSetAttending( 1 );
-
-					// その患者を対応している医師、看護師エージェントのIDを設定します。
-					ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetNurseAgent(ArrayListNurseAgents.get( i ).getId());
-					ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetDoctorAgent(erIntensiveCareUnitDoctorAgent.getId());
-					break;
-				}
-			}
-		}
-
-	// 患者の改善度を算出します。
-
-		// 入院時のAIS値を設定します。
-		lfInitAIS = ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).lfSetHospitalStayInitAIS();
-
-		// 入院日数を算出します。
-		lfHospitalStayDay = lfCalcHospitalStay( ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ) );
-
-		// 患者の入院日数を設定します。
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetHospitalStayDay( lfHospitalStayDay );
-
-		// AIS値改善割合を算出します。
-		double lfStepTime = this.getEngine().getLatestTimeStep()/1000.0;
-		double lfStayTime = lfStepTime / (24.0*3600.0);
-		lfAISRevisedSeries = lfCurePatientAISSeries( lfStayTime, lfHospitalStayDay, 0.5, lfInitAIS );
-
-		// AIS値改善割合を設定します。
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetRevisedSeries( lfAISRevisedSeries );
-
-		// 初めて集中治療室に入った場合に算出します。
-		cIntensiveCareUnitLog.info(ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).getId() + "," + erIntensiveCareUnitDoctorAgent.getId() +"," + "高度治療室の平均在院日数を算出します。");
-		// 平均在院日数を算出します。
-		vCalcIcuAvgLengthOfStay();
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetEnterHighCareUnitFlag( 1 );
-
-		erEngine.resume();
-		return;
 	}
 }

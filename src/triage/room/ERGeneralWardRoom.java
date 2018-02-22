@@ -10,38 +10,11 @@ import triage.agent.ERDoctorAgent;
 import triage.agent.ERDoctorAgentException;
 import triage.agent.ERNurseAgent;
 import triage.agent.ERPatientAgent;
-import utility.initparam.InitSimParam;
 import utility.node.ERTriageNode;
 import utility.node.ERTriageNodeManager;
 import utility.sfmt.Rand;
 
 
-/**
- * 病院の一般病棟を表すクラスです。
- * このプログラムではこのクラスを含めすべての部屋をエージェントとして定義しています。<br>
- * そのようにすることにより、いろいろと都合がよいためそのようにしております。<br>
- * 一般病棟では重症度が低い患者が入院する病棟です。<br>
- * 日本外傷データバンク及び厚生労働省が出している統計を元に入院日数を算出し、その日までに
- * 所定の閾値まで下がるようにし、下がったら退院するような流れとなっています。<br>
- * 次に行く場所は以下の通りです。
- * １HCU<br>
- * ２ICU<br>
- * ５手術室<br>
- *
- * 使用方法は次の通りです。<br>
- * 初期化　　　　　　vInitialize　<br>
- * エージェント作成　vCreateDoctorAgents<br>
- * 　　　　　　　　　vCreateNurseAgents<br>
- * 設定　　　　　　　vSetDoctorAgentParameter<br>
- * 　　　　　　　　　vSetNurseAgentParameter<br>
- * 　　　　　　　　　vSetReadWriteFileForAgents<br>
- * 入院　　　　　　　vImplementGeneralWardRoom<br>
- * 実行　　　　　　　action　<br>
- * 終了処理　　　　　　vTerminate　<br>
- *
- * @author kobayashi
- *
- */
 public class ERGeneralWardRoom extends Agent
 {
 	private static final long serialVersionUID = 6843485607134630501L;
@@ -589,6 +562,7 @@ public class ERGeneralWardRoom extends Agent
 	private double lfCurePatientAISSeries( double lfTime, double lfHospitalStayTime, double lfFinishAIS, double lfInitAIS )
 	{
 		double lfSeries = 0.0;
+		double lfX = 0.0;
 		double lfN = 0.0;
 		double lfDeltaTime = 0.0;
 
@@ -1425,7 +1399,7 @@ public class ERGeneralWardRoom extends Agent
 	 * @since 2016/07/27
 	 * @return	緊急度別トリアージ受診人数
 	 */
-	public synchronized int iGetTriageCategoryPatientNum( int iCategory )
+	public int iGetTriageCategoryPatientNum( int iCategory )
 	{
 		int i;
 		int iCategoryPatientNum = 0;
@@ -1457,6 +1431,8 @@ public class ERGeneralWardRoom extends Agent
 	 */
 	public int iGetPatientAgentsNum()
 	{
+		int i;
+
 		return ArrayListPatientAgents != null ? ArrayListPatientAgents.size() : 0;
 	}
 
@@ -1467,7 +1443,7 @@ public class ERGeneralWardRoom extends Agent
 	 * </PRE>
 	 * @return		最も長く病院に在院する患者の在院時間
 	 */
-	public synchronized double lfGetLongestStayPatient()
+	public double lfGetLongestStayPatient()
 	{
 		int i;
 		double lfLongestStayTime = -Double.MAX_VALUE;
@@ -1496,12 +1472,11 @@ public class ERGeneralWardRoom extends Agent
 	 *    現在、最後に病床に入った患者の到着から入院までの時間を算出します。
 	 * </PRE>
 	 */
-	public synchronized void vLastBedTime()
+	public void vLastBedTime()
 	{
 		int i;
 		double lfLongestTime = -Double.MAX_VALUE;
 		double lfLastTime = -Double.MAX_VALUE;
-
 		synchronized( csGeneralWardCriticalSection )
 		{
 			if( ArrayListPatientAgents != null )
@@ -1549,95 +1524,5 @@ public class ERGeneralWardRoom extends Agent
 	public double lfGetLastBedTime()
 	{
 		return lfLastBedTime;
-	}
-
-	/**
-	 * <PRE>
-	 *   一般病棟の患者を生成します。
-	 * </PRE>
-	 * @param erEngine			シミュレーションエンジン
-	 * @param iRandomMode		傷病状態発生方法
-	 * @param iInverseSimMode	シミュレーションモード
-	 * @param iFileWriteMode	ファイル出力方法
-	 * @param initparam			初期設定ファイルインスタンス
-	 * @param cLog				ログ出力
-	 * @param csObject			クリティカルセクション
-	 * @throws IOException		ファイル出力例外
-	 */
-	public void vGeneratePatient(SimulationEngine erEngine, int iRandomMode, int iInverseSimMode, int iFileWriteMode, InitSimParam initparam, Logger cLog, Object csObject ) throws IOException
-	{
-		int i;
-		double lfX,lfY,lfZ;
-		double lfInitAIS = 0.0;
-		double lfHospitalStayDay = 0.0;
-		double lfAISRevisedSeries = 0.0;
-	// 患者エージェント生成
-		erEngine.pause();
-		cGeneralWardLog = cLog;
-		ArrayListPatientAgents.add( new ERPatientAgent() );
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetLog( cLog );
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetCriticalSection( csObject );
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetInitParam( initparam );
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetRandom( rnd );
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetPatientRandomMode( iRandomMode );
-		// ランダムに患者の容体を割り当てます。
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1).vSetRandom();
-//		engine.addAgent(ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ));
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1).vSetSimulationEngine(erEngine);
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetMoveRoomFlag( 1 );
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetMoveWaitingTime( 181 );
-		// 一般病棟なので8とします。
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetLocation( 8 );
-		// 逆シミュレーションモードでなければ以下を実行します。
-		iInverseSimFlag = iInverseSimMode;
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetInverseSimMode( iInverseSimFlag );
-		// 通常モード及びGUIモードの場合ログ出力します。
-		if( iInverseSimFlag == 0 || iInverseSimFlag == 1 )
-		{
-			ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetReadWriteFile( iFileWriteMode );
-		}
-	// 患者エージェントの位置を設定します。
-		lfX = this.getPosition().getX()+10*(2*rnd.NextUnif()-1);
-		lfY = this.getPosition().getY()+10*(2*rnd.NextUnif()-1);
-		lfZ = this.getPosition().getZ()+10*(2*rnd.NextUnif()-1);
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).setPosition( lfX, lfY, lfZ );
-
-	// 医師、看護師の割り当てを行います。
-		// 各看護師の観察を実行します。
-		// 医師エージェントの対応を実施します。
-		erDoctorAgent.vSetAttending( 1 );
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetDoctorAgent(erDoctorAgent.getId());
-
-		// 看護師エージェントの対応を実施します。
-		ArrayListNurseAgents.get( ArrayListPatientAgents.size()%ArrayListNurseAgents.size() ).vSetAttending( 1 );
-
-		// その患者を対応している医師、看護師エージェントのIDを設定します。
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetNurseAgent(ArrayListNurseAgents.get( ArrayListPatientAgents.size()%ArrayListNurseAgents.size() ).getId());
-
-	// 患者の改善度を算出します。
-
-		// 入院時のAIS値を設定します。
-		lfInitAIS = ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).lfSetHospitalStayInitAIS();
-
-		// 入院日数を算出します。
-		lfHospitalStayDay = lfCalcHospitalStay( ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ) );
-
-		// 患者の入院日数を設定します。
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetHospitalStayDay( lfHospitalStayDay );
-
-		// AIS値改善割合を算出します。
-		double lfStepTime = this.getEngine().getLatestTimeStep()/1000.0;
-		double lfStayTime = lfStepTime / (24.0*3600.0);
-		lfAISRevisedSeries = lfCurePatientAISSeries( lfStayTime, lfHospitalStayDay, 0.5, lfInitAIS );
-
-		// AIS値改善割合を設定します。
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetRevisedSeries( lfAISRevisedSeries );
-
-		// 初めて一般病棟に入った場合に算出します。
-		cGeneralWardLog.info(ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).getId() + "," + erDoctorAgent.getId() +"," + "高度治療室の平均在院日数を算出します。");
-		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).vSetEnterHighCareUnitFlag( 1 );
-
-		erEngine.resume();
-		return;
 	}
 }
