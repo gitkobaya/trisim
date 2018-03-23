@@ -640,19 +640,24 @@ public class ERMain
 			log, cs, random, cmd.lfGetPatientPepole(), cmd.iGetPatientRandomMode(), cmd.iGetExecMode(), cmd.iGetFileWriteMode(),cmd.iGetPatientArrivalMode(), initParam, initInvParam,
 			cmd.iGetInitGeneralWardPatientNum(), cmd.iGetInitIntensiveCareUnitPatientNum(), cmd.iGetInitHighCareUnitPatientNum() );
 
-		if( cmd.iGetExecMode() == 1 )
+		if( cmd.iGetInverseSimulationMethod() == 1 )
 		{
-//			invSimEngine.vInitInvSimEngineGa(iGaMethodData, iSearchNumData, iLimitCountData);
+			double lfCrossOverProb = 0.05;
+			double lfMutationProb = 0.3;
+			int iCrossOverMethod = 3;
+			int iCrossOverLoc = 2;
+
+			invSimEngine.vInitInvSimEngineGa(cmd.iGetGaMethod(), cmd.iGetGensNumber(), cmd.iGetGensVectorDimension(), iCrossOverMethod, iCrossOverLoc, lfCrossOverProb, lfMutationProb );
 		}
-		else if( cmd.iGetExecMode() == 2 )
+		else if( cmd.iGetInverseSimulationMethod() == 2 )
 		{
-//			invSimEngine.vInitInvSimEngineRcGa(iRcGaMethodData, iSearchNumData, iLimitCountData);
+//			invSimEngine.vInitInvSimEngineRcga(cmd.iGetGaMethod(), cmd.iGetGensNumber(), cmd.iGetGensVectorDimension());
 		}
-		else if( cmd.iGetExecMode() == 3 )
+		else if( cmd.iGetInverseSimulationMethod() == 3 )
 		{
 //			invSimEngine.vInitInvSimEnginePso(iPsoMethodData, iSearchNumData, iLimitCountData);
 		}
-		else if( cmd.iGetExecMode() == 4 )
+		else if( cmd.iGetInverseSimulationMethod() == 4 )
 		{
 			invSimEngine.vInitInvSimEngineAbc( cmd.iGetAbcMethod(), cmd.iGetAbcSearchNumber(), cmd.iGetAbcLimitCount() );
 		}

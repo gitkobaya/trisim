@@ -9,6 +9,20 @@ import java.util.Comparator;
 
 import utility.sfmt.Sfmt;
 
+/**
+ *    実数値遺伝的アルゴリズムのREXを扱うクラスです。
+ *    交叉手法であるREXとしてはREX,REX-Star, Adaptation REXを実装しています。
+ *    遺伝的アルゴリズム自体はJGGというものを使用しています。
+ *    それぞれの性能に関しましては各論文を参照してください。
+ *    Adaptation REXに関しては距離関数に論文掲載のユークリッド距離及びマハラノビス距離を実装しています。
+ *    初期化   vInitialize()
+ *    実行     vRex() or vRexStar() or vARex()
+ *    終了処理 vTerminate()
+ *    という流れで使用します。
+ *
+ * @author kobayashi
+ *
+ */
 public class CRex extends CRealCodedGa
 {
 	private int iParentOutputFlag;

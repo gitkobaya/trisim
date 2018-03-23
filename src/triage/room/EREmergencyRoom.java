@@ -15,6 +15,32 @@ import utility.node.ERTriageNode;
 import utility.node.ERTriageNodeManager;
 import utility.sfmt.Rand;
 
+/**
+ * 病院の一般病棟を表すクラスです。
+ * このプログラムではこのクラスを含めすべての部屋をエージェントとして定義しています。<br>
+ * そのようにすることにより、いろいろと都合がよいためそのようにしております。<br>
+ * 一般病棟では重症度が低い患者が入院する病棟です。<br>
+ * 日本外傷データバンク及び厚生労働省が出している統計を元に入院日数を算出し、その日までに
+ * 所定の閾値まで下がるようにし、下がったら退院するような流れとなっています。<br>
+ * 次に行く場所は以下の通りです。
+ * １HCU<br>
+ * ２ICU<br>
+ * ５手術室<br>
+ *
+ * 使用方法は次の通りです。<br>
+ * 初期化　　　　　　vInitialize　<br>
+ * エージェント作成　vCreateDoctorAgents<br>
+ * 　　　　　　　　　vCreateNurseAgents<br>
+ * 設定　　　　　　　vSetDoctorAgentParameter<br>
+ * 　　　　　　　　　vSetNurseAgentParameter<br>
+ * 　　　　　　　　　vSetReadWriteFileForAgents<br>
+ * 診断　　　　　　　vImplementConsultation<br>
+ * 実行　　　　　　　action　<br>
+ * 終了処理　　　　　　vTerminate　<br>
+ *
+ * @author kobayashi
+ *
+ */
 public class EREmergencyRoom extends Agent
 {
 	private static final long serialVersionUID = -7465112602538861582L;
@@ -1594,24 +1620,27 @@ public class EREmergencyRoom extends Agent
 			// 医師エージェントの位置を設定します。
 			lfX = this.getPosition().getX()+3*rnd.NextUnif();
 			lfY = this.getPosition().getY()+3*rnd.NextUnif();
-			lfZ = this.getPosition().getZ()+3*rnd.NextUnif();
+			lfZ = this.getPosition().getZ();
 			ArrayListDoctorAgents.get(i).setPosition( lfX, lfY, lfZ );
+			ArrayListDoctorAgents.get(i).vSetTriageNode( erTriageNode );
 		}
 		for( i = 0;i < ArrayListNurseAgents.size(); i++ )
 		{
 			// 看護師エージェントの位置を設定します。
 			lfX = this.getPosition().getX()+15*(2*rnd.NextUnif()-1);
 			lfY = this.getPosition().getY()+15*(2*rnd.NextUnif()-1);
-			lfZ = this.getPosition().getZ()+15*(2*rnd.NextUnif()-1);
+			lfZ = this.getPosition().getZ();
 			ArrayListNurseAgents.get(i).setPosition( lfX, lfY, lfZ );
+			ArrayListNurseAgents.get(i).vSetTriageNode( erTriageNode );
 		}
 		for( i = 0;i < ArrayListClinicalEngineerAgents.size(); i++ )
 		{
 			// 医療技師エージェントの位置を設定します。
 			lfX = this.getPosition().getX()+15*(2*rnd.NextUnif()-1);
 			lfY = this.getPosition().getY()+15*(2*rnd.NextUnif()-1);
-			lfZ = this.getPosition().getZ()+15*(2*rnd.NextUnif()-1);
+			lfZ = this.getPosition().getZ();
 			ArrayListClinicalEngineerAgents.get(i).setPosition( lfX, lfY, lfZ );
+			ArrayListClinicalEngineerAgents.get(i).vSetTriageNode( erTriageNode );
 		}
 	}
 

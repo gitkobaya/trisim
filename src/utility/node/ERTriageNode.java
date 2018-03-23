@@ -433,4 +433,27 @@ public class ERTriageNode implements Savable
 		// TODO 自動生成されたメソッド・スタブ
 		iLocation = iLoc;
 	}
+
+	/**
+	 * <PRE>
+	 *   ノードが所属する部屋の階数を取得します。
+	 * </PRE>
+	 * @return 部屋番号
+	 */
+	public int iGetFloor()
+	{
+		return iFloor;
+	}
+
+	/**
+	 * <PRE>
+	 *   ノードが所属する部屋の階数を設定します。
+	 * </PRE>
+	 * @param iLoc 部屋番号
+	 */
+	public void vSetFloor( int iFloorData )
+	{
+		// TODO 自動生成されたメソッド・スタブ
+		iFloor = iFloorData;
+	}
 }

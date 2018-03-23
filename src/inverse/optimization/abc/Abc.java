@@ -120,8 +120,6 @@ public class Abc
 		pcPowell = null;
 	}
 
-
-
 	/**
 	 * <PRE>
 	 * 　人口蜂コロニーの初期化を実行します。(コンストラクタ)
@@ -4410,6 +4408,7 @@ public class Abc
 				}
 				// 制約条件を満たしているかどうかチェックを行う。
 				pfvConstraintCondition.vConstraintCondition( pplfAbcData[i] );
+				piNonUpdateCount[i] = 0;
 			}
 		}
 	}
@@ -4439,7 +4438,8 @@ public class Abc
 					pplfAbcData[i][k] = plfGlobalMinAbcData[k] + lfRand*(plfGlobalMaxAbcData[k]-plfGlobalMinAbcData[k]);
 				}
 				// 制約条件を満たしているかどうかチェックを行う。
-				pfvConstraintCondition.vConstraintCondition( pplfAbcData[i] );
+//				pfvConstraintCondition.vConstraintCondition( pplfAbcData[i] );
+				piNonUpdateCount[i] = 0;
 			}
 		}
 	}

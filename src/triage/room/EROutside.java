@@ -15,6 +15,7 @@ import utility.node.ERTriageNodeManager;
 import utility.sfmt.Rand;
 import jp.ac.nihon_u.cit.su.furulab.fuse.SimulationEngine;
 import jp.ac.nihon_u.cit.su.furulab.fuse.models.Agent;
+import jp.ac.nihon_u.cit.su.furulab.fuse.util.Position;
 
 public class EROutside extends Agent
 {
@@ -184,6 +185,7 @@ public class EROutside extends Agent
 	{
 		int i;
 		int iRes = 0;
+		ERPatientAgent erPAgent;
 
 		synchronized( csOutsideCriticalSection )
 		{
@@ -198,6 +200,18 @@ public class EROutside extends Agent
 					// 退院可能な患者エージェントがいる場合は患者エージェントを削除します
 					if( ArrayListPatientAgents.get(i).iGetDisChargeFlag() == 1 )
 					{
+						if( iInverseSimFlag == 1 )
+						{
+							erPAgent = ArrayListPatientAgents.get(i);
+//							if( Position.getDistance2D( erPAgent.getX(), erPAgent.getY(), this.getX(), this.getY()) > 10 ) continue;
+							if( erPAgent.getY()-this.getY() < -10 ) continue;
+						}
+						else
+						{
+							erPAgent = ArrayListPatientAgents.get(i);
+							erPAgent.lfGetWaitTime();
+							erPAgent.iGetMoveRoomFlag();
+						}
 						// なくなられたエージェントが配列上いた位置を削除するため、それ以降のデータがすべて1繰り下がるので、
 						// それに対応する。そうしないと配列サイズを超えて参照したエラーが発生します。
 						cOutsideLog.info( ArrayListPatientAgents.get(i).getId() + ","  + "病院外：退院しました！。");
@@ -257,7 +271,7 @@ public class EROutside extends Agent
 		// 患者エージェントの位置を設定します。
 		lfX = this.getPosition().getX()+10*(2*rnd.NextUnif()-1);
 		lfY = this.getPosition().getY()+10*(2*rnd.NextUnif()-1);
-		lfZ = this.getPosition().getZ()+10*(2*rnd.NextUnif()-1);
+		lfZ = this.getPosition().getZ();
 		ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1).setPosition( lfX, lfY, lfZ );
 
 		return ;
@@ -379,7 +393,7 @@ public class EROutside extends Agent
 			// 患者エージェントの位置を設定します。
 			lfX = this.getPosition().getX()+10*(2*rnd.NextUnif()-1);
 			lfY = this.getPosition().getY()+10*(2*rnd.NextUnif()-1);
-			lfZ = this.getPosition().getZ()+10*(2*rnd.NextUnif()-1);
+			lfZ = this.getPosition().getZ();
 			ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).setPosition( lfX, lfY, lfZ );
 			return;
 		}
@@ -409,7 +423,7 @@ public class EROutside extends Agent
 			// 患者エージェントの位置を設定します。
 			lfX = this.getPosition().getX()+10*(2*rnd.NextUnif()-1);
 			lfY = this.getPosition().getY()+10*(2*rnd.NextUnif()-1);
-			lfZ = this.getPosition().getZ()+10*(2*rnd.NextUnif()-1);
+			lfZ = this.getPosition().getZ();
 			ArrayListPatientAgents.get( ArrayListPatientAgents.size()-1 ).setPosition( lfX, lfY, lfZ );
 		}
 		engine.resume();
@@ -754,6 +768,19 @@ public class EROutside extends Agent
 		return ArrayListPatientAgents.get(iLoc);
 	}
 
+	/**
+	 * <PRE>
+	 *    患者エージェントを追加します。
+	 * </PRE>
+	 * @param erPAgent 患者エージェント
+	 */
+	public void vSetPatientAgent( ERPatientAgent erPAgent )
+	{
+		ArrayListPatientAgents.add( erPAgent );
+//		erCurrentPatientAgent = erPAgent;
+	}
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////演算関係
@@ -1075,6 +1102,20 @@ public class EROutside extends Agent
 		return Math.exp(lfLogGamma(lfX));
 	}
 
+	/**
+	 * <PRE>
+	 *    救急部門インスタンスのアドレスを設定します。
+	 * </PRE>
+	 * @param erDepartment 救急部門のインスタンス
+	 */
+	public void vSetErDepartmentPatientAgents(ERDepartment erDepartment)
+	{
+		int i;
+		for( i = 0;i < ArrayListPatientAgents.size(); i++ )
+		{
+			ArrayListPatientAgents.get(i).vSetErDepartment( erDepartment );
+		}
+	}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1127,18 +1168,4 @@ public class EROutside extends Agent
 		lfTotalTime += lfSecond;
 	}
 
-	/**
-	 * <PRE>
-	 *    救急部門インスタンスのアドレスを設定します。
-	 * </PRE>
-	 * @param erDepartment 救急部門のインスタンス
-	 */
-	public void vSetErDepartmentPatientAgents(ERDepartment erDepartment)
-	{
-		int i;
-		for( i = 0;i < ArrayListPatientAgents.size(); i++ )
-		{
-			ArrayListPatientAgents.get(i).vSetErDepartment( erDepartment );
-		}
-	}
 }

@@ -15,6 +15,32 @@ import utility.node.ERTriageNode;
 import utility.node.ERTriageNodeManager;
 import utility.sfmt.Rand;
 
+/**
+ * 病院の診察室を表すクラスです。
+ * このプログラムではこのクラスを含めすべての部屋をエージェントとして定義しています。<br>
+ * そのようにすることにより、いろいろと都合がよいためそのようにしております。<br>
+ * 診察室では登録された患者に対して、患者の重症度、バイタルサインなどのデータから<br>
+ * 次にどこの部屋に行けばよいのか診断します。診断後行く部屋は次の通りです。<br>
+ * １待合室<br>
+ * ２観察室<br>
+ * ３初療室<br>
+ * ４一般病棟<br>
+ * ５手術室<br>
+ *
+ * 使用方法は次の通りです。<br>
+ * 初期化　　　　　　vInitialize　<br>
+ * エージェント作成　vCreateDoctorAgents<br>
+ * 　　　　　　　　　vCreateNurseAgents<br>
+ * 設定　　　　　　　vSetDoctorAgentParameter<br>
+ * 　　　　　　　　　vSetNurseAgentParameter<br>
+ * 　　　　　　　　　vSetReadWriteFileForAgents<br>
+ * 診断　　　　　　　vImplementConsultation<br>
+ * 実行　　　　　　　action　<br>
+ * 終了処理　　　　　　vTerminate　<br>
+ *
+ * @author kobayashi
+ *
+ */
 public class ERConsultationRoom extends Agent
 {
 	private static final long serialVersionUID = -4740079265086427212L;
@@ -585,12 +611,16 @@ public class ERConsultationRoom extends Agent
 		// 患者のいる位置を待合室に変更します。
 		erPAgent.vSetLocation( 9 );
 
-		// 患者エージェントを待合室に配置します。
-		erWaitingRoom.vSetPatientAgent( erPAgent );
+		// 移動開始フラグを設定します。
+		erPAgent.vSetMoveRoomFlag( 1 );
+		erPAgent.vSetMoveWaitingTime( 0.0 );
 
 		// その患者を対応している医師、看護師エージェントのIDを0に設定します。
 		erPAgent.vSetNurseAgent( 0 );
 		erPAgent.vSetDoctorAgent( 0 );
+
+		// 患者エージェントを待合室に配置します。
+		erWaitingRoom.vSetPatientAgent( erPAgent );
 
 		// 看護師エージェントへ患者情報を送信します。
 		for( j = 0;j < erWaitingRoom.iGetNurseAgentsNum(); j++ )
@@ -1005,6 +1035,7 @@ public class ERConsultationRoom extends Agent
 				{
 					// 移動先の経路を患者エージェントに設定します。
 					erPAgent.vSetMoveRoute( erTriageNodeManager.getRoute( this.erGetTriageNode(), ArrayListExaminationFastRooms.get(i).erGetTriageNode() ) );
+					cConsultationRoomLog.info(erPAgent.getId() + "," + erConsultationDoctorAgentData.getId() + "," + "超音波室へ移動開始" + "," + "診察室");
 				}
 				erPAgent = null;
 
@@ -1090,6 +1121,7 @@ public class ERConsultationRoom extends Agent
 				{
 					// 移動先の経路を患者エージェントに設定します。
 					erPAgent.vSetMoveRoute( erTriageNodeManager.getRoute( this.erGetTriageNode(), ArrayListOperationRooms.get(i).erGetTriageNode() ) );
+					cConsultationRoomLog.info(erPAgent.getId() + "," + erConsultationDoctorAgentData.getId() + "," + "手術室へ移動開始" + "," + "診察室");
 				}
 				erPAgent = null;
 				break;
@@ -1179,6 +1211,7 @@ public class ERConsultationRoom extends Agent
 				{
 					// 移動先の経路を患者エージェントに設定します。
 					erPAgent.vSetMoveRoute( erTriageNodeManager.getRoute( this.erGetTriageNode(), ArrayListEmergencyRooms.get(i).erGetTriageNode() ) );
+					cConsultationRoomLog.info(erPAgent.getId() + "," + erConsultationDoctorAgent.getId() + "," + "初療室へ移動開始" + "," + "診察室");
 				}
 				erPAgent = null;
 
@@ -1253,6 +1286,13 @@ public class ERConsultationRoom extends Agent
 
 				// 医師エージェントの対応を終了します。
 				erConsultationDoctorAgent.vSetAttending( 0 );
+
+				if( iInverseSimFlag == 1 )
+				{
+					// 移動先の経路を患者エージェントに設定します。
+					erPAgent.vSetMoveRoute( erTriageNodeManager.getRoute( this.erGetTriageNode(), ArrayListSereveInjuryObservationRooms.get(i).erGetTriageNode() ) );
+					cConsultationRoomLog.info(erPAgent.getId() + "," + erConsultationDoctorAgent.getId() + "," + "重症観察室へ移動開始" + "," + "診察室");
+				}
 
 				erPAgent = null;
 
@@ -1338,6 +1378,7 @@ public class ERConsultationRoom extends Agent
 				{
 					// 移動先の経路を患者エージェントに設定します。
 					erPAgent.vSetMoveRoute( erTriageNodeManager.getRoute( this.erGetTriageNode(), ArrayListGeneralWardRooms.get(i).erGetTriageNode() ) );
+					cConsultationRoomLog.info(erPAgent.getId() + "," + erConsultationDoctorAgent.getId() + "," + "一般病棟へ移動開始" + "," + "診察室");
 				}
 				erPAgent = null;
 
@@ -1660,7 +1701,7 @@ public class ERConsultationRoom extends Agent
 			// 看護師エージェントの位置を設定します。
 			lfX = this.getPosition().getX()+10*(rnd.NextUnif());
 			lfY = this.getPosition().getY()+10*(rnd.NextUnif());
-			lfZ = this.getPosition().getZ()+10*(rnd.NextUnif());
+			lfZ = this.getPosition().getZ();
 			ArrayListNurseAgents.get(i).setPosition( lfX, lfY, lfZ );
 		}
 	}

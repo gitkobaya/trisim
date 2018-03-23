@@ -1,9 +1,16 @@
+/**
+ * <PRE>
+ *    逆シミュレーションを実行するためのパッケージです。
+ * </PRE>
+ */
 package inverse;
+
 import inverse.optimization.abc.Abc;
 import inverse.optimization.constraintcondition.ConstraintConditionInterface;
 import inverse.optimization.ga.BaseGenAlg;
 import inverse.optimization.ga.GenAlgException;
 import inverse.optimization.objectivefunction.ObjectiveFunctionInterface;
+import inverse.optimization.rcga.CUndx;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,13 +18,21 @@ import java.util.logging.Logger;
 
 import jp.ac.nihon_u.cit.su.furulab.fuse.Environment;
 import jp.ac.nihon_u.cit.su.furulab.fuse.SimulationEngine;
-import main.ERFinisher;
 import triage.ERDepartment;
+import triage.ERFinisher;
 import utility.csv.CCsv;
+import utility.initparam.InitInverseSimParam;
 import utility.initparam.InitSimParam;
 import utility.sfmt.Rand;
 
-
+/**
+ * <PRE>
+ *    逆シミュレーションを行うためのメイン部分です。
+ *    このクラスで初期化、実行、終了処理をします。
+ * </PRE>
+ * @author kobayashi
+ *
+ */
 public class InverseSimulationEngine
 {
 	private ERDepartment erDepartments[];
@@ -80,6 +95,7 @@ public class InverseSimulationEngine
 	private double lfConvergenceParam;			// 解への収束パラメータ状況
 
 	// 実数値GA関連パラメータ
+	private CUndx rcga;							// 実数値ＧＡを実行するクラス
 	private int iRcGaMethod;					// 実数値ＧＡ方式
 	private double lfAlpha;						// UNDX用パラメータ
 	private double lfBeta;						// UNDX用パラメータ
@@ -107,8 +123,13 @@ public class InverseSimulationEngine
 	private ArrayList<Long> alElapesdTime;
 
 	private InitSimParam initSimParam;
+	private InitInverseSimParam initInvSimParam;
 
-	/**
+	int iInitializeGeneralWardPatientNum;
+	int iInitializeIntensiveCareUnitPatientNum;
+	int iInitializeHighCareUnitPatientNum;
+
+	 /**
 	 * <PRE>
 	 *    逆シミュレーションのコンストラクタです。
 	 * </PRE>
@@ -163,6 +184,9 @@ public class InverseSimulationEngine
 	 * @param iFileWriteModeData						ファイル書き込みモード
 	 * @param iPatientArrivalModeData					患者到達モード（0:通常,1:災害）
 	 * @param initSimParam								初期設定パラメータ（合わせ込み）
+	 * @param iInitGeneralWardPatientNum				一般病棟の初期患者数
+	 * @param iInitIntensiveCareUnitPatientNum			集中治療室の初期患者数
+	 * @param iInitHighCareUnitPatientNum				高度治療室の初期患者数
 	 * @throws IOException								java標準のIO例外クラス
 	 */
 	public InverseSimulationEngine( int iGenerationNum,
@@ -194,7 +218,11 @@ public class InverseSimulationEngine
 			 int iInverseSimFlag,
 			 int iFileWriteModeData,
 			 int iPatientArrivalModeData,
-			 InitSimParam initSimParam ) throws IOException
+			 InitSimParam initSimParam,
+			 InitInverseSimParam initInvParam,
+			 int iInitGeneralWardPatientNum,
+			 int iInitIntensiveCareUnitPatientNum,
+			 int iInitHighCareUnitPatientNum) throws IOException
 	{
 		vInitialize( iGenerationNum, iGensNum, iGensVectorDimNum, iInvSimMethod,
 				iSimEndTime,
@@ -222,7 +250,11 @@ public class InverseSimulationEngine
 				 iInverseSimFlag,
 				 iFileWriteModeData,
 				 iPatientArrivalModeData,
-				 initSimParam );
+				 initSimParam,
+				 initInvParam,
+				 iInitGeneralWardPatientNum,
+				 iInitIntensiveCareUnitPatientNum,
+				 iInitHighCareUnitPatientNum);
 	}
 
 	/**
@@ -259,6 +291,10 @@ public class InverseSimulationEngine
 	 * @param iFileWriteModeData						ファイル書き込みモード
 	 * @param iPatientArrivalModeData					患者到達モード（0:通常,1:災害）
 	 * @param initParam									初期設定パラメータ（合わせ込みデータ）
+	 * @param initInvParam								逆シミュレーション用初期設定パラメータ
+	 * @param iInitGeneralWardPatientNum				一般病棟の初期患者数
+	 * @param iInitIntensiveCareUnitPatientNum			集中治療室の初期患者数
+	 * @param iInitHighCareUnitPatientNum				高度治療室の初期患者数
 	 * @throws IOException								java標準のIO例外クラス
 	 */
 	public void vInitialize( int iGenerationNum,
@@ -290,7 +326,11 @@ public class InverseSimulationEngine
 							 int iInverseSimFlagData,
 							 int iFileWriteModeData,
 							 int iPatientArrivalModeData,
-							 InitSimParam initParam ) throws IOException
+							 InitSimParam initParam,
+							 InitInverseSimParam initInvParam,
+							 int iInitGeneralWardPatientNum,
+							 int iInitIntensiveCareUnitPatientNum,
+							 int iInitHighCareUnitPatientNum) throws IOException
 	{
 		int i;
 
@@ -307,27 +347,31 @@ public class InverseSimulationEngine
 		pplfErArgument				= new double[iGensNumber][iGensVectorDimNum];
 		erDepartments				= new ERDepartment[iGensNumber];
 
-		strConsultationRoomPath				= strConsultationRoomPathData;
-		strOperationRoomPath				= strOperationRoomPathData;
-		strEmergencyRoomPath				= strEmergencyRoomPathData;
-		strObservationRoomPath				= strObservationRoomPathData;
-		strSevereInjuryObservationRoomPath	= strSevereInjuryObservationRoomPathData;
-		strIntensiveCareUnitPath			= strIntensiveCareUnitPathData;
-		strHighCareUnitPath					= strHighCareUnitPathData;
-		strGeneralWardPath					= strGeneralWardPathData;
-		strWaitingRoomPath					= strWaitingRoomPathData;
-		strXRayRoomPath						= strXRayRoomPathData;
-		strCTRoomPath						= strCTRoomPathData;
-		strMRIRoomPath						= strMRIRoomPathData;
-		strAngiographyRoomPath				= strAngiographyRoomPathData;
-		strFastRoomPath						= strFastRoomPathData;
-		lfPatientPepole						= lfPatientPepoleData;
-		iRandomMode							= iRandomModeData;
-		iInverseSimFlag						= iInverseSimFlagData;
-		invEngineCriticalSection			= cs;
-		iFileWriteMode						= iFileWriteModeData;
-		iPatientArrivalMode					= iPatientArrivalModeData;
-		initSimParam						= initParam;
+		strConsultationRoomPath					= strConsultationRoomPathData;
+		strOperationRoomPath					= strOperationRoomPathData;
+		strEmergencyRoomPath					= strEmergencyRoomPathData;
+		strObservationRoomPath					= strObservationRoomPathData;
+		strSevereInjuryObservationRoomPath		= strSevereInjuryObservationRoomPathData;
+		strIntensiveCareUnitPath				= strIntensiveCareUnitPathData;
+		strHighCareUnitPath						= strHighCareUnitPathData;
+		strGeneralWardPath						= strGeneralWardPathData;
+		strWaitingRoomPath						= strWaitingRoomPathData;
+		strXRayRoomPath							= strXRayRoomPathData;
+		strCTRoomPath							= strCTRoomPathData;
+		strMRIRoomPath							= strMRIRoomPathData;
+		strAngiographyRoomPath					= strAngiographyRoomPathData;
+		strFastRoomPath							= strFastRoomPathData;
+		lfPatientPepole							= lfPatientPepoleData;
+		iRandomMode								= iRandomModeData;
+		iInverseSimFlag							= iInverseSimFlagData;
+		invEngineCriticalSection				= cs;
+		iFileWriteMode							= iFileWriteModeData;
+		iPatientArrivalMode						= iPatientArrivalModeData;
+		initSimParam							= initParam;
+		initInvSimParam							= initInvParam;
+		iInitializeGeneralWardPatientNum		= iInitGeneralWardPatientNum;
+		iInitializeIntensiveCareUnitPatientNum	= iInitIntensiveCareUnitPatientNum;
+		iInitializeHighCareUnitPatientNum		= iInitHighCareUnitPatientNum;
 
 		SimLog.warning( "クラス名" + "," + this.getClass() + "," + "メソッド名" + "," + "vInitialize" + "," + "クリティカルセクションのアドレス" + "," + cs + "," );
 		// 各救急部門オブジェクトにパラメーターを割り振ります。
@@ -339,15 +383,15 @@ public class InverseSimulationEngine
 				erDepartments[i].vSetLog(SimLog);
 				erDepartments[i].vSetSimulationEndTime( iSimulationEndTime );
 				erDepartments[i].vSetErDepartmentRandom( rnd );
-				erDepartments[i].vSetRandomEmergencyDepartment( 1 );
-				erDepartments[i].vSetRandomEmergencyDepartmentAgents( 1 );
+				erDepartments[i].vSetRandomEmergencyDepartment( initInvSimParam );
+				erDepartments[i].vSetRandomEmergencyDepartmentAgents( initInvSimParam );
 				erDepartments[i].vInitialize( engine, env, strConsultationRoomPathData,
 											  strOperationRoomPathData, strEmergencyRoomPathData, strObservationRoomPathData,
 											  strSevereInjuryObservationRoomPathData, strIntensiveCareUnitPathData,
 											  strHighCareUnitPathData, strGeneralWardPathData, strWaitingRoomPathData,
 											  strXRayRoomPathData, strCTRoomPathData, strMRIRoomPathData, strAngiographyRoomPathData,
 											  strFastRoomPathData, lfPatientPepoleData, iRandomModeData, iInverseSimFlagData, iFileWriteModeData,
-											  iPatientArrivalMode, SimRandom, initSimParam );
+											  iPatientArrivalMode, SimRandom, initParam, iInitGeneralWardPatientNum, iInitIntensiveCareUnitPatientNum, iInitHighCareUnitPatientNum );
 				erDepartments[i].vSetAllLog( log );
 				erDepartments[i].vSetCriticalSection( cs );
 			}
@@ -380,10 +424,27 @@ public class InverseSimulationEngine
 	 * <PRE>
 	 *    遺伝的アルゴリズムの初期化を実行します。
 	 * </PRE>
+	 * @param iGaMethodData		遺伝的アルゴリズムの手法
+	 * @param iGenNumsData		遺伝子数
+	 * @param iGenBitsNum		各遺伝子の構成数
+	 * @param iCrossOverMethod	交叉手法
+	 * @param iCrossOverLoc		交叉位置
+	 * @param lfCrossOverProb	交叉確率
+	 * @param lfMutationProb	突然変異確率
 	 */
-	public void vInitInvSimEngineGa()
+	public void vInitInvSimEngineGa( int iGaMethodData, int iGenNumsData, int iGenBitsNum, int iCrossOverMethod, int iCrossOverLoc, double lfCrossOverProb, double lfMutationProb )
 	{
+		iGaMethod				= iGaMethodData;
+		iGensNumber				= iGenNumsData;
+		iGensVectorDimension	= iGenBitsNum;
+		iGaCrossOverMethod		= iCrossOverMethod;
+		iGaCrossOverLoc			= iCrossOverLoc;
+		lfGaCorssOverProb		= lfCrossOverProb;
+		lfGaMutationProb		= lfMutationProb;
+		iGaSelectNumber			= 2;
 
+		// 遺伝的アルゴリズムのインスタンスを生成します。
+		ga = new BaseGenAlg( iGensNumber, iGensVectorDimension );
 	}
 
 	/**
@@ -528,15 +589,24 @@ public class InverseSimulationEngine
 		}
 		else if( iInverseSimulationMethod == 1 )
 		{
-
+			for( i = 0;i < pplfErArgument.length; i++ )
+			{
+				vSetOptimumData(i, pplfErArgument[i] );
+			}
 		}
 		else if( iInverseSimulationMethod == 2 )
 		{
-
+			for( i = 0;i < pplfErArgument.length; i++ )
+			{
+				vSetOptimumData(i, pplfErArgument[i] );
+			}
 		}
 		else if( iInverseSimulationMethod == 3 )
 		{
-
+			for( i = 0;i < pplfErArgument.length; i++ )
+			{
+				vSetOptimumData(i, pplfErArgument[i] );
+			}
 		}
 		else if( iInverseSimulationMethod == 4 )
 		{
@@ -555,11 +625,13 @@ public class InverseSimulationEngine
 	 * @param iTimeStep			FUSEのシミュレーションタイムステップ
 	 * @throws GenAlgException	遺伝的アルゴリズム計算エラー
 	 * @throws IOException		ファイル出力エラー
+	 * @return 評価指標の出力結果
 	 */
-	public void vImplement( int iTimeStep ) throws GenAlgException, IOException
+	public double lfImplement( int iTimeStep ) throws GenAlgException, IOException
 	{
 		int i;
 		int iCount = 0;
+		double lfRes = 0.0;
 
 		// シミュレーションを実行します。
 		SimEngine.start( iTimeStep );
@@ -614,7 +686,7 @@ public class InverseSimulationEngine
 //		vOutput();
 //		vOutput(2);
 		// ここで最適化手法を実行します。
-		vImplementOptimize();
+		lfRes = lfImplementOptimize();
 //		vOutput(1);
 
 		// 逆シミュレーションの現在回数を更新します。
@@ -634,6 +706,7 @@ public class InverseSimulationEngine
 		// 現在までの時間を計測
 		vGetCurrentTime();
 
+		return lfRes;
 	}
 
 	/**
@@ -763,11 +836,14 @@ public class InverseSimulationEngine
 		// ＧＡを適用します。
 		if( iInverseSimulationMethod == 1 )
 		{
+			ga.vSetConstraintFunction(interfaceObjFunc);
+			ga.vSetConstarintFunctionMode( iEvaluationIndexModeData );
 		}
 		// 実数値ＧＡを適用します。
 		else if( iInverseSimulationMethod == 2 )
 		{
-
+//			rcga.vSetConstraintFunction( interfaceObjFunc );
+//			rcga.vSetConstarintFunctionMode( iEvaluationIndexModeData );
 		}
 		// 粒子群最適化法を適用します。
 		else if( iInverseSimulationMethod == 3 )
@@ -798,6 +874,7 @@ public class InverseSimulationEngine
 		// ＧＡの場合。
 		if( iInverseSimulationMethod == 1 )
 		{
+			ga.vReleaseCallbackConstraintFunction();
 		}
 		// 実数値ＧＡの場合。
 		else if( iInverseSimulationMethod == 2 )
@@ -830,6 +907,7 @@ public class InverseSimulationEngine
 		// ＧＡの場合。
 		if( iInverseSimulationMethod == 1 )
 		{
+			ga.vReleaseCallbackConstraintCondition();
 		}
 		// 実数値ＧＡの場合。
 		else if( iInverseSimulationMethod == 2 )
@@ -961,34 +1039,37 @@ public class InverseSimulationEngine
 	 *   逆シミュレーションを実行します。
 	 * </PRE>
 	 * @throws GenAlgException 遺伝的アルゴリズム計算エラー
+	 * @return 評価指標出力結果
 	 */
-	public void vImplementOptimize() throws GenAlgException
+	public double lfImplementOptimize() throws GenAlgException
 	{
+		double lfRes = 0.0;
 		// 遺伝的アルゴリズムを実行します。
 		if( iInverseSimulationMethod == 1 )
 		{
-			vGeneticAlgorithm();
+			lfRes = lfGeneticAlgorithm();
 		}
 		// 実数値ＧＡを適用します。
 		else if( iInverseSimulationMethod == 2 )
 		{
-			vRealCodedGeneticAlgorithm();
+			lfRes = lfRealCodedGeneticAlgorithm();
 		}
 		// 粒子群最適化法を適用します。
 		else if( iInverseSimulationMethod == 3 )
 		{
-			vParticleSwarmOptimization();
+			lfRes = lfParticleSwarmOptimization();
 		}
 		// 人工蜂コロニー法を適用します。
 		else if( iInverseSimulationMethod == 4 )
 		{
-			vArtificialBeeColonyMethod();
+			lfRes = lfArtificialBeeColonyMethod();
 		}
 		// それ以外の手法を適用したので異常終了とします。
 		else
 		{
 
 		}
+		return lfRes;
 	}
 
 	/**
@@ -997,7 +1078,7 @@ public class InverseSimulationEngine
 	 * </PRE>
 	 * @throws GenAlgException	遺伝的アルゴリズム計算エラー
 	 */
-	private void vGeneticAlgorithm() throws GenAlgException
+	private double lfGeneticAlgorithm() throws GenAlgException
 	{
 		// 淘汰を実行します。
 		if( iGaMethod == 1 )
@@ -1015,8 +1096,19 @@ public class InverseSimulationEngine
 			// トーナメント法
 			ga.lGensSelectTournament( iGaSelectNumber );
 		}
+		// 交叉を行います。
+		ga.lGensCrossOver(lfGaCorssOverProb, iGaCrossOverMethod );
+
 		// 突然変異を実行します。
 		ga.lGensMutation( lfGaMutationProb );
+
+		// 現時点での最大最小を求めます。
+		ga.vGetLocalMaxMin();
+
+		// 全体での最大最小を求めます。
+		ga.vGetGlobalMaxMin();
+
+		return ga.lfGetGlobalMinGaDataConstFuncValue();
 	}
 
 	/**
@@ -1024,7 +1116,7 @@ public class InverseSimulationEngine
 	 *    粒子群最適化法を実行します。
 	 * </PRE>
 	 */
-	public void vParticleSwarmOptimization()
+	public double lfParticleSwarmOptimization()
 	{
 		// PSOを実行します。
 		if( iPsoMethod == 1 )
@@ -1043,6 +1135,7 @@ public class InverseSimulationEngine
 		{
 			// Constriction Factor Approach法
 		}
+		return 0.0;
 	}
 
 	/**
@@ -1050,8 +1143,9 @@ public class InverseSimulationEngine
 	 *    人工蜂コロニー法を実行します。
 	 * </PRE>
 	 */
-	private void vArtificialBeeColonyMethod()
+	private double lfArtificialBeeColonyMethod()
 	{
+		double lfRes = 0.0;
 		// オリジナルArtificial Bee Colony Method(2005)
 		if( iAbcMethod == 1 )
 		{
@@ -1132,6 +1226,8 @@ public class InverseSimulationEngine
 		{
 			abc.vBFARexAbc();
 		}
+		lfRes = abc.lfOutputGlobalMinAbcDataConstFuncValue();
+		return lfRes;
 	}
 
 	/**
@@ -1139,7 +1235,7 @@ public class InverseSimulationEngine
 	 *    実数値遺伝的アルゴリズムを実行します。
 	 * </PRE>
 	 */
-	private void vRealCodedGeneticAlgorithm()
+	private double lfRealCodedGeneticAlgorithm()
 	{
 	// 実数値GA法を実行します。
 		if( iRcGaMethod == 1 )
@@ -1158,6 +1254,7 @@ public class InverseSimulationEngine
 		{
 			// AREX
 		}
+		return 0.0;
 	}
 
 	/**
@@ -1171,6 +1268,17 @@ public class InverseSimulationEngine
 		int i,j;
 		Runtime rc = Runtime.getRuntime();
 
+		// 各パラメータでもしも、0以下の値を出しているものがある場合0とします。
+		for( i = 0;i < pplfErArgument.length; i++ )
+		{
+			for( j = 0;j < pplfErArgument[i].length; j++ )
+			{
+				if( pplfErArgument[i][j] < 0.0 )
+				{
+					pplfErArgument[i][j] = 0.0;
+				}
+			}
+		}
 		// 終了処理を実行します。
 		for( i = 0;i < erDepartments.length; i++ )
 		{
@@ -1229,7 +1337,8 @@ public class InverseSimulationEngine
 										  strSevereInjuryObservationRoomPath, strIntensiveCareUnitPath,
 										  strHighCareUnitPath, strGeneralWardPath, strWaitingRoomPath,
 										  strXRayRoomPath, strCTRoomPath, strMRIRoomPath, strAngiographyRoomPath,
-										  strFastRoomPath, lfPatientPepole, iRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, SimRandom, initSimParam );
+										  strFastRoomPath, lfPatientPepole, iRandomMode, iInverseSimFlag, iFileWriteMode, iPatientArrivalMode, SimRandom, initSimParam,
+										  iInitializeGeneralWardPatientNum, iInitializeIntensiveCareUnitPatientNum, iInitializeHighCareUnitPatientNum );
 			// ログ出力を設定します。
 			erDepartments[i].vSetAllLog( SimLog );
 			erDepartments[i].vSetCriticalSection( invEngineCriticalSection );
@@ -1261,13 +1370,30 @@ public class InverseSimulationEngine
 					strData += pplfErArgument[i][j] + "," ;
 					System.out.print( pplfErArgument[i][j] + "," );
 				}
-				strData += abc.strOutputSingleConstraintFunction(i);
-				strData += "\n";
-				System.out.println(abc.strOutputSingleConstraintFunction(i) + "");
+				if( iInverseSimulationMethod == 1 )
+				{
+					strData += ga.strOutputSingleConstraintFunction(i);
+					strData += "\n";
+					System.out.println(ga.strOutputSingleConstraintFunction(i) + "");
+				}
+				else if( iInverseSimulationMethod == 4 )
+				{
+					strData += abc.strOutputSingleConstraintFunction(i);
+					strData += "\n";
+					System.out.println(abc.strOutputSingleConstraintFunction(i) + "");
+				}
 			}
 			csvWriteERData.vWrite( strData );
-			lfRes = abc.lfOutputGlobalMinAbcDataConstFuncValue();
-			strData = abc.strOutputGlobalMinAbcData();
+			if( iInverseSimulationMethod == 1 )
+			{
+				lfRes = ga.lfOutputGlobalMinGaDataConstFuncValue();
+				strData = ga.strOutputGlobalMinGaData();
+			}
+			else if( iInverseSimulationMethod == 4 )
+			{
+				lfRes = abc.lfOutputGlobalMinAbcDataConstFuncValue();
+				strData = abc.strOutputGlobalMinAbcData();
+			}
 			System.out.println( strData + Double.toString( lfRes ) );
 			csvWriteERConstraintFunctionValue.vWrite( strData + Double.toString( lfRes ) );
 		}
@@ -1277,16 +1403,41 @@ public class InverseSimulationEngine
 			{
 				for( j = 0;j < pplfErArgument[i].length; j++ )
 				{
-					strData += abc.lfGetBeeData(i, j) + "," ;
-					System.out.print( abc.lfGetBeeData(i, j) + "," );
+					if( iInverseSimulationMethod == 1 )
+					{
+						strData += ga.lGetGensData(i, j) + "," ;
+						System.out.print( ga.lGetGensData(i, j) + "," );
+					}
+					else if( iInverseSimulationMethod == 4 )
+					{
+						strData += abc.lfGetBeeData(i, j) + "," ;
+						System.out.print( abc.lfGetBeeData(i, j) + "," );
+					}
 				}
-				strData += abc.strOutputSingleConstraintFunction(i);
-				strData += "\n";
-				System.out.println(abc.strOutputSingleConstraintFunction(i) + "");
+				if( iInverseSimulationMethod == 1 )
+				{
+					strData += ga.strOutputSingleConstraintFunction(i);
+					strData += "\n";
+					System.out.println(ga.strOutputSingleConstraintFunction(i) + "");
+				}
+				else if( iInverseSimulationMethod == 4 )
+				{
+					strData += abc.strOutputSingleConstraintFunction(i);
+					strData += "\n";
+					System.out.println(abc.strOutputSingleConstraintFunction(i) + "");
+				}
 			}
 			csvWriteERData.vWrite( strData );
-			lfRes = abc.lfOutputGlobalMinAbcDataConstFuncValue();
-			strData = abc.strOutputGlobalMinAbcData();
+			if( iInverseSimulationMethod == 1 )
+			{
+				lfRes = ga.lfOutputGlobalMinGaDataConstFuncValue();
+				strData = ga.strOutputGlobalMinGaData();
+			}
+			else if( iInverseSimulationMethod == 4 )
+			{
+				lfRes = abc.lfOutputGlobalMinAbcDataConstFuncValue();
+				strData = abc.strOutputGlobalMinAbcData();
+			}
 			System.out.println( strData + Double.toString( lfRes ) );
 			csvWriteERConstraintFunctionValue.vWrite( strData + Double.toString( lfRes ) );
 		}
@@ -1484,6 +1635,8 @@ public class InverseSimulationEngine
 		// ＧＡを適用します。
 		if( iInverseSimulationMethod == 1 )
 		{
+			ga.vSetConstraintCondition(interfaceConstraintCondition);
+			ga.vSetConstarintConditionMode( 4 );
 		}
 		// 実数値ＧＡを適用します。
 		else if( iInverseSimulationMethod == 2 )

@@ -11,6 +11,7 @@ import jp.ac.nihon_u.cit.su.furulab.fuse.SimulationEngine;
 import jp.ac.nihon_u.cit.su.furulab.fuse.models.Agent;
 import utility.csv.CCsv;
 import utility.initparam.InitSimParam;
+import utility.node.ERTriageNode;
 
 public class ERDoctorAgent extends Agent{
 
@@ -166,6 +167,8 @@ public class ERDoctorAgent extends Agent{
 	private int iFileWriteMode;							// 長時間シミュレーションファイル出力モード
 
 	private InitSimParam initSimParam;					// 初期設定ファイル操作用変数
+	
+	private ERTriageNode erTriageNode;					// 医師がいるノード
 
 	/**
 	 * <PRE>
@@ -454,8 +457,8 @@ public class ERDoctorAgent extends Agent{
 			else if( iEmergencyLevel == 3 && erPatientAgent.iGetStartEmergencyLevel() == 4 )
 			{
 //				if( rnd.NextUnif() < 0.5 )
-//				if( rnd.NextUnif() < initSimParam.lfGetDoctorImplementConsultationJudgeEmergencyDischargeRate2() )
-//					iProcessResult = 1;
+				if( rnd.NextUnif() < initSimParam.lfGetDoctorImplementConsultationJudgeEmergencyDischargeRate2() )
+					iProcessResult = 1;
 			}
 		}
 		else
@@ -4135,7 +4138,7 @@ public class ERDoctorAgent extends Agent{
 	 *    正規乱数を発生させます。-1.0以下、1.0以上が乱数を発生させた結果出力された場合、
 	 *    再度乱数を発生させます。乱数発生回数の繰り返し回数は100回とします。
 	 * </PRE>
-	 * @return	正規乱数の結果(-1.0 \leq rand \leq 1.0)
+	 * @return	正規乱数の結果(-1.0 &lt;= rand &lt;= 1.0)
 	 */
 	public double normalRand()
 	{
@@ -4252,4 +4255,49 @@ public class ERDoctorAgent extends Agent{
 		// TODO 自動生成されたメソッド・スタブ
 		initSimParam = initparam;
 	}
+
+	/**
+	 * <PRE>
+	 *   医師エージェントが何階にいるか取得します。
+	 * </PRE>
+	 * @return 患者エージェントの現在いる階数
+	 */
+	public int iGetFloor()
+	{
+		return erTriageNode.iGetFloor();
+	}
+
+	/**
+	 * <PRE>
+	 *   医師エージェントが何階にいるか設定します。
+	 * </PRE>
+	 * @param 現在いる階数
+	 */
+	public void vSetFloor( int iFloorData )
+	{
+		erTriageNode.vSetFloor( iFloorData );
+	}
+
+	/**
+	 * <PRE>
+	 *    トリアージプロトコルの設定をします。
+	 * </PRE>
+	 * @param cCurNode トリアージプロトコル
+	 */
+	public void vSetTriageNode( ERTriageNode cCurNode )
+	{
+		erTriageNode = cCurNode;
+	}
+
+	/**
+	 * <PRE>
+	 *   トリアージプロトコルを取得します。
+	 * </PRE>
+	 * @return トリアージプロトコル
+	 */
+	public ERTriageNode erGetTriageNode()
+	{
+		return erTriageNode;
+	}
+
 }

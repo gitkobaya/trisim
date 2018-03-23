@@ -1,6 +1,11 @@
 package inverse.optimization.ga;
 
+import inverse.optimization.constraintcondition.ConstraintConditionInterface;
+import inverse.optimization.objectivefunction.ObjectiveFunctionInterface;
+
 import java.util.Arrays;
+
+import utility.sfmt.Sfmt;
 
 public class BaseGenAlg {
 
@@ -18,12 +23,27 @@ public class BaseGenAlg {
 	private double[] plfFit;
 	private double[] plfCdf;
 	private int[] paiRank;
-	private long[][] plGens;
-	private long[][] plBufGens;
+	private double[][] pplGens;
+	private double[][] pplBufGens;
+	private double[] plfGlobalMaxGaData;
+	private double[] plfGlobalMinGaData;
+	private double[][] pplfLocalMaxGaData;
+	private double[][] pplfLocalMinGaData;
+	private double[] plfLocalMaxObjectiveGaData;
+	private double[] plfLocalMinObjectiveGaData;
 	private int ulGenNumbers;
 	private int ulGenBitNumbers;
 
+	private double lfGlobalMaxGaData;
+	private double lfGlobalMinGaData;
+	private double lfLocalMaxGaData;
+	private double lfLocalMinGaData;
+
+
 	private Sfmt rnd;
+
+	private ObjectiveFunctionInterface pflfObjectiveFunction;	// 評価指標のコールバック関数
+	private ConstraintConditionInterface pfvConstraintCondition;	// 評価指標の制約条件のコールバック関数
 
 	/**
 	 * コンストラクタ
@@ -35,9 +55,36 @@ public class BaseGenAlg {
 	{
 		ulGenNumbers	= 0;
 		ulGenBitNumbers	= 0;
-		plGens			= null;
-		plBufGens		= null;
+		pplGens			= null;
+		pplBufGens		= null;
 		plfCdf			= null;
+		plfFit			= null;
+	}
+
+	/**
+	 * コンストラクタ
+	 * @author kobayashi
+	 * @since 2009/8/23
+	 * @version 1.0
+	 */
+	public BaseGenAlg( long ulGensNums, long ulGenBits )
+	{
+		ulGenNumbers	= 0;
+		ulGenBitNumbers	= 0;
+		pplGens			= null;
+		pplBufGens		= null;
+		plfCdf			= null;
+		plfFit			= null;
+
+		try
+		{
+			lGensInit( ulGensNums, ulGenBits );
+		}
+		catch (GenAlgException e)
+		{
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -78,16 +125,18 @@ public class BaseGenAlg {
 		{
 			ulGenNumbers	= (int)ulGensNums;
 			ulGenBitNumbers = (int)ulGenBits;
-			plGens = new long[ulGenNumbers][ulGenBitNumbers];
-			plBufGens = new long[ulGenNumbers][ulGenBitNumbers];
-			for( i=0; i<ulGensNums; i++ )
-			{
-				//
-				for( j=0; j<ulGenBits; j++ )
-				{
-					plBufGens[i][j] = 0;
-				}
-			}
+			pplGens = new double[ulGenNumbers][ulGenBitNumbers];
+			pplBufGens = new double[ulGenNumbers][ulGenBitNumbers];
+			plfFit = new double[ulGenNumbers];
+			plfCdf = new double[ulGenNumbers];
+			plfGlobalMaxGaData = new double[ulGenBitNumbers];
+			plfGlobalMinGaData = new double[ulGenBitNumbers];
+			pplfLocalMaxGaData = new double[ulGenNumbers][ulGenBitNumbers];
+			pplfLocalMinGaData = new double[ulGenNumbers][ulGenBitNumbers];
+			plfLocalMaxObjectiveGaData = new double[ulGenNumbers];
+			plfLocalMinObjectiveGaData = new double[ulGenNumbers];
+			lfGlobalMaxGaData = -Double.MAX_VALUE;
+			lfGlobalMinGaData = Double.MAX_VALUE;
 		}
 		catch( NullPointerException npe )
 		{
@@ -139,13 +188,13 @@ public class BaseGenAlg {
 			cGae.SetErrorInfo( GENALG_INVALID_DATA_ERROR, "lGensFit", "CBaseGenAlg", "染色体ビット番号不正データ", ste[0].getLineNumber() );
 			throw( cGae );
 		}
-		if( plGens == null )
+		if( pplGens == null )
 		{
 			StackTraceElement ste[] = (new Throwable()).getStackTrace();
 			cGae.SetErrorInfo( GENALG_MEMORYALLOCATE_ERROR, "lGensFit", "CBaseGenAlg", "染色体格納配列メモリ不正", ste[0].getLineNumber() );
 			throw( cGae );
 		}
-		if( plBufGens == null )
+		if( pplBufGens == null )
 		{
 			StackTraceElement ste[] = (new Throwable()).getStackTrace();
 			cGae.SetErrorInfo( GENALG_MEMORYALLOCATE_ERROR, "lGensFit", "CBaseGenAlg", "染色体一時格納配列メモリ不正", ste[0].getLineNumber() );
@@ -160,8 +209,8 @@ public class BaseGenAlg {
 				for( j=0; j<ulGenBitNumbers; j++ )
 				{
 					lfRand = lfNormalRand();
-					plGens[i][j] = (int)(lfRand);
-//					plGens[i][j] = (lfRand <= 0.5) ? 1 : 0;
+					pplGens[i][j] = (int)(lfRand);
+//					pplGens[i][j] = (lfRand <= 0.5) ? 1 : 0;
 				}
 			}
 		}
@@ -186,6 +235,93 @@ public class BaseGenAlg {
 		return 0;
 	}
 
+
+	/**
+	 * <PRE>
+	 *   目的関数をインストールします。
+	 *   実際にはコールバック関数をインストールします。
+	 * </PRE>
+	 * @param pflfFunction 目的関数の関数ポインタ
+	 * @author kobayashi
+	 * @since 2015/7/28
+	 * @version 0.1
+	 */
+	public void vSetConstraintFunction( ObjectiveFunctionInterface pflfFunction )
+	{
+		pflfObjectiveFunction = pflfFunction;
+	}
+
+	/**
+	 * <PRE>
+	 * 　使用する目的関数を設定します。
+	 * </PRE>
+	 * @param iMode 使用する目的関数
+	 * @author kobayashi
+	 * @since 2015/7/28
+	 * @version 0.1
+	 */
+	public void vSetConstarintFunctionMode( int iMode )
+	{
+		pflfObjectiveFunction.vSetFunctionMode( iMode );
+	}
+
+	/**
+	 * <PRE>
+	 * 　目的関数をアンインストールします。
+	 * 　実際にはコールバック関数をアンインストールします。
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2015/7/28
+	 * @version 0.1
+	 */
+	public void vReleaseCallbackConstraintFunction()
+	{
+		pflfObjectiveFunction = null;
+	}
+
+	/**
+	 * <PRE>
+	 * 　制約条件をインストールします。
+	 * 　実際にはコールバック関数をインストールします。
+	 * </PRE>
+	 * @param pfvCondition 制約条件の関数ポインタ
+	 * @author kobayashi
+	 * @since 2016/8/12
+	 * @version 0.1
+	 */
+	public void vSetConstraintCondition( ConstraintConditionInterface pfvCondition )
+	{
+		pfvConstraintCondition = pfvCondition;
+	}
+
+	/**
+	 * <PRE>
+	 * 　使用する制約条件を設定します。
+	 * </PRE>
+	 * @param iMode 使用する制約条件
+	 * @author kobayashi
+	 * @since 2016/8/12
+	 * @version 0.1
+	 */
+	public void vSetConstarintConditionMode( int iMode )
+	{
+		pfvConstraintCondition.vSetConditionMode( iMode );
+	}
+
+	/**
+	 * <PRE>
+	 * 　制約条件をアンインストールします。
+	 * 　実際にはコールバック関数をアンインストールします。
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/12
+	 * @version 0.1
+	 */
+	public void vReleaseCallbackConstraintCondition()
+	{
+		pfvConstraintCondition = null;
+	}
+
 	/**
 	 * <PRE>
 	 *   ルーレット選択を実行します。
@@ -205,7 +341,8 @@ public class BaseGenAlg {
 		double lfProb_i			= 0.0;
 		double lfProb_i1		= 0.0;
 		double lfProb			= 0.0;
-		double lfRand			= rnd.NextUnif()*9;
+		double lfRand			= rnd.NextUnif();
+		double plfArg[]			= null;
 		long plSelectRoletteGens[] = null;
 		GenAlgException cGae = new GenAlgException();
 
@@ -221,13 +358,13 @@ public class BaseGenAlg {
 			cGae.SetErrorInfo( GENALG_INVALID_DATA_ERROR, "lGensSelectRolette", "BaseGenAlg", "染色体ビット番号不正データ", ste[0].getLineNumber() );
 			throw( cGae );
 		}
-		if( plGens == null )
+		if( pplGens == null )
 		{
 			StackTraceElement ste[] = (new Throwable()).getStackTrace();
 			cGae.SetErrorInfo( GENALG_MEMORYALLOCATE_ERROR, "lGensSelectRolette", "BaseGenAlg", "染色体格納配列メモリ不正", ste[0].getLineNumber() );
 			throw( cGae );
 		}
-		if( plBufGens == null )
+		if( pplBufGens == null )
 		{
 			StackTraceElement ste[] = (new Throwable()).getStackTrace();
 			cGae.SetErrorInfo( GENALG_MEMORYALLOCATE_ERROR, "lGensSelectRolette", "BaseGenAlg", "染色体一時格納配列メモリ不正", ste[0].getLineNumber() );
@@ -236,6 +373,13 @@ public class BaseGenAlg {
 		try
 		{
 			plSelectRoletteGens = new long[ulGenNumbers];
+			plfArg = new double[ulGenBitNumbers];
+
+			// 適応度を算出します。
+			for( i=0;i < ulGenNumbers; i++ )
+			{
+				plfFit[i] = pflfObjectiveFunction.lfObjectiveFunction(pplGens[i]);
+			}
 
 			for( i=0; i<ulGenNumbers; i++ )
 			{
@@ -246,7 +390,7 @@ public class BaseGenAlg {
 			{
 				lfProb = rnd.NextUnif();
 				// 初期位置のルーレット選択確率の位置を計算。
-				lfProb_i = 0.0;
+				lfProb_i = lfProb_i1 = 0.0;
 				for(j=0; j<ulGenNumbers; j++ )
 				{
 					// 2つめの選択確率の位置を算出。
@@ -264,7 +408,7 @@ public class BaseGenAlg {
 			{
 				for( j=0; j<ulGenBitNumbers; j++ )
 				{
-					plBufGens[i][j] = plGens[(int)plSelectRoletteGens[i]][j];
+					pplBufGens[i][j] = pplGens[(int)plSelectRoletteGens[i]][j];
 				}
 			}
 			// 染色体の更新
@@ -272,7 +416,7 @@ public class BaseGenAlg {
 			{
 				for( j=0; j<ulGenBitNumbers; j++ )
 				{
-					plGens[i][j] = plBufGens[i][j];
+					pplGens[i][j] = pplBufGens[i][j];
 				}
 			}
 		}
@@ -343,13 +487,13 @@ public class BaseGenAlg {
 			cGae.SetErrorInfo( GENALG_INVALID_DATA_ERROR, "lGensSelectTournament", "CBaseGenAlg", "染色体ビット番号不正データ", ste[0].getLineNumber()  );
 			throw( cGae );
 		}
-		if( plGens == null )
+		if( pplGens == null )
 		{
 			StackTraceElement ste[] = (new Throwable()).getStackTrace();
 			cGae.SetErrorInfo( GENALG_MEMORYALLOCATE_ERROR, "lGensSelectTournament", "CBaseGenAlg", "染色体格納配列メモリ不正", ste[0].getLineNumber()  );
 			throw( cGae );
 		}
-		if( plBufGens == null )
+		if( pplBufGens == null )
 		{
 			StackTraceElement ste[] = (new Throwable()).getStackTrace();
 			cGae.SetErrorInfo( GENALG_MEMORYALLOCATE_ERROR, "lGensSelectTournament", "CBaseGenAlg", "染色体一時格納配列メモリ不正", ste[0].getLineNumber()  );
@@ -397,7 +541,7 @@ public class BaseGenAlg {
 					{
 						for( k=0 ; k<ulGenBitNumbers ; k++ )
 						{
-							plBufGens[j][k] = plGens[plBufCdfSelect[i]][k];
+							pplBufGens[j][k] = pplGens[plBufCdfSelect[i]][k];
 						}
 					}
 				}
@@ -409,7 +553,7 @@ public class BaseGenAlg {
 						// 該当番号を取得する。
 						for( k=0 ; k<ulGenBitNumbers ; k++ )
 						{
-							plBufGens[j][k] = plGens[plBufCdfSelect[i]][k];
+							pplBufGens[j][k] = pplGens[plBufCdfSelect[i]][k];
 						}
 					}
 				}
@@ -452,15 +596,15 @@ public class BaseGenAlg {
 				{
 					for( j = 0;j < ulGenBitNumbers; j++ )
 					{
-						plBufGens[i][j] = plGens[piTempRank[i]][j];
-						plBufGens[ulGenNumbers-1-i][j] = plGens[piTempRank[i]][j];
+						pplBufGens[i][j] = pplGens[piTempRank[i]][j];
+						pplBufGens[ulGenNumbers-1-i][j] = pplGens[piTempRank[i]][j];
 					}
 				}
 				if( ulGenNumbers % 2 == 1 )
 				{
 					for( j = 0;j < ulGenBitNumbers; j++ )
 					{
-						plBufGens[i][j] = plGens[piTempRank[i]][j];
+						pplBufGens[i][j] = pplGens[piTempRank[i]][j];
 					}
 				}
 				plfTempData = null;
@@ -471,7 +615,7 @@ public class BaseGenAlg {
 			{
 				for( j=0; j<ulGenBitNumbers; j++ )
 				{
-					plGens[i][j] = plBufGens[i][j];
+					pplGens[i][j] = pplBufGens[i][j];
 				}
 			}
 		}
@@ -530,13 +674,13 @@ public class BaseGenAlg {
 			cGae.SetErrorInfo( GENALG_INVALID_DATA_ERROR, "lGensSelectRanking", "CBaseGenAlg", "染色体ビット番号不正データ", ste[0].getLineNumber() );
 			throw( cGae );
 		}
-		if( plGens == null )
+		if( pplGens == null )
 		{
 			StackTraceElement ste[] = (new Throwable()).getStackTrace();
 			cGae.SetErrorInfo( GENALG_MEMORYALLOCATE_ERROR, "lGensSelectRanking", "CBaseGenAlg", "染色体格納配列メモリ不正", ste[0].getLineNumber() );
 			throw( cGae );
 		}
-		if( plBufGens == null )
+		if( pplBufGens == null )
 		{
 			StackTraceElement ste[] = (new Throwable()).getStackTrace();
 			cGae.SetErrorInfo( GENALG_MEMORYALLOCATE_ERROR, "lGensSelectRanking", "CBaseGenAlg", "染色体一時格納配列メモリ不正", ste[0].getLineNumber() );
@@ -551,7 +695,7 @@ public class BaseGenAlg {
 			{
 				for( j=0; j<ulGenBitNumbers; j++ )
 				{
-					plBufGens[i][j] = plGens[paiRank[i]][j];
+					pplBufGens[i][j] = pplGens[paiRank[i]][j];
 				}
 			}
 			// 染色体の更新
@@ -559,7 +703,7 @@ public class BaseGenAlg {
 			{
 				for( j=0; j<ulGenBitNumbers; j++ )
 				{
-					plGens[i][j] = plBufGens[i][j];
+					pplGens[i][j] = pplBufGens[i][j];
 				}
 			}
 		}
@@ -640,13 +784,13 @@ public class BaseGenAlg {
 			cGae.SetErrorInfo( GENALG_INVALID_DATA_ERROR, "lGensCrossOver", "CBaseGenAlg", "染色体ビット番号不正データ", ste[0].getLineNumber() );
 			throw( cGae );
 		}
-		if( plGens == null )
+		if( pplGens == null )
 		{
 			StackTraceElement ste[] = (new Throwable()).getStackTrace();
 			cGae.SetErrorInfo( GENALG_MEMORYALLOCATE_ERROR, "lGensCrossOver", "CBaseGenAlg", "染色体格納配列メモリ不正", ste[0].getLineNumber() );
 			throw( cGae );
 		}
-		if( plBufGens == null )
+		if( pplBufGens == null )
 		{
 			StackTraceElement ste[] = (new Throwable()).getStackTrace();
 			cGae.SetErrorInfo( GENALG_MEMORYALLOCATE_ERROR, "lGensCrossOver", "CBaseGenAlg", "染色体一時格納配列メモリ不正", ste[0].getLineNumber() );
@@ -695,14 +839,14 @@ public class BaseGenAlg {
 						// 交叉を位置まで実行しない。
 						for( j=0; j<iCrossLoc; j++ )
 						{
-							plBufGens[i1][j] = plGens[(int)plSelectCrossGens[i1]][j];
-							plBufGens[i2][j] = plGens[(int)plSelectCrossGens[i2]][j];
+							pplBufGens[i1][j] = pplGens[(int)plSelectCrossGens[i1]][j];
+							pplBufGens[i2][j] = pplGens[(int)plSelectCrossGens[i2]][j];
 						}
 						// 交叉を実行する。
 						for( j=iCrossLoc; j<ulGenBitNumbers; j++ )
 						{
-							plBufGens[i1][j] = plGens[(int)plSelectCrossGens[i2]][j];
-							plBufGens[i2][j] = plGens[(int)plSelectCrossGens[i1]][j];
+							pplBufGens[i1][j] = pplGens[(int)plSelectCrossGens[i2]][j];
+							pplBufGens[i2][j] = pplGens[(int)plSelectCrossGens[i1]][j];
 						}
 						iCrossCount+=2;
 					}
@@ -714,7 +858,7 @@ public class BaseGenAlg {
 					{
 						if( plSelectCrossGens[i] != -1 )
 						{
-							plBufGens[i+iCrossCount][j] = plGens[i][j];
+							pplBufGens[i+iCrossCount][j] = pplGens[i][j];
 						}
 					}
 				}
@@ -755,14 +899,14 @@ public class BaseGenAlg {
 							// 交叉を実行しない。
 							if( j < plSelectCrossOverLoc[0] || j >= plSelectCrossOverLoc[1] )
 							{
-								plBufGens[i1][j] = plGens[(int)plSelectCrossGens[i1]][j];
-								plBufGens[i2][j] = plGens[(int)plSelectCrossGens[i2]][j];
+								pplBufGens[i1][j] = pplGens[(int)plSelectCrossGens[i1]][j];
+								pplBufGens[i2][j] = pplGens[(int)plSelectCrossGens[i2]][j];
 							}
 							// 交叉を実行する。
 							else if( plSelectCrossOverLoc[0] <= j && j < plSelectCrossOverLoc[1] )
 							{
-								plBufGens[i1][j] = plGens[(int)plSelectCrossGens[i2]][j];
-								plBufGens[i2][j] = plGens[(int)plSelectCrossGens[i1]][j];
+								pplBufGens[i1][j] = pplGens[(int)plSelectCrossGens[i2]][j];
+								pplBufGens[i2][j] = pplGens[(int)plSelectCrossGens[i1]][j];
 							}
 						}
 						iCrossCount+=2;
@@ -775,7 +919,7 @@ public class BaseGenAlg {
 					{
 						if( plSelectCrossGens[i] != -1 )
 						{
-							plBufGens[i+iCrossCount][j] = plGens[i][j];
+							pplBufGens[i+iCrossCount][j] = pplGens[i][j];
 						}
 					}
 				}
@@ -814,14 +958,14 @@ public class BaseGenAlg {
 							// 交叉を位置まで実行しない。
 //								if( j < plSelectCrossOverLoc[k] )
 //								{
-//									plBufGens[i1][j] = plGens[(int)plSelectCrossGens[i1]][j];
-//									plBufGens[i2][j] = plGens[(int)plSelectCrossGens[i2]][j];
+//									pplBufGens[i1][j] = pplGens[(int)plSelectCrossGens[i1]][j];
+//									pplBufGens[i2][j] = pplGens[(int)plSelectCrossGens[i2]][j];
 //								}
 //								// 交叉を実行する。
 //								else
 //								{
-//									plBufGens[i1][j] = plGens[(int)plSelectCrossGens[i2]][j];
-//									plBufGens[i2][j] = plGens[(int)plSelectCrossGens[i1]][j];
+//									pplBufGens[i1][j] = pplGens[(int)plSelectCrossGens[i2]][j];
+//									pplBufGens[i2][j] = pplGens[(int)plSelectCrossGens[i1]][j];
 //								}
 //							}
 //						}
@@ -850,14 +994,14 @@ public class BaseGenAlg {
 							// 交叉を位置まで実行しない。
 							if( plSelectCrossOverLoc[j] == 0 )
 							{
-								plBufGens[i1][j] = plGens[(int)plSelectCrossGens[i1]][j];
-								plBufGens[i2][j] = plGens[(int)plSelectCrossGens[i2]][j];
+								pplBufGens[i1][j] = pplGens[(int)plSelectCrossGens[i1]][j];
+								pplBufGens[i2][j] = pplGens[(int)plSelectCrossGens[i2]][j];
 							}
 							// 交叉を実行する。
 							else
 							{
-								plBufGens[i1][j] = plGens[(int)plSelectCrossGens[i2]][j];
-								plBufGens[i2][j] = plGens[(int)plSelectCrossGens[i1]][j];
+								pplBufGens[i1][j] = pplGens[(int)plSelectCrossGens[i2]][j];
+								pplBufGens[i2][j] = pplGens[(int)plSelectCrossGens[i1]][j];
 							}
 						}
 					}
@@ -870,7 +1014,7 @@ public class BaseGenAlg {
 					{
 						if( plSelectCrossGens[i] != -1 )
 						{
-							plBufGens[i+iCrossCount][j] = plGens[(int)plSelectCrossGens[i]][j];
+							pplBufGens[i+iCrossCount][j] = pplGens[(int)plSelectCrossGens[i]][j];
 						}
 					}
 				}
@@ -880,7 +1024,7 @@ public class BaseGenAlg {
 			{
 				for( j=0; j<ulGenBitNumbers; j++ )
 				{
-					plGens[i][j] = plBufGens[i][j];
+					pplGens[i][j] = pplBufGens[i][j];
 				}
 			}
 			plSelectCrossGens = null;
@@ -932,6 +1076,7 @@ public class BaseGenAlg {
 	{
 		int i,j;
 		double lfProb	= 0.0;
+		double[] plfArg = null;
 		GenAlgException cGae = new GenAlgException();
 
 		if( lfMutProb < 0.0 )
@@ -952,12 +1097,14 @@ public class BaseGenAlg {
 			cGae.SetErrorInfo( GENALG_INVALID_DATA_ERROR, "lGensMutation", "CBaseGenAlg", "染色体ビット番号不正データ", ste[0].getLineNumber() );
 			throw( cGae );
 		}
-		if( plGens == null )
+		if( pplGens == null )
 		{
 			StackTraceElement ste[] = (new Throwable()).getStackTrace();
 			cGae.SetErrorInfo( GENALG_MEMORYALLOCATE_ERROR, "lGensMutation", "CBaseGenAlg", "染色体格納配列メモリ不正", ste[0].getLineNumber() );
 			throw( cGae );
 		}
+
+		plfArg = new double[ulGenBitNumbers];
 
 		for( i=0; i<ulGenNumbers ; i++ )
 		{
@@ -966,11 +1113,17 @@ public class BaseGenAlg {
 				lfProb = rnd.NextUnif();
 				if( lfProb <= lfMutProb )
 				{
-//					if( plGens[i][j] == 0 )		plGens[i][j] = 1;
-//					else if( plGens[i][j] == 1 )plGens[i][j] = 0;
-					plGens[i][j] = (int)(rnd.NextUnif()*9);
+//					if( pplGens[i][j] == 0 )		pplGens[i][j] = 1;
+//					else if( pplGens[i][j] == 1 )pplGens[i][j] = 0;
+					pplGens[i][j] = rnd.NextInt(1500);
 				}
 			}
+		}
+
+		// 制約条件のチェックを行います。
+		for( i = 0;i < ulGenNumbers; i++ )
+		{
+			pfvConstraintCondition.vConstraintCondition(pplGens[i]);
 		}
 		return 0;
 	}
@@ -987,8 +1140,8 @@ public class BaseGenAlg {
 	 */
 	public long lGensDelete()
 	{
-		plGens = null;
-		plBufGens = null;
+		pplGens = null;
+		pplBufGens = null;
 		return 0;
 	}
 
@@ -1097,9 +1250,9 @@ public class BaseGenAlg {
 	 * @param iY 遺伝子列の指定位置
 	 * @return 遺伝子のビット
 	 */
-	public long lGetGensData(int iX, int iY)
+	public double lGetGensData(int iX, int iY)
 	{
-		return plGens[iX][iY];
+		return pplGens[iX][iY];
 	}
 
 	/**
@@ -1109,9 +1262,9 @@ public class BaseGenAlg {
 	 * @param iLoc 指定位置
 	 * @return 遺伝子データ
 	 */
-	public long[] plGetGensData( int iLoc )
+	public double[] plGetGensData( int iLoc )
 	{
-		return plGens[iLoc];
+		return pplGens[iLoc];
 	}
 
 	/**
@@ -1120,9 +1273,9 @@ public class BaseGenAlg {
 	 * </PRE>
 	 * @return 遺伝子データ
 	 */
-	public long[][] pplGetGensData()
+	public double[][] pplGetGensData()
 	{
-		return plGens;
+		return pplGens;
 	}
 
 	/**
@@ -1135,7 +1288,7 @@ public class BaseGenAlg {
 	 */
 	public void vSetGenData( int iGenNum, int iGenBits, long lData )
 	{
-		plGens[iGenNum][iGenBits] = lData;
+		pplGens[iGenNum][iGenBits] = lData;
 	}
 
 	/**
@@ -1177,5 +1330,496 @@ public class BaseGenAlg {
 ///		else if( lfRes <= 0.0 ) lfRes = 0.0;
 		return lfRes;
 	}
+
+	/**
+	 * <PRE>
+	 * 現時点での目的関数の最大、最小を求めます。
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/10
+	 * @version 0.1
+	 */
+	public void vGetLocalMaxMin()
+	{
+		int i,j;
+		double lfFunc = 0.0;
+		double lfMin = 0.0;
+		double lfMax = 0.0;
+
+		lfMin = lfMax = pflfObjectiveFunction.lfObjectiveFunction( pplGens[0] );
+		// ローカルの最大値を更新します。
+		for( i = 1;i < ulGenNumbers; i++ )
+		{
+			lfFunc = pflfObjectiveFunction.lfObjectiveFunction( pplGens[i] );
+
+			if( lfMin > lfFunc )
+			{
+				for( j = 0;j < ulGenBitNumbers; j++ )
+					pplfLocalMinGaData[i][j] = pplGens[i][j];
+				plfLocalMinObjectiveGaData[i] = lfMin = lfFunc;
+			}
+			if( lfMax < lfFunc )
+			{
+				for( j = 0;j < ulGenBitNumbers; j++ )
+					pplfLocalMaxGaData[i][j] = pplGens[i][j];
+				plfLocalMaxObjectiveGaData[i] = lfMax = lfFunc;
+			}
+		}
+	}
+
+	/**
+	 * <PRE>
+	 * 現時点での目的関数の全体を通しての最大、最小値を求めます。
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2016/8/10
+	 * @version 0.1
+	 */
+	public void vGetGlobalMaxMin()
+	{
+		int i,j;
+		int iMinLoc = 0;
+		double lfObjFunc = 0.0;
+
+		for( i = 0;i < ulGenNumbers; i++ )
+		{
+			lfObjFunc = pflfObjectiveFunction.lfObjectiveFunction( pplGens[i] );
+			if( lfGlobalMinGaData >= lfObjFunc )
+			{
+				iMinLoc = i;
+				lfGlobalMinGaData = lfObjFunc;
+				for( j = 0; j < ulGenBitNumbers; j++ )
+					plfGlobalMinGaData[j] = (double)pplGens[i][j];
+			}
+			if( lfGlobalMaxGaData <= lfObjFunc )
+			{
+				iMinLoc = i;
+				lfGlobalMaxGaData = lfObjFunc;
+				for( j = 0; j < ulGenBitNumbers; j++ )
+					plfGlobalMaxGaData[j] = (double)pplGens[i][j];
+			}
+		}
+	}
+
+	/**
+	 * <PRE>
+	 * 　現時点での最小値の粒子の目的関数値を出力します。
+	 * </PRE>
+	 * @return 現時点での各粒子の目的関数の値
+	 * @author kobayashi
+	 * @since 2016/9/14
+	 * @version 1.0
+	 */
+	public double lfGetGlobalMinGaDataConstFuncValue()
+	{
+		// 現時点での各粒子の目的関数の値を出力します。
+		return lfGlobalMinGaData;
+	}
+
+	/**
+	 * <PRE>
+	 * 　Ga法を適用した結果を出力します。(各蜂の位置)
+	 * </PRE>
+	 * @return 現時点での各蜂の位置
+	 * @author kobayashi
+	 * @since 2015/6/6
+	 * @version 1.0
+	 */
+	public String strOutputGaData()
+	{
+		int i,j;
+		String str = new String();
+		// 現時点での蜂の位置を出力します。
+		for( i = 0; i < ulGenNumbers; i++ )
+		{
+			for( j = 0;j < ulGenBitNumbers; j++ )
+			{
+				str += Double.toString( pplGens[i][j] ) + ",";
+			}
+		}
+		return str;
+	}
+
+	/**
+	 * <PRE>
+	 * 　Ga法を適用した結果を出力します。(各蜂の目的関数値)
+	 * </PRE>
+	 * @return 現時点での各蜂の目的関数値
+	 * @author kobayashi
+	 * @since 2015/6/6
+	 * @version 1.0
+	 */
+	public String strOutputConstraintFunction()
+	{
+		int i;
+		String str = new String();
+		// 現時点での各蜂の目的関数の値を出力します。
+		for( i = 0; i < ulGenNumbers; i++ )
+		{
+			str += Double.toString( pflfObjectiveFunction.lfObjectiveFunction( pplGens[i] ) ) + ",";
+		}
+		return str;
+	}
+
+	/**
+	 * <PRE>
+	 * 　Ga法を適用した結果を出力します。(各蜂の目的関数値)
+	 * </PRE>
+	 * @param iLoc	各蜂の番号
+	 * @return 現時点での各蜂の目的関数値
+	 * @author kobayashi
+	 * @since 2015/6/6
+	 * @version 1.0
+	 */
+	public String strOutputSingleConstraintFunction( int iLoc )
+	{
+		String str = new String();
+		// 現時点での各蜂の目的関数の値を出力します。
+		str += Double.toString( pflfObjectiveFunction.lfObjectiveFunction( pplGens[iLoc] ) ) + ",";
+		return str;
+	}
+
+	/**
+	 * <PRE>
+	 * 　現時点でのもっともよい蜂の位置を出力します。(最大値)
+	 * </PRE>
+	 * @return 現時点での最も良い蜂の位置（最大値）
+	 * @author kobayashi
+	 * @since 2015/6/19
+	 * @version 1.0
+	 */
+	public String strOutputGlobalMaxGaData()
+	{
+		int i;
+		String str = new String();
+		// 現時点での各粒子の目的関数の値を出力します。
+		for( i = 0; i < ulGenBitNumbers; i++ )
+		{
+			str += Double.toString( plfGlobalMaxGaData[i] ) + ",";
+		}
+		return str;
+	}
+
+	/**
+	 * <PRE>
+	 * 　現時点でのもっともよい粒子の目的関数値を出力します。(最大値)
+	 * </PRE>
+	 * @return 現時点での蜂の目的関数値（最大値）
+	 * @author kobayashi
+	 * @since 2015/6/19
+	 * @version 1.0
+	 */
+	public double lfOutputGlobalMaxGaDataConstFuncValue()
+	{
+		// 現時点での各蜂の目的関数の値を出力します。
+		return pflfObjectiveFunction.lfObjectiveFunction( plfGlobalMaxGaData );
+	}
+
+	/**
+	 * <PRE>
+	 * 　現時点でのもっともよい蜂の位置を出力します。(最小値)
+	 * </PRE>
+	 * @return 現時点での最も良い蜂の位置（最小値）
+	 * @author kobayashi
+	 * @since 2015/6/19
+	 * @version 1.0
+	 */
+	public String strOutputGlobalMinGaData()
+	{
+		int i;
+		String str = new String();
+		// 現時点での各蜂の目的関数の値を出力します。
+		for( i = 0; i < ulGenBitNumbers; i++ )
+		{
+			str += Double.toString( plfGlobalMinGaData[i] ) + ",";
+		}
+		return str;
+	}
+
+	/**
+	 * <PRE>
+	 * 　現時点でのもっともよい蜂の目的関数値を出力します。(最小値)
+	 * </PRE>
+	 * @return もっともよい蜂の目的関数値(最小値)
+	 * @author kobayashi
+	 * @since 2015/6/19
+	 * @version 1.0
+	 */
+	public double lfOutputGlobalMinGaDataConstFuncValue()
+	{
+		// 現時点での各粒子の目的関数の値を出力します。
+		return pflfObjectiveFunction.lfObjectiveFunction( plfGlobalMinGaData );
+	}
+
+	/**
+	 * <PRE>
+	 *    現時点でのもっともよい蜂の位置とその他の粒子との距離を出力します。
+	 * </PRE>
+	 * @param iOutFlag	0 各蜂と他の蜂の距離のみ出力。
+	 * 					1 平均距離を出力。
+	 * @return 最適な探索点と現在の探索点との距離(Euclide)
+	 * @author kobayashi
+	 * @since 2015/6/19
+	 * @version 0.1
+	 */
+	public double lfOutputGaDataLocDist( int iOutFlag )
+	{
+		int i,j;
+		double lfRes = 0.0;
+		double lfAvgDist = 0.0;
+		double lfDist = 0.0;
+		double lfDist2 = 0.0;
+		// 現時点での各粒子と他の粒子との距離を出力します。
+		for( i= 0;i < ulGenNumbers; i++ )
+		{
+			lfRes = 0.0;
+			for( j = 0;j < ulGenBitNumbers; j++ )
+			{
+				lfDist = plfGlobalMaxGaData[j]-pplGens[i][j];
+				lfDist2 = lfDist*lfDist;
+				lfRes += lfDist2;
+			}
+			lfAvgDist += lfRes;
+		}
+		lfAvgDist /= (double)ulGenNumbers;
+		return lfAvgDist;
+	}
+
+	/**
+	 * <PRE>
+	 * 　Ga法を適用した結果を出力します。(各蜂の位置)
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2015/6/6
+	 * @version 1.0
+	 */
+	public void vOutputGaData()
+	{
+		int i,j;
+		// 現時点での蜂の位置を出力します。
+		for( i = 0; i < ulGenNumbers; i++ )
+		{
+			for( j = 0;j < ulGenBitNumbers; j++ )
+			{
+				System.out.print( pplGens[i][j] + "," );
+			}
+			System.out.println("");
+		}
+	}
+
+	/**
+	 * <PRE>
+	 * 　Ga法を適用した結果を出力します。(各蜂の目的関数値)
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2015/6/6
+	 * @version 1.0
+	 */
+	public void vOutputConstraintFunction()
+	{
+		int i;
+		// 現時点での各蜂の目的関数の値を出力します。
+		for( i = 0; i < ulGenNumbers; i++ )
+		{
+			System.out.print( pflfObjectiveFunction.lfObjectiveFunction( pplGens[i] ) + "," );
+		}
+		System.out.print("\n");
+	}
+
+	/**
+	 * <PRE>
+	 * 　現時点でのもっともよい粒子の位置を出力します。
+	 * </PRE>
+	 * @param iFlag 出力モード
+	 * @author kobayashi
+	 * @since 2015/6/19
+	 * @version 1.0
+	 */
+	public void vOutputGlobalMaxGaData( int iFlag )
+	{
+		int i;
+		// 現時点での各粒子の目的関数の値を出力します。
+		if (iFlag == 0)
+		{
+			for (i = 0; i < ulGenBitNumbers; i++)
+			{
+				System.out.print( plfGlobalMaxGaData[i] + "," );
+			}
+			System.out.println("");
+		}
+		else
+		{
+			for (i = 0; i < ulGenBitNumbers; i++)
+			{
+				System.out.print( plfGlobalMaxGaData[i] + "," );
+			}
+			System.out.print( lfGlobalMaxGaData );
+		}
+	}
+
+	/**
+	 * <PRE>
+	 * 　現時点でのもっともよい粒子の位置を出力します。
+	 * </PRE>
+	 * @param iFlag 出力モード
+	 * @author kobayashi
+	 * @since 2015/6/19
+	 * @version 1.0
+	 */
+	public void vOutputGlobalMinGaData( int iFlag )
+	{
+		int i;
+		// 現時点での各粒子の値を出力します。
+		if (iFlag == 0)
+		{
+			for (i = 0; i < ulGenBitNumbers; i++)
+			{
+				System.out.print( plfGlobalMinGaData[i] + "," );
+			}
+			System.out.println("");
+		}
+		else
+		{
+			for (i = 0; i < ulGenBitNumbers; i++)
+			{
+				System.out.print( plfGlobalMinGaData[i] + "," );
+			}
+			System.out.println(lfGlobalMinGaData);
+		}
+	}
+
+	/**
+	 * <PRE>
+	 * 　現時点でのもっともよい粒子の目的関数値を出力します。
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2015/6/19
+	 * @version 1.0
+	 */
+	public void vOutputGlobalMaxGaDataConstFuncValue()
+	{
+		// 現時点での各粒子の目的関数の値を出力します。
+		System.out.println( pflfObjectiveFunction.lfObjectiveFunction( plfGlobalMaxGaData ) + "," );
+	}
+
+	/**
+	 * <PRE>
+	 * 　現時点でのもっともよい粒子の目的関数値を出力します。
+	 * </PRE>
+	 * @author kobayashi
+	 * @since 2015/6/19
+	 * @version 1.0
+	 */
+	public void vOutputGlobalMinGaDataConstFuncValue()
+	{
+		// TODO 自動生成されたメソッド・スタブ
+		System.out.println( pflfObjectiveFunction.lfObjectiveFunction( plfGlobalMinGaData ) + "," );
+	}
+	/**
+	 * <PRE>
+	 * 　現時点でのもっともよい粒子位置とその他の粒子との距離を出力します。
+	 * </PRE>
+	 * @param iOutFlag 0 各粒子と他の粒子の距離のみ出力。
+	 * 　　　　　　　　1 平均距離を出力。
+	 * @author kobayashi
+	 * @since 2015/6/19
+	 * @version 0.1
+	 */
+	public void vOutputGaDataLocDist( int iOutFlag )
+	{
+		int i,j;
+		double lfRes = 0.0;
+		double lfAvgDist = 0.0;
+		double lfDist = 0.0;
+		double lfDist2 = 0.0;
+		// 現時点での各粒子と他の粒子との距離を出力します。
+		for( i= 0;i < ulGenNumbers; i++ )
+		{
+			lfRes = 0.0;
+			for( j = 0;j < ulGenBitNumbers; j++ )
+			{
+				lfDist = plfGlobalMaxGaData[j]-pplGens[i][j];
+				lfDist2 = lfDist*lfDist;
+				lfRes += lfDist2;
+			}
+			lfAvgDist += lfRes;
+			System.out.print( lfRes + "," );
+		}
+		lfAvgDist /= (double)ulGenNumbers;
+		if( iOutFlag == 1 )
+		{
+			// 現時点粒子間の平均距離を出力します。
+			System.out.print( lfAvgDist + "," );
+		}
+	}
+
+	/**
+	* <PRE>
+	* 　現時点での各粒子ごとの最良位置を出力します。
+	* </PRE>
+	* @param iFlag 0 目的関数値を出力しない。
+	* 　　　　　　 1 目的関数値を出力する。
+	* @author kobayashi
+	* @since 2015/7/6
+	* @version 0.2
+	*/
+	public void vOutputLocalMinGaData(int iFlag)
+	{
+		// TODO 自動生成されたメソッド・スタブ
+		int i, j;
+		double lfRes = 0.0;
+		double lfAvgDist = 0.0;
+		double lfDist = 0.0;
+		double lfDist2 = 0.0;
+		// 現時点での各粒子ごとの最良位置を出力します。
+		for (i = 0; i < ulGenNumbers; i++)
+		{
+			for (j = 0; j < ulGenBitNumbers; j++)
+			{
+				System.out.println(pplfLocalMinGaData[i][j] + ",");
+			}
+			if (iFlag == 1)
+			{
+				// 現時点での各粒子の目的関数の値を出力します。
+				System.out.println(plfLocalMinObjectiveGaData[i] + ",");
+			}
+		}
+		System.out.println("");
+
+	}
+
+	/**
+	 * <PRE>
+	 * 　現時点での各粒子ごとの最良位置を出力します。
+	 * </PRE>
+	 * @param iOutFlag	0 目的関数値を出力しない。
+	 * 					1 目的関数値を出力する。
+	 * @author kobayashi
+	 * @since 2015/7/6
+	 * @version 0.2
+	 */
+	public void vOutputLocalMaxGaData( int iOutFlag )
+	{
+		int i,j;
+		double lfRes = 0.0;
+		double lfAvgDist = 0.0;
+		double lfDist = 0.0;
+		double lfDist2 = 0.0;
+		// 現時点での各粒子ごとの最良位置を出力します。
+		for( i= 0;i < ulGenNumbers; i++ )
+		{
+			for( j = 0; j < ulGenBitNumbers; j++ )
+			{
+				System.out.print( pplfLocalMaxGaData[i][j] + "," );
+			}
+			if( iOutFlag == 1 )
+			{
+				// 現時点での各粒子の目的関数の値を出力します。
+				System.out.print( plfLocalMaxObjectiveGaData[i] + "," );
+			}
+		}
+		System.out.println("");
+	}
+
 
 }

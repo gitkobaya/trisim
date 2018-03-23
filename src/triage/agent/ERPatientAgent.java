@@ -3,6 +3,7 @@ package triage.agent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -11,6 +12,7 @@ import jp.ac.nihon_u.cit.su.furulab.fuse.Message;
 import jp.ac.nihon_u.cit.su.furulab.fuse.SimulationEngine;
 import jp.ac.nihon_u.cit.su.furulab.fuse.models.Agent;
 import jp.ac.nihon_u.cit.su.furulab.fuse.util.Position;
+import triage.ERDepartment;
 import utility.csv.CCsv;
 import utility.initparam.InitSimParam;
 import utility.node.ERTriageNode;
@@ -217,6 +219,10 @@ public class ERPatientAgent extends Agent
 	private int iFileWriteMode;							// 長時間シミュレーション用ファイル出力モード
 
 	private InitSimParam initSimParam;					// 職設定ファイル操作用変数
+
+	private double lfWidth;								// 患者エージェント描画用幅
+	private double lfHeight;							// 患者エージェント描画用高さ
+	private ERDepartment erDepartment;					// 救急部門のインスタンス
 
 	/**
 	 * <PRE>
@@ -4645,6 +4651,733 @@ public class ERPatientAgent extends Agent
 		return lfWaitTime;
 	}
 
+
+	/**
+	 * <PRE>
+	 *    患者の観察を受けるまでの時間を返します。
+	 * </PRE>
+	 * @return 観察待ち時間
+	 */
+	public double lfGetObservationTime()
+	{
+		// TODO 自動生成されたメソッド・スタブ
+		return lfObservationWaitTime;
+	}
+
+	/**
+	 * <PRE>
+	 *    患者エージェントのログ出力を設定します。
+	 * </PRE>
+	 * @param log java標準のログ―クラスのインスタンス
+	 */
+	public void vSetLog(Logger log)
+	{
+		// TODO 自動生成されたメソッド・スタブ
+		cPatientAgentLog = log;
+	}
+
+	/**
+	 * <PRE>
+	 *    シミュレーション終了時間を設定します。
+	 * </PRE>
+	 * @param lfEndTime シミュレーション終了時間
+	 */
+	public void vSetSimulationEndTime( double lfEndTime )
+	{
+		lfSimulationEndTime = lfEndTime;
+	}
+
+	/**
+	 * <PRE>
+	 *    逆シミュレーションモードを設定します。
+	 * </PRE>
+	 * @param iMode 0 通常シミュレーション
+	 *              1 GUIモード
+	 *              2 逆シミュレーション
+	 */
+	public void vSetInverseSimMode( int iMode )
+	{
+		iInverseSimMode = iMode;
+	}
+
+	/**
+	 * <PRE>
+	 *   患者エージェントの幅を設定します。
+	 * </PRE>
+	 * @param lfWidthData
+	 */
+	public void vSetWidth(double lfWidthData)
+	{
+		lfWidth = lfWidthData;
+	}
+
+	/**
+	 * <PRE>
+	 *   患者エージェントの高さを設定します。
+	 * </PRE>
+	 * @param lfHeightData
+	 */
+	public void vSetHeight(double lfHeightData)
+	{
+		lfHeight = lfHeightData;
+	}
+
+	/**
+	 * <PRE>
+	 *   患者エージェントの幅を取得します。
+	 * </PRE>
+	 * @return 患者エージェントの幅（楕円の場合は横の半径）
+	 */
+	public double lfGetWidth()
+	{
+		return lfWidth;
+	}
+
+	/**
+	 * <PRE>
+	 *   患者エージェントの高さを取得します。
+	 * </PRE>
+	 * @return 患者エージェントの高さ(楕円の場合は縦の半径)
+	 */
+	public double lfGetHeight()
+	{
+		return lfHeight;
+	}
+
+	/**
+	 * <PRE>
+	 *   患者エージェントが何階にいるか取得します。
+	 * </PRE>
+	 * @return 患者エージェントの現在いる階数
+	 */
+	public int iGetFloor()
+	{
+		return erCurNodeRoute.iGetFloor();
+	}
+
+	/**
+	 * <PRE>
+	 *   患者エージェントが何階にいるか設定します。
+	 * </PRE>
+	 * @param 現在いる階数
+	 */
+	public void vSetFloor( int iFloorData )
+	{
+		erCurNodeRoute.vSetFloor( iFloorData );
+	}
+
+	/**
+	 *<PRE>
+	 *	現在在籍している病室から移動する病室までの移動経路を設定します。
+	 *</PRE>
+	 * @param ListRoute	移動ルート（ノードリスト）
+	 */
+	public void vSetMoveRoute(ArrayList<ERTriageNode> ListRoute)
+	{
+		int i;
+		double lfDist = 0.0;
+		double lfTempDist = 0.0;
+		double[] alfDist;
+		double[] alfVel = {0.0,0.0,0.0};
+		double lfVelocity = 0.0;
+		// TODO 自動生成されたメソッド・スタブ
+		ArrayListRoute = ListRoute;
+		// 現在のノードと次のノードを設定します。
+		erCurNodeRoute = ArrayListRoute.get(0);
+		erNextNodeRoute = ArrayListRoute.get(1);
+		iLocNode = 1;
+
+		alfDist = new double[ArrayListRoute.size()];
+
+		// 患者エージェントの移動速度を設定します。
+		for( i = 1;i < ArrayListRoute.size(); i++ )
+		{
+			lfTempDist = ArrayListRoute.get(i-1).getPosition().getDistance( ArrayListRoute.get(i).getPosition() );
+			lfDist += lfTempDist;
+			alfDist[i-1] = lfTempDist;
+		}
+		alfDist[i-1] = lfTempDist;
+		// こっちは患者の速度を決める場合、移動時間は固定
+//		for( i = 0;i < alfVel.length; i++ )
+//		{
+//			alfVel[i] = lfDist/lfMoveTime;
+//		}
+//		this.setVelocity( alfVel );
+		// こちらは患者の移動時間を設定、患者の移動速度は一定
+//		lfVelocity = Math.sqrt( this.getVelocity()[0]*this.getVelocity()[0]+this.getVelocity()[1]*this.getVelocity()[1]+this.getVelocity()[2]*this.getVelocity()[2] );
+		lfVelocity = Math.sqrt( this.getVelocity()[0]*this.getVelocity()[0]+this.getVelocity()[1]*this.getVelocity()[1] );
+//		lfVelocity = this.getVelocity()[0];
+		lfMoveTime = lfDist/this.getVelocity()[0];
+
+	}
+
+	/**
+	 * <PRE>
+	 *    目的地へ移動します。
+	 * </PRE>
+	 * @return 目的地への
+	 */
+	private int iMoveRoute()
+	{
+		int i;
+		Position posCur, posNext;
+		double alfDirection[] = {0.0,0.0,0.0};
+		double alfMoveDirection[] = {0.0,0.0,0.0};
+		double lfDirection = 0.0;
+		double lfCurrentTimeStep;
+		double lfMoveDistX, lfMoveDistY, lfMoveDistZ;
+		double t = 0.0;
+
+		double lfJudgeCurPosition, lfJudgePrevPosition;
+		double lfPrevX, lfPrevY, lfPrevZ;
+		double lfDistX1, lfDistX2, lfDistY1, lfDistY2;
+
+		boolean bExceedFlag = false;
+
+		// まだ探索をしていない場合は、移動処理をしません。
+		if( ArrayListRoute == null ) return 0;
+		if( erCurNodeRoute == null || erNextNodeRoute == null ) return 0;
+
+		lfPrevX = erCurNodeRoute.getPosition().getX();
+		lfPrevY = erCurNodeRoute.getPosition().getY();
+		lfPrevZ = erCurNodeRoute.getPosition().getZ();
+		lfCurrentTimeStep = this.getEngine().getLatestTimeStep()/1000.0;
+		for( t = 0;t < lfCurrentTimeStep; t += 1.0 )
+		{
+			// 目的地に到着したかどうかを判定します。
+			if( erCurNodeRoute == ArrayListRoute.get(ArrayListRoute.size()-1) )
+			{
+				// 到着した場合は1を出力します。
+				return 1;
+			}
+
+			// 目的地の方向を取得します。
+			posCur = erCurNodeRoute.getPosition();
+			posNext = erNextNodeRoute.getPosition();
+			alfDirection[0] = posNext.getX() - posCur.getX();
+			alfDirection[1] = posNext.getY() - posCur.getY();
+			alfDirection[2] = posNext.getZ() - posCur.getZ();
+
+		// 次のノードへ移動します。
+
+			// 次ノードへの方向ベクトル（単位ベクトル）を算出します。
+			lfDirection = Position.getDistance2D(posCur.getX(), posCur.getY(), posNext.getX(), posNext.getY() );
+			alfDirection[0] = alfDirection[0] / lfDirection;
+			alfDirection[1] = alfDirection[1] / lfDirection;
+			alfDirection[2] = alfDirection[2] / lfDirection;
+
+			// 1ステップで進む距離を算出します。(1秒ごとの計算を実施。)
+			lfMoveDistX = this.getVelocity()[0] * alfDirection[0];
+			lfMoveDistY = this.getVelocity()[1] * alfDirection[1];
+			lfMoveDistZ = this.getVelocity()[2] * alfDirection[2];
+			// 位置を速度分移動させます。
+			alfMoveDirection[0] = this.getX() + lfMoveDistX;
+			alfMoveDirection[1] = this.getY() + lfMoveDistY;
+			alfMoveDirection[2] = this.getZ() + lfMoveDistZ;
+//			alfMoveDirection[2] = 0.0;
+
+			// 位置を更新します。
+			this.setPosition( alfMoveDirection );
+
+			// 次のノードに触れたかどうかを判定します。
+			lfJudgeCurPosition = posNext.getDistance( this.getPosition() );
+
+			// 次に進むノードを超えていないかいるかを判定します。
+			lfDistX1 = lfPrevX-posNext.getX();
+			lfDistX2 = alfMoveDirection[0]-posNext.getX();
+			lfDistY1 = lfPrevY-posNext.getY();
+			lfDistY2 = alfMoveDirection[1]-posNext.getY();
+			if( lfDistX1 != 0 && lfDistX2 != 0 )
+			{
+				// 次に向かうノードを超えたと判定します。
+				if( lfDistX1*lfDistX2 < 0 )	bExceedFlag = true;
+				// 次に向かうノードを超えていないと判定します。
+				else						bExceedFlag = false;
+			}
+			else
+			{
+				// 次に向かうノードを超えたと判定します。
+				if( lfDistY1*lfDistY2 < 0 )	bExceedFlag = true;
+				// 次に向かうノードを超えていないと判定します。
+				else						bExceedFlag = false;
+			}
+			// エージェントが目的地付近に到達したかどうかを判定します。
+			if( lfJudgeCurPosition <= 30 || bExceedFlag == true )
+			{
+
+				double lfDist = 0.0;
+				double lfPrevDist = Double.MAX_VALUE;
+				// ノード範囲内にいる場合はエージェントをノード座標まで移動させます。
+				for( lfDist = lfJudgeCurPosition; lfDist >= 0; lfDist = posNext.getDistance( this.getPosition() ) )
+				{
+					if( lfPrevDist < lfDist ) break;
+					// 位置を更新します。
+					alfMoveDirection[0] = this.getX() + lfMoveDistX;
+					alfMoveDirection[1] = this.getY() + lfMoveDistY;
+					alfMoveDirection[2] = this.getZ() + lfMoveDistZ;
+//					alfMoveDirection[2] = 0.0;
+					lfPrevDist = lfDist;
+					this.setPosition( alfMoveDirection );
+				}
+				// 経路として到着目前に次の判定を行い、部屋内のどこかに割り当てます。
+				if( iLocNode+1 >= ArrayListRoute.size() )
+				{
+					vSetLocationInTheRoom( alfMoveDirection[0], alfMoveDirection[1] );
+				}
+				// 触れた場合は現在のノード及び次のノードを更新します。
+				if( iLocNode < ArrayListRoute.size() )
+				{
+					iLocNode++;
+					erCurNodeRoute = erNextNodeRoute;
+					if( erCurNodeRoute != ArrayListRoute.get(ArrayListRoute.size()-1) )
+					{
+						erNextNodeRoute = ArrayListRoute.get(iLocNode);
+					}
+					else
+					{
+						erNextNodeRoute = null;
+					}
+				}
+			}
+			lfPrevX = alfMoveDirection[0];
+			lfPrevY = alfMoveDirection[1];
+//			lfPrevZ = alfMoveDirection[2];
+		}
+		return 0;
+	}
+
+	private void vSetLocationInTheRoom( double lfMoveX, double lfMoveY )
+	{
+		// エージェントが近傍にいるかどうかを調べます。
+		int i;
+		int iFinishFlag = 0;
+		double lfMaxDist = 0.0;
+		double lfCurDist = 0.0;
+		double lfCurX = 0.0;
+		double lfCurY = 0.0;
+		double lfX,lfY;
+		double lfCurTheta = 0.0;
+		double lfRoomX,lfRoomY,lfRoomWidth,lfRoomHeight;
+		List<Agent> agents;
+
+		// 待合室の時にのみ実行します。
+		if( this.iGetLocation() == 9 )
+		{
+			lfCurX = this.getX();
+			lfCurY = this.getY();
+			agents = this.getEngine().getNeighborAgents(this, 30);
+			// 部屋のサイズｎうち大きいほうの寸法を取得します。
+			lfMaxDist = erDepartment.erGetWaitingRoom().iGetWidth() > erDepartment.erGetWaitingRoom().iGetHeight() ? erDepartment.erGetWaitingRoom().iGetWidth() : erDepartment.erGetWaitingRoom().iGetHeight();
+			// どの位置ならば患者エージェントを配置できるのかを調査し設定します。
+			for( i = 0; i < 100; i++ )
+			{
+				double lfTheta = Math.PI*2.0*rnd.NextUnif();
+				for( Agent agent:agents)
+				{
+					// 患者エージェントのみを取得します。
+					Object target = this.getEngine().getObjectById( agent.getId() );
+					if( target instanceof ERPatientAgent )
+					{
+						ERPatientAgent targetAgent = (ERPatientAgent)target;
+						// 指定位置にエージェントがいるかどうかを判定します。
+						lfX = lfMaxDist*rnd.NextUnif()*Math.cos(lfTheta)+this.getX();
+						lfY = lfMaxDist*rnd.NextUnif()*Math.sin(lfTheta)+this.getY();
+						if( Position.getDistance2D( lfX, lfY, targetAgent.getX(), targetAgent.getY() ) > this.lfGetWidth() )
+						{
+							// 部屋の中に納まるように配置します。
+							lfRoomX = erDepartment.erGetWaitingRoom().getX();
+							lfRoomY = erDepartment.erGetWaitingRoom().getY();
+							lfRoomWidth = erDepartment.erGetWaitingRoom().iGetWidth();
+							lfRoomHeight = erDepartment.erGetWaitingRoom().iGetHeight();
+							if( (lfRoomX-lfRoomWidth/2 <= lfX && lfX <= lfRoomX+lfRoomWidth/2-this.lfGetWidth()/2) &&
+								(lfRoomY-lfRoomHeight/2+this.lfGetHeight()/2 <= lfY && lfY <= lfRoomY+lfRoomHeight/2) )
+							{
+								lfCurX = lfX;
+								lfCurY = lfY;
+								lfCurTheta = lfTheta;
+								iFinishFlag = 1;
+								break;
+							}
+						}
+					}
+				}
+				if( iFinishFlag == 1 ) break;
+			}
+			// 移動先にエージェントがいて衝突してしまう場合は手前で停止します。
+			lfMoveX = lfCurX;
+			lfMoveY = lfCurY;
+	//		lfMoveZ = 0.0;
+			this.setPosition( lfMoveX, lfMoveY, 0.0 );
+			iFinishFlag = 1;
+		}
+		else if( this.iGetLocation() == 8 )
+		{
+//			lfCurX = this.getX();
+//			lfCurY = this.getY();
+//			agents = this.getEngine().getNeighborAgents(this, 30);
+//			// 部屋のサイズｎうち大きいほうの寸法を取得します。
+//			lfMaxDist = erDepartment.erGetWaitingRoom().iGetWidth() > erDepartment.erGetWaitingRoom().iGetHeight() ? erDepartment.erGetWaitingRoom().iGetWidth() : erDepartment.erGetWaitingRoom().iGetHeight();
+//			// どの位置ならば患者エージェントを配置できるのかを調査し設定します。
+//			for( i = 0; i < 100; i++ )
+//			{
+//				double lfTheta = Math.PI*2.0*rnd.NextUnif();
+//				for( Agent agent:agents)
+//				{
+//					// 患者エージェントのみを取得します。
+//					Object target = this.getEngine().getObjectById( agent.getId() );
+//					if( target instanceof ERPatientAgent )
+//					{
+//						ERPatientAgent targetAgent = (ERPatientAgent)target;
+//						// 指定位置にエージェントがいるかどうかを判定します。
+//						lfX = lfMaxDist*rnd.NextUnif()*Math.cos(lfTheta)+this.getX();
+//						lfY = lfMaxDist*rnd.NextUnif()*Math.sin(lfTheta)+this.getY();
+//						if( Position.getDistance2D( lfX, lfY, targetAgent.getX(), targetAgent.getY() ) > this.lfGetWidth() )
+//						{
+//							// 部屋の中に納まるように配置します。
+//							lfRoomX = erDepartment.GetWaitingRoom().getX();
+//							lfRoomY = erDepartment.erGetWaitingRoom().getY();
+//							lfRoomWidth = erDepartment.erGetWaitingRoom().iGetWidth();
+//							lfRoomHeight = erDepartment.erGetWaitingRoom().iGetHeight();
+//							if( (lfRoomX-lfRoomWidth/2 <= lfX && lfX <= lfRoomX+lfRoomWidth/2-this.lfGetWidth()/2) &&
+//								(lfRoomY-lfRoomHeight/2+this.lfGetHeight()/2 <= lfY && lfY <= lfRoomY+lfRoomHeight/2) )
+//							{
+//								lfCurX = lfX;
+//								lfCurY = lfY;
+//								lfCurTheta = lfTheta;
+//								iFinishFlag = 1;
+//								break;
+//							}
+//						}
+//					}
+//				}
+//				if( iFinishFlag == 1 ) break;
+//			}
+//			// 移動先にエージェントがいて衝突してしまう場合は手前で停止します。
+//			lfMoveX = lfCurX;
+//			lfMoveY = lfCurY;
+//			lfMoveZ = 0.0;
+//			this.setPosition( lfMoveX, lfMoveY, 0.0 );
+//			iFinishFlag = 1;
+		}
+	}
+
+	/***
+	 * <PRE>
+	 *    患者の傷病状態を発生させる頻度を取得します。
+	 * </PRE>
+	 * @param iData 傷病状態発生乱数モード
+	 *              0 一様乱数
+	 *              1 正規乱数
+	 *              2 ワイブル分布乱数
+	 */
+	public void vSetPatientRandomMode( int iData )
+	{
+		iInjuryRandomMode = iData;
+	}
+
+	/**
+	 * <PRE>
+	 *    部屋間を移動中であることを表すフラグを取得します。
+	 * </PRE>
+	 * @return 部屋移動中フラグ
+	 *         0 移動していない
+	 *         1 移動している
+	 */
+	public int iGetMoveRoomFlag()
+	{
+		return iMoveRoomFlag;
+	}
+
+	/**
+	 * <PRE>
+	 *    部屋間を移動するのに要する時間を取得します。
+	 * </PRE>
+	 * @return 部屋間移動時間
+	 */
+	public double lfGetMoveTime()
+	{
+		return lfMoveTime;
+	}
+
+	/**
+	 * <PRE>
+	 *    シミュレーションが開始してからの総時間を取得します。
+	 * </PRE>
+	 * @return シミュレーションの総経過時間
+	 */
+	public double lfGetTotalTime()
+	{
+		// TODO 自動生成されたメソッド・スタブ
+		return lfTotalTime;
+	}
+
+	/**
+	 * <PRE>
+	 *    weibull分布関数の逆関数。
+	 * </PRE>
+	 * @param lfBeta	ワイブル分布用パラメータ1
+	 * @param lfAlpha	ワイブル分布用パラメータ2
+	 * @param lfRand	乱数値
+	 * @return ワイブル分布関数の逆関数値
+	 */
+	private double InvWeibull( double lfAlpha, double lfBeta, double lfRand )
+	{
+		double lfRes = 0.0;
+		lfRes = lfBeta*Math.pow( Math.log( 1.0/(1.0-lfRand) ), 1.0/lfAlpha );
+		return lfRes;
+	}
+
+	/**
+	 * <PRE>
+	 *    weibull分布乱数を発生させます。-1.0以下、1.0以上が乱数を発生させた結果出力された場合、
+	 *    再度乱数を発生させます。乱数発生回数の繰り返し回数は100回とします。
+	 * </PRE>
+	 * @param lfBeta	ワイブル分布用パラメータ1
+	 * @param lfAlpha	ワイブル分布用パラメータ2
+	 * @return ワイブル乱数[-1.0～1.0]
+	 */
+	public double weibullRand( double lfAlpha, double lfBeta )
+	{
+		double lfRes = 0.0;
+		double lfRand = 0.0;
+		int i;
+
+		for( i = 0;i < 100; i++ )
+		{
+			if( rnd == null )	lfRand = Math.random();
+			else 				lfRand = rnd.NextUnif();
+			lfRand = lfRand >= 1.0 ? 0.9999999999 : lfRand;
+			lfRes = InvWeibull( lfAlpha, lfBeta, lfRand );
+			if( -1.0 <= lfRes && lfRes <= 1.0 )
+				break;
+		}
+		// この場合は一様乱数で発生させます。
+		if( i == 100 )
+		{
+			lfRes = rnd.NextUnif();
+		}
+		return lfRes;
+	}
+
+	/**
+	 * <PRE>
+	 *    正規乱数を発生させます。-1.0以下、1.0以上が乱数を発生させた結果出力された場合、
+	 *    再度乱数を発生させます。乱数発生回数の繰り返し回数は100回とします。
+	 * </PRE>
+	 * @return	正規乱数値
+	 */
+	public double normalRand()
+	{
+		double lfRes = 0.0;
+		int i;
+
+		for( i = 0;i < 100; i++ )
+		{
+			if( rnd == null )	lfRes = Math.random();
+			else				lfRes = rnd.NextNormal();
+			if( -1.0 <= lfRes && lfRes <= 1.0 ) break;
+		}
+		// この場合は一様乱数ではっせさせます。
+		if( i == 100 )
+		{
+			lfRes = rnd.NextUnif();
+		}
+		return lfRes;
+	}
+
+	/**
+	 * <PRE>
+	 *    診察した医者を取得します。
+	 * </PRE>
+	 * @return	診察室医師エージェントのインスタンス
+	 */
+	public ERDoctorAgent erGetConsultationDoctorAgent()
+	{
+		// TODO Auto-generated method stub
+		return erConsultationDoctor;
+	}
+
+	/**
+	 * <PRE>
+	 *    診察してくれる医者を設定します。
+	 * </PRE>
+	 * @param erDAgent 担当医エージェント
+	 */
+	public void vSetConsultationDoctorAgent( ERDoctorAgent erDAgent )
+	{
+		erConsultationDoctor = erDAgent;
+	}
+
+	/**
+	 * <PRE>
+	 *   現在のなくなられた数を出力します。
+	 * </PRE>
+	 * @return 亡くなられた患者の数
+	 */
+	public int iGetDeathNum()
+	{
+		return iDeathNum;
+	}
+
+	/**
+	 * <PRE>
+	 *    患者の生存確率を取得します。
+	 * </PRE>
+	 * @return	患者の現時点での生存確率
+	 */
+	public double lfGetSurvivalProbability()
+	{
+		// TODO 自動生成されたメソッド・スタブ
+		return lfSurvivalProbability;
+	}
+
+	public void vSetCriticalSection(Object cs )
+	{
+		// TODO 自動生成されたメソッド・スタブ
+		csPatientCriticalSection = cs;
+	}
+
+	public void vSetRandom( Rand sfmtRandom )
+	{
+		rnd = sfmtRandom;
+	}
+
+	/**
+	 * <PRE>
+	 *    シミュレーション開始初めてトリアージを受けたときの緊急度を取得します。
+	 * </PRE>
+	 * @return	シミュレーション開始はじめの緊急度
+	 */
+	public int iGetStartEmergencyLevel()
+	{
+		return iStartEmergencyLevel;
+	}
+
+	/**
+	 * <PRE>
+	 *   ファイルへ書き込みを行います。1行ずつ実行します。
+	 *   0 の場合はすべてのデータを書き込んでいきます。
+	 *   1 の場合は最初と最後100秒分のデータを書き込みます。
+	 * </PRE>
+	 * @param iFlag			ファイル書き込みモード選択フラグ
+	 * @param lfTime		現在のシミュレーション時間
+	 * @throws IOException	ファイル書き込みエラー
+	 */
+	public synchronized void vWriteFile( int iFlag, double lfTime ) throws IOException
+	{
+		String strData = lfTotalTime + "," + lfTimeCourse + "," + lfMoveWaitingTime + "," + lfCurrentWaitTime + "," + lfCurrentObservationWaitTime + "," + lfCurrentConsultationTime +"," + lfCurrentOperationTime + "," + lfCurrentEmergencyTime + "," + lfIntensiveCareUnitStayTime + "," + lfHighCareUnitStayTime + "," + lfGeneralWardStayTime + "," + lfStayHospitalTime + "," + iSurvivalFlag + "," + iLocation + ",";
+		strData += lfInternalAISHead + "," + lfInternalAISFace + "," + lfInternalAISNeck + "," + lfInternalAISThorax + "," + lfInternalAISAbdomen + "," + lfInternalAISSpine +"," + lfInternalAISUpperExtremity +"," + lfInternalAISLowerExtremity + "," + lfInternalAISUnspecified + "," + iEmergencyLevel + "," + iStartEmergencyLevel + ",";
+		strData += lfSpO2 + "," + lfRr + "," + lfPulse + "," + lfSbp + "," + lfDbp + "," + lfBodyTemperature + "," + lfSurvivalProbability + ",";
+		strData += iDisChargeFlag + ",";
+		strData += lfXRayRoomStayTime + "," + lfCTRoomStayTime + "," + lfMRIRoomStayTime + "," + lfAngiographyRoomStayTime + "," + lfFastRoomStayTime;
+		// 終了時の書き込みか、特に指定していない場合
+		if( iFlag == 0 )
+		{
+			csvWriteAgentData.vWrite( strData );
+		}
+		// 開始時の書き込み
+		else
+		{
+			// 開始時の書き込み
+			if( lfTime <= 100.0 )
+			{
+				csvWriteAgentStartData.vWrite( strData );
+			}
+			// 終了時の書き込み
+			if( lfTime >= lfSimulationEndTime-100.0 )
+			{
+				csvWriteAgentData.vWrite( strData );
+			}
+		}
+	}
+
+	/**
+	 * <PRE>
+	 *   書き出しできなかったデータをすべて書き込みます。
+	 *   0 の場合はすべてのデータを書き込んでいきます。
+	 *   1 の場合は最初と最後100秒分のデータを書き込みます。
+	 * </PRE>
+	 * @param iFlag			ファイル書き込みモード選択フラグ
+	 * @param lfTime		現在のシミュレーション時間
+	 * @throws IOException	ファイル書き込みエラー
+	 */
+	public synchronized void vFlushFile( int iFlag ) throws IOException
+	{
+		String strData = lfTotalTime + "," + lfTimeCourse + "," + lfMoveWaitingTime + "," + lfWaitTime + "," + lfObservationWaitTime + "," + lfConsultationTime +"," + lfOperationTime + "," + lfEmergencyTime + "," + lfIntensiveCareUnitStayTime + "," + lfHighCareUnitStayTime + "," + lfGeneralWardStayTime + "," + lfStayHospitalTime + "," + iSurvivalFlag + "," + iLocation + ",";
+		strData += lfInternalAISHead + "," + lfInternalAISFace + "," + lfInternalAISNeck + "," + lfInternalAISThorax + "," + lfInternalAISAbdomen + "," + lfInternalAISSpine +"," + lfInternalAISUpperExtremity +"," + lfInternalAISLowerExtremity + "," + lfInternalAISUnspecified + "," + iEmergencyLevel + "," + iStartEmergencyLevel + ",";
+		strData += lfSpO2 + "," + lfRr + "," + lfPulse + "," + lfSbp + "," + lfDbp + "," + lfBodyTemperature + "," + lfSurvivalProbability + ",";
+		strData += iDisChargeFlag + ",";
+		strData += lfXRayRoomStayTime + "," + lfCTRoomStayTime + "," + lfMRIRoomStayTime + "," + lfAngiographyRoomStayTime + "," + lfFastRoomStayTime;
+		// 終了時の書き込みか、特に指定していない場合
+		if( csvWriteAgentData != null )
+		{
+			csvWriteAgentData.vWrite( strData );
+			csvWriteAgentData.vClose();
+		}
+		// 開始時の書き込み
+		if( csvWriteAgentStartData != null )
+		{
+			csvWriteAgentStartData.vWrite( strData );
+			csvWriteAgentStartData.vClose();
+		}
+	}
+
+	/**
+	 * <PRE>
+	 *   初期設定ファイルクラスのインスタンスを設定します。
+	 * </PRE>
+	 * @param initparam
+	 */
+	public void vSetInitParam(InitSimParam initparam)
+	{
+		// TODO 自動生成されたメソッド・スタブ
+		initSimParam = initparam;
+	}
+
+	/**
+	 * <PRE>
+	 *   現在訪れたノードを取得します。
+	 * </PRE>
+	 * @return 現在のFuseNode
+	 */
+	public ERTriageNode erGetCurrentNode()
+	{
+		return erCurNodeRoute;
+	}
+
+	/**
+	 * <PRE>
+	 *   次に訪れるノードを取得します。
+	 * </PRE>
+	 * @return 次のFuseNode
+	 */
+	public ERTriageNode erGetNextNode()
+	{
+		return erNextNodeRoute;
+	}
+
+	/**
+	 * <PRE>
+	 *   経路を取得します。
+	 * </PRE>
+	 * @return 経路のノードリスト
+	 */
+	public ArrayList<ERTriageNode> erGetArrayListRoute()
+	{
+		return ArrayListRoute;
+	}
+
+	public void vSetErDepartment( ERDepartment erData )
+	{
+		erDepartment = erData;
+	}
+
+	public ERDepartment erGetErDepartment()
+	{
+		return erDepartment;
+	}
+
+
 	/**
 	 * <PRE>
 	 *   医師エージェントへ外傷状態を送信します。
@@ -4968,7 +5701,8 @@ public class ERPatientAgent extends Agent
 				}
 			}
 			// 退院したか、なくなられた場合、エージェントをシミュレーションから退場させる。
-			if( iDisChargeFlag == 1 || iSurvivalFlag == 0 )
+//			if( iDisChargeFlag == 1 || iSurvivalFlag == 0 )
+			if( iSurvivalFlag == 0 )
 			{
 				if( this.isExitAgent() == false )
 				{
@@ -5014,417 +5748,5 @@ public class ERPatientAgent extends Agent
 				cPatientAgentLog.warning( str );
 			}
 		}
-	}
-
-	/**
-	 * <PRE>
-	 *    患者の観察を受けるまでの時間を返します。
-	 * </PRE>
-	 * @return 観察待ち時間
-	 */
-	public double lfGetObservationTime()
-	{
-		// TODO 自動生成されたメソッド・スタブ
-		return lfObservationWaitTime;
-	}
-
-	/**
-	 * <PRE>
-	 *    患者エージェントのログ出力を設定します。
-	 * </PRE>
-	 * @param log java標準のログ―クラスのインスタンス
-	 */
-	public void vSetLog(Logger log)
-	{
-		// TODO 自動生成されたメソッド・スタブ
-		cPatientAgentLog = log;
-	}
-
-	/**
-	 * <PRE>
-	 *    シミュレーション終了時間を設定します。
-	 * </PRE>
-	 * @param lfEndTime シミュレーション終了時間
-	 */
-	public void vSetSimulationEndTime( double lfEndTime )
-	{
-		lfSimulationEndTime = lfEndTime;
-	}
-
-	/**
-	 * <PRE>
-	 *    逆シミュレーションモードを設定します。
-	 * </PRE>
-	 * @param iMode 0 通常シミュレーション
-	 *              1 GUIモード
-	 *              2 逆シミュレーション
-	 */
-	public void vSetInverseSimMode( int iMode )
-	{
-		iInverseSimMode = iMode;
-	}
-
-	/**
-	 *<PRE>
-	 *	現在在籍している病室から移動する病室までの移動経路を設定します。
-	 *</PRE>
-	 * @param ListRoute	移動ルート（ノードリスト）
-	 */
-	public void vSetMoveRoute(ArrayList<ERTriageNode> ListRoute)
-	{
-		int i;
-		double lfDist = 0.0;
-		double lfTempDist = 0.0;
-		double[] alfDist;
-		double[] alfVel = {0.0,0.0,0.0};
-		double lfVelocity = 0.0;
-		// TODO 自動生成されたメソッド・スタブ
-		ArrayListRoute = ListRoute;
-		// 現在のノードと次のノードを設定します。
-		erCurNodeRoute = ArrayListRoute.get(0);
-		erNextNodeRoute = ArrayListRoute.get(1);
-		iLocNode = 1;
-
-		alfDist = new double[ArrayListRoute.size()];
-
-		// 患者エージェントの移動速度を設定します。
-		for( i = 1;i < ArrayListRoute.size(); i++ )
-		{
-			lfTempDist = ArrayListRoute.get(i-1).getPosition().getDistance( ArrayListRoute.get(i).getPosition() );
-			lfDist += lfTempDist;
-			alfDist[i-1] = lfTempDist;
-		}
-		alfDist[i-1] = lfTempDist;
-		// こっちは患者の速度を決める場合、移動時間は固定
-//		for( i = 0;i < alfVel.length; i++ )
-//		{
-//			alfVel[i] = lfDist/lfMoveTime;
-//		}
-//		this.setVelocity( alfVel );
-		// こちらは患者の移動時間を設定、患者の移動速度は一定
-//		lfVelocity = Math.sqrt( this.getVelocity()[0]*this.getVelocity()[0]+this.getVelocity()[1]*this.getVelocity()[1]+this.getVelocity()[2]*this.getVelocity()[2] );
-		lfVelocity = Math.sqrt( this.getVelocity()[0]*this.getVelocity()[0]+this.getVelocity()[1]*this.getVelocity()[1] );
-//		lfVelocity = this.getVelocity()[0];
-		lfMoveTime = lfDist/this.getVelocity()[0];
-
-	}
-
-	/**
-	 * <PRE>
-	 *    目的地へ移動します。
-	 * </PRE>
-	 * @return 目的地への
-	 */
-	private int iMoveRoute()
-	{
-		int i;
-		Position posCur, posNext;
-		double alfDirection[] = {0.0,0.0,0.0};
-		double alfMoveDirection[] = {0.0,0.0,0.0};
-		double lfDirection = 0.0;
-
-		double lfJudgePosition = 0.0;
-
-		// まだ探索をしていない場合は、移動処理をしません。
-		if( ArrayListRoute == null ) return 0;
-		if( erCurNodeRoute == null || erNextNodeRoute == null ) return 0;
-
-		// 目的地に到着したかどうかを判定します。
-		if( erCurNodeRoute == ArrayListRoute.get(ArrayListRoute.size()-1) )
-		{
-			// 到着した場合は1を出力します。
-			return 1;
-		}
-		// 目的地の方向を取得します。
-		posCur = erCurNodeRoute.getPosition();
-		posNext = erNextNodeRoute.getPosition();
-		alfDirection[0] = posNext.getX() - posCur.getX();
-		alfDirection[1] = posNext.getY() - posCur.getY();
-		alfDirection[2] = posNext.getZ() - posCur.getZ();
-
-	// 次のノードへ移動します。
-
-		// 次ノードへの方向ベクトル（単位ベクトル）を算出します。
-		lfDirection = Position.getDistance2D(posCur.getX(), posCur.getY(), posNext.getX(), posNext.getY() );
-		alfDirection[0] = alfDirection[0] / lfDirection;
-		alfDirection[1] = alfDirection[1] / lfDirection;
-		alfDirection[2] = alfDirection[2] / lfDirection;
-
-		// 位置を速度分移動させます。
-		alfMoveDirection[0] = this.getX() + this.getVelocity()[0] * alfDirection[0];
-		alfMoveDirection[1] = this.getY() + this.getVelocity()[1] * alfDirection[1];
-//		alfMoveDirection[2] = this.getZ() + this.getVelocity()[2] * alfDirection[2];
-		alfMoveDirection[2] = 0.0;
-
-		// 位置を更新します。
-		this.setPosition( alfMoveDirection );
-
-		// 次のノードに触れたかどうかを判定します。
-		lfJudgePosition = posNext.getDistance( this.getPosition() );
-		if( lfJudgePosition <= 20 )
-		{
-			// 触れた場合は現在のノード及び次のノードを更新します。
-			if( iLocNode < ArrayListRoute.size() )
-			{
-				iLocNode++;
-				erCurNodeRoute = erNextNodeRoute;
-				if( erCurNodeRoute != ArrayListRoute.get(ArrayListRoute.size()-1) )
-				{
-					erNextNodeRoute = ArrayListRoute.get(iLocNode);
-				}
-				else
-				{
-					erNextNodeRoute = null;
-				}
-			}
-		}
-		return 0;
-	}
-
-	/***
-	 * <PRE>
-	 *    患者の傷病状態を発生させる頻度を取得します。
-	 * </PRE>
-	 * @param iData 傷病状態発生乱数モード
-	 *              0 一様乱数
-	 *              1 正規乱数
-	 *              2 ワイブル分布乱数
-	 */
-	public void vSetPatientRandomMode( int iData )
-	{
-		iInjuryRandomMode = iData;
-	}
-
-	/**
-	 * <PRE>
-	 *    部屋間を移動中であることを表すフラグを取得します。
-	 * </PRE>
-	 * @return 部屋移動中フラグ
-	 *         0 移動していない
-	 *         1 移動している
-	 */
-	public int iGetMoveRoomFlag()
-	{
-		return iMoveRoomFlag;
-	}
-
-	/**
-	 * <PRE>
-	 *    部屋間を移動するのに要する時間を取得します。
-	 * </PRE>
-	 * @return 部屋間移動時間
-	 */
-	public double lfGetMoveTime()
-	{
-		return lfMoveTime;
-	}
-
-	/**
-	 * <PRE>
-	 *    シミュレーションが開始してからの総時間を取得します。
-	 * </PRE>
-	 * @return シミュレーションの総経過時間
-	 */
-	public double lfGetTotalTime()
-	{
-		// TODO 自動生成されたメソッド・スタブ
-		return lfTotalTime;
-	}
-
-	/**
-	 * <PRE>
-	 *    weibull分布関数の逆関数。
-	 * </PRE>
-	 * @param lfBeta	ワイブル分布用パラメータ1
-	 * @param lfAlpha	ワイブル分布用パラメータ2
-	 * @param lfRand	乱数値
-	 * @return ワイブル分布関数の逆関数値
-	 */
-	private double InvWeibull( double lfAlpha, double lfBeta, double lfRand )
-	{
-		double lfRes = 0.0;
-		lfRes = lfBeta*Math.pow( Math.log( 1.0/(1.0-lfRand) ), 1.0/lfAlpha );
-		return lfRes;
-	}
-
-	/**
-	 * <PRE>
-	 *    weibull分布乱数を発生させます。-1.0以下、1.0以上が乱数を発生させた結果出力された場合、
-	 *    再度乱数を発生させます。乱数発生回数の繰り返し回数は100回とします。
-	 * </PRE>
-	 * @param lfBeta	ワイブル分布用パラメータ1
-	 * @param lfAlpha	ワイブル分布用パラメータ2
-	 * @return ワイブル乱数[-1.0～1.0]
-	 */
-	public double weibullRand( double lfAlpha, double lfBeta )
-	{
-		double lfRes = 0.0;
-		double lfRand = 0.0;
-		int i;
-
-		for( i = 0;i < 100; i++ )
-		{
-			if( rnd == null )	lfRand = Math.random();
-			else 				lfRand = rnd.NextUnif();
-			lfRand = lfRand >= 1.0 ? 0.9999999999 : lfRand;
-			lfRes = InvWeibull( lfAlpha, lfBeta, lfRand );
-			if( -1.0 <= lfRes && lfRes <= 1.0 )
-				break;
-		}
-		// この場合は一様乱数で発生させます。
-		if( i == 100 )
-		{
-			lfRes = rnd.NextUnif();
-		}
-		return lfRes;
-	}
-
-	/**
-	 * <PRE>
-	 *    正規乱数を発生させます。-1.0以下、1.0以上が乱数を発生させた結果出力された場合、
-	 *    再度乱数を発生させます。乱数発生回数の繰り返し回数は100回とします。
-	 * </PRE>
-	 * @return	正規乱数値
-	 */
-	public double normalRand()
-	{
-		double lfRes = 0.0;
-		int i;
-
-		for( i = 0;i < 100; i++ )
-		{
-			if( rnd == null )	lfRes = Math.random();
-			else				lfRes = rnd.NextNormal();
-			if( -1.0 <= lfRes && lfRes <= 1.0 ) break;
-		}
-		// この場合は一様乱数ではっせさせます。
-		if( i == 100 )
-		{
-			lfRes = rnd.NextUnif();
-		}
-		return lfRes;
-	}
-
-	/**
-	 * <PRE>
-	 *    診察した医者を取得します。
-	 * </PRE>
-	 * @return	診察室医師エージェントのインスタンス
-	 */
-	public ERDoctorAgent erGetConsultationDoctorAgent()
-	{
-		// TODO Auto-generated method stub
-		return erConsultationDoctor;
-	}
-
-	/**
-	 * <PRE>
-	 *    診察してくれる医者を設定します。
-	 * </PRE>
-	 * @param erDAgent 担当医エージェント
-	 */
-	public void vSetConsultationDoctorAgent( ERDoctorAgent erDAgent )
-	{
-		erConsultationDoctor = erDAgent;
-	}
-
-	/**
-	 * <PRE>
-	 *   現在のなくなられた数を出力します。
-	 * </PRE>
-	 * @return 亡くなられた患者の数
-	 */
-	public int iGetDeathNum()
-	{
-		return iDeathNum;
-	}
-
-	/**
-	 * <PRE>
-	 *    患者の生存確率を取得します。
-	 * </PRE>
-	 * @return	患者の現時点での生存確率
-	 */
-	public double lfGetSurvivalProbability()
-	{
-		// TODO 自動生成されたメソッド・スタブ
-		return lfSurvivalProbability;
-	}
-
-	public void vSetCriticalSection(Object cs )
-	{
-		// TODO 自動生成されたメソッド・スタブ
-		csPatientCriticalSection = cs;
-	}
-
-	public void vSetRandom( Rand sfmtRandom )
-	{
-		rnd = sfmtRandom;
-	}
-
-	/**
-	 * <PRE>
-	 *    シミュレーション開始初めてトリアージを受けたときの緊急度を取得します。
-	 * </PRE>
-	 * @return	シミュレーション開始はじめの緊急度
-	 */
-	public int iGetStartEmergencyLevel()
-	{
-		return iStartEmergencyLevel;
-	}
-
-	public synchronized void vWriteFile( int iFlag, double lfTime ) throws IOException
-	{
-		String strData = lfTotalTime + "," + lfTimeCourse + "," + lfMoveWaitingTime + "," + lfCurrentWaitTime + "," + lfCurrentObservationWaitTime + "," + lfCurrentConsultationTime +"," + lfCurrentOperationTime + "," + lfCurrentEmergencyTime + "," + lfIntensiveCareUnitStayTime + "," + lfHighCareUnitStayTime + "," + lfGeneralWardStayTime + "," + lfStayHospitalTime + "," + iSurvivalFlag + "," + iLocation + ",";
-		strData += lfInternalAISHead + "," + lfInternalAISFace + "," + lfInternalAISNeck + "," + lfInternalAISThorax + "," + lfInternalAISAbdomen + "," + lfInternalAISSpine +"," + lfInternalAISUpperExtremity +"," + lfInternalAISLowerExtremity + "," + lfInternalAISUnspecified + "," + iEmergencyLevel + "," + iStartEmergencyLevel + ",";
-		strData += lfSpO2 + "," + lfRr + "," + lfPulse + "," + lfSbp + "," + lfDbp + "," + lfBodyTemperature + "," + lfSurvivalProbability + ",";
-		strData += iDisChargeFlag + ",";
-		strData += lfXRayRoomStayTime + "," + lfCTRoomStayTime + "," + lfMRIRoomStayTime + "," + lfAngiographyRoomStayTime + "," + lfFastRoomStayTime;
-		// 終了時の書き込みか、特に指定していない場合
-		if( iFlag == 0 )
-		{
-			csvWriteAgentData.vWrite( strData );
-		}
-		// 開始時の書き込み
-		else
-		{
-			// 開始時の書き込み
-			if( lfTime <= 100.0 )
-			{
-				csvWriteAgentStartData.vWrite( strData );
-			}
-			// 終了時の書き込み
-			if( lfTime >= lfSimulationEndTime-100.0 )
-			{
-				csvWriteAgentData.vWrite( strData );
-			}
-		}
-	}
-
-	public synchronized void vFlushFile( int iFlag ) throws IOException
-	{
-		String strData = lfTotalTime + "," + lfTimeCourse + "," + lfMoveWaitingTime + "," + lfWaitTime + "," + lfObservationWaitTime + "," + lfConsultationTime +"," + lfOperationTime + "," + lfEmergencyTime + "," + lfIntensiveCareUnitStayTime + "," + lfHighCareUnitStayTime + "," + lfGeneralWardStayTime + "," + lfStayHospitalTime + "," + iSurvivalFlag + "," + iLocation + ",";
-		strData += lfInternalAISHead + "," + lfInternalAISFace + "," + lfInternalAISNeck + "," + lfInternalAISThorax + "," + lfInternalAISAbdomen + "," + lfInternalAISSpine +"," + lfInternalAISUpperExtremity +"," + lfInternalAISLowerExtremity + "," + lfInternalAISUnspecified + "," + iEmergencyLevel + "," + iStartEmergencyLevel + ",";
-		strData += lfSpO2 + "," + lfRr + "," + lfPulse + "," + lfSbp + "," + lfDbp + "," + lfBodyTemperature + "," + lfSurvivalProbability + ",";
-		strData += iDisChargeFlag + ",";
-		strData += lfXRayRoomStayTime + "," + lfCTRoomStayTime + "," + lfMRIRoomStayTime + "," + lfAngiographyRoomStayTime + "," + lfFastRoomStayTime;
-		// 終了時の書き込みか、特に指定していない場合
-		if( csvWriteAgentData != null )
-		{
-			csvWriteAgentData.vWrite( strData );
-			csvWriteAgentData.vClose();
-		}
-		// 開始時の書き込み
-		if( csvWriteAgentStartData != null )
-		{
-			csvWriteAgentStartData.vWrite( strData );
-			csvWriteAgentStartData.vClose();
-		}
-	}
-
-	public void vSetInitParam(InitSimParam initparam)
-	{
-		// TODO 自動生成されたメソッド・スタブ
-		initSimParam = initparam;
 	}
 }

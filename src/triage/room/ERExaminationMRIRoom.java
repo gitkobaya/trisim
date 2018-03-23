@@ -1071,7 +1071,7 @@ public class ERExaminationMRIRoom extends Agent
 			// 医療技師エージェントの位置を設定します。
 			lfX = this.getPosition().getX()+10*(2*rnd.NextUnif()-1);
 			lfY = this.getPosition().getY()+10*(2*rnd.NextUnif()-1);
-			lfZ = this.getPosition().getZ()+10*(2*rnd.NextUnif()-1);
+			lfZ = this.getPosition().getZ();
 			ArrayListClinicalEngineerAgents.get(i).setPosition( lfX, lfY, lfZ );
 		}
 	}

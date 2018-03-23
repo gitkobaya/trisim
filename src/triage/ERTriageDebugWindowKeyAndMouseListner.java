@@ -1,11 +1,18 @@
 package triage;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import triage.agent.ERClinicalEngineerAgent;
 import triage.agent.ERDoctorAgent;
@@ -27,6 +34,9 @@ public class ERTriageDebugWindowKeyAndMouseListner  extends KeyAndMouseListner2D
 	private FusePanel fusePanel;						// FusePanelのインスタンス。
 	private ERTriageNodeManager erTriageNodeManager;	// ノードマネージャーのインスタンス
 	private static InitGUISimParam initSimParam;		// 描画用初期設定ファイルクラス
+
+	private JFrame jfDebugFrame;
+	private JPanel jfDebugPanel;
 
 	/**
 	 * <PRE>
@@ -52,11 +62,32 @@ public class ERTriageDebugWindowKeyAndMouseListner  extends KeyAndMouseListner2D
 		// デバックモードでない場合はクリックしても反応しないようにさせます。
 		if( initSimParam.iGetDebugMode() == 0 ) return;
 
+		// デバッグウィンドウを表示します。一度作成したら閉じるまでは作成しません。
+		if( jfDebugFrame == null )
+		{
+			JFrame.setDefaultLookAndFeelDecorated( true );
+			jfDebugFrame = new JFrame();
+			jfDebugPanel = new JPanel();
+			jfDebugFrame.setTitle("TRISimデバックウィンドウ");
+			jfDebugFrame.setVisible( true );
+			jfDebugFrame.setSize(400,400);
+//			jfDebugFrame.setDefaultCloseOperation( 3 );
+			// これで半透明化が可能。Colorの四番目の引数がアルファブレンドに相当。
+			jfDebugFrame.setBackground( new Color(0,0,0,0.5f));
+		}
+
 		if( e.getButton() == MouseEvent.BUTTON1 )
 		{
+			JLabel jlabel = new JLabel();
 			Position pos;
 			pos = fusePanel.getWorldPos(e.getX(), e.getY());
-			System.out.println(pos.getX() + "," + pos.getY() );
+//			jfDebugFrame.(pos.getX() + "," + pos.getY() +"," + pos.getZ() );
+			String strDebug = pos.getX() + "," + pos.getY() +"," + pos.getZ();
+			jlabel.setText( strDebug );
+			jfDebugPanel.add( jlabel );
+			Container contentPane = jfDebugFrame.getContentPane();
+			contentPane.add( jfDebugPanel, BorderLayout.CENTER );
+			System.out.println( strDebug );
 		}
 		else if( e.getButton() == MouseEvent.BUTTON3 )
 		{
@@ -83,7 +114,7 @@ public class ERTriageDebugWindowKeyAndMouseListner  extends KeyAndMouseListner2D
 				if( Math.abs( pos.getX() - curNode.getPosition().getX() ) < 30 && Math.abs( pos.getY()-curNode.getPosition().getY()) < 30 )
 				{
 					// ある場合はコマンドライン上に出力します。
-					System.out.println(curNode.getId() + "," + curNode.getPosition().getX() + "," + curNode.getPosition().getY() );
+					System.out.println(curNode.getId() + "," + curNode.getPosition().getX() + "," + curNode.getPosition().getY() + "," + curNode.getPosition().getZ());
 				}
 			}
 
@@ -228,19 +259,19 @@ public class ERTriageDebugWindowKeyAndMouseListner  extends KeyAndMouseListner2D
 			if( curAgent instanceof ERDoctorAgent )
 			{
 				ERDoctorAgent erDoctorAgent = (ERDoctorAgent)curAgent;
-				System.out.println("医師エージェント" + "," + erDoctorAgent.getId() + "," + erDoctorAgent.getX() + "," + erDoctorAgent.getY() + "," + erDoctorAgent.iGetAttending() );
+				System.out.println("医師エージェント" + "," + erDoctorAgent.getId() + "," + erDoctorAgent.getX() + "," + erDoctorAgent.getY() + "," + erDoctorAgent.getZ() + "," + erDoctorAgent.iGetAttending() );
 			}
 			// 看護師エージェントの場合
 			else if( curAgent instanceof ERNurseAgent )
 			{
 				ERNurseAgent erNurseAgent = (ERNurseAgent)curAgent;
-				System.out.println("看護師エージェント" + "," + erNurseAgent.getId() + "," + erNurseAgent.getX() + "," + erNurseAgent.getY() + "," + erNurseAgent.iGetNurseCategory() + "," + erNurseAgent.iGetAttending() );
+				System.out.println("看護師エージェント" + "," + erNurseAgent.getId() + "," + erNurseAgent.getX() + "," + erNurseAgent.getY() + "," + erNurseAgent.getZ() +"," + erNurseAgent.iGetNurseCategory() + "," + erNurseAgent.iGetAttending() );
 			}
 			// 医療技師エージェントの場合
 			else if( curAgent instanceof ERClinicalEngineerAgent )
 			{
 				ERClinicalEngineerAgent erClinicalEngineerAgent = (ERClinicalEngineerAgent)curAgent;
-				System.out.println("医療技師エージェント" + "," + erClinicalEngineerAgent.getId() + "," + erClinicalEngineerAgent.getX() + "," + erClinicalEngineerAgent.getY() + "," + erClinicalEngineerAgent.iGetClinicalEngineerDepartment() );
+				System.out.println("医療技師エージェント" + "," + erClinicalEngineerAgent.getId() + "," + erClinicalEngineerAgent.getX() + "," + erClinicalEngineerAgent.getY() + "," + erClinicalEngineerAgent.getZ() +"," + erClinicalEngineerAgent.iGetClinicalEngineerDepartment() );
 			}
 			// 患者エージェントの場合
 			else if( curAgent instanceof ERPatientAgent )
@@ -250,9 +281,9 @@ public class ERTriageDebugWindowKeyAndMouseListner  extends KeyAndMouseListner2D
 				erStartNode = erPatientAgent.erGetCurrentNode();
 				erEndNode = erPatientAgent.erGetNextNode();
 				if( erStartNode != null && erEndNode != null )
-					System.out.println("患者エージェント" + "," + erPatientAgent.getId() + "," + erPatientAgent.getX() + "," + erPatientAgent.getY() + "," + erPatientAgent.iGetLocation() + "," + erStartNode.getId() + "," + erEndNode.getId() );
+					System.out.println("患者エージェント" + "," + erPatientAgent.getId() + "," + erPatientAgent.getX() + "," + erPatientAgent.getY() + "," + erPatientAgent.getZ() + "," + erPatientAgent.iGetLocation() + "," + erStartNode.getId() + "," + erEndNode.getId() );
 				else
-					System.out.println("患者エージェント" + "," + erPatientAgent.getId() + "," + erPatientAgent.getX() + "," + erPatientAgent.getY() + "," + erPatientAgent.iGetLocation() );
+					System.out.println("患者エージェント" + "," + erPatientAgent.getId() + "," + erPatientAgent.getX() + "," + erPatientAgent.getY() + "," + erPatientAgent.getZ() + "," + erPatientAgent.iGetLocation() );
 			}
 		}
 		else
@@ -263,19 +294,19 @@ public class ERTriageDebugWindowKeyAndMouseListner  extends KeyAndMouseListner2D
 				if( voErAgent instanceof ERDoctorAgent )
 				{
 					ERDoctorAgent erDoctorAgent = (ERDoctorAgent)voErAgent;
-					System.out.println("医師エージェント" + "," + erDoctorAgent.getId() + "," + erDoctorAgent.getX() + "," + erDoctorAgent.getY() + "," + erDoctorAgent.iGetAttending() );
+					System.out.println("医師エージェント" + "," + erDoctorAgent.getId() + "," + erDoctorAgent.getX() + "," + erDoctorAgent.getY() + "," + erDoctorAgent.getZ() + "," + erDoctorAgent.iGetAttending() );
 				}
 				// 看護師エージェントの場合
 				else if( voErAgent instanceof ERNurseAgent )
 				{
 					ERNurseAgent erNurseAgent = (ERNurseAgent)voErAgent;
-					System.out.println("看護師エージェント" + "," + erNurseAgent.getId() + "," + erNurseAgent.getX() + "," + erNurseAgent.getY() + "," + erNurseAgent.iGetNurseCategory() + "," + erNurseAgent.iGetAttending() );
+					System.out.println("看護師エージェント" + "," + erNurseAgent.getId() + "," + erNurseAgent.getX() + "," + erNurseAgent.getY() + "," + erNurseAgent.getZ() + "," + erNurseAgent.iGetNurseCategory() + "," + erNurseAgent.iGetAttending() );
 				}
 				// 医療技師エージェントの場合
 				else if( voErAgent instanceof ERClinicalEngineerAgent )
 				{
 					ERClinicalEngineerAgent erClinicalEngineerAgent = (ERClinicalEngineerAgent)voErAgent;
-					System.out.println("医療技師エージェント" + "," + erClinicalEngineerAgent.getId() + "," + erClinicalEngineerAgent.getX() + "," + erClinicalEngineerAgent.getY() + "," + erClinicalEngineerAgent.iGetClinicalEngineerDepartment() );
+					System.out.println("医療技師エージェント" + "," + erClinicalEngineerAgent.getId() + "," + erClinicalEngineerAgent.getX() + "," + erClinicalEngineerAgent.getY() + "," + erClinicalEngineerAgent.getZ() + "," + erClinicalEngineerAgent.iGetClinicalEngineerDepartment() );
 				}
 				// 患者エージェントの場合
 				else if( voErAgent instanceof ERPatientAgent )
@@ -287,7 +318,7 @@ public class ERTriageDebugWindowKeyAndMouseListner  extends KeyAndMouseListner2D
 					erEndNode = erPatientAgent.erGetNextNode();
 					if( erStartNode != null && erEndNode != null )
 					{
-						System.out.println("患者エージェント" + "," + erPatientAgent.getId() + "," + erPatientAgent.getX() + "," + erPatientAgent.getY() );
+						System.out.println("患者エージェント" + "," + erPatientAgent.getId() + "," + erPatientAgent.getX() + "," + erPatientAgent.getY() + "," + erPatientAgent.getZ() );
 						erRoute = erPatientAgent.erGetArrayListRoute();
 						for( ERTriageNode node: erRoute )
 						{
@@ -300,7 +331,7 @@ public class ERTriageDebugWindowKeyAndMouseListner  extends KeyAndMouseListner2D
 						System.out.println( "向かう部屋:" + erEndNode.iGetLocation());
 					}
 					else
-						System.out.println("患者エージェント" + "," + erPatientAgent.getId() + "," + erPatientAgent.getX() + "," + erPatientAgent.getY() + "," + erPatientAgent.iGetLocation() );
+						System.out.println("患者エージェント" + "," + erPatientAgent.getId() + "," + erPatientAgent.getX() + "," + erPatientAgent.getY() + "," + erPatientAgent.getZ() + "," + erPatientAgent.iGetLocation() );
 				}
 				else
 				{

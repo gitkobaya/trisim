@@ -3,7 +3,18 @@ package inverse.optimization.objectivefunction;
 import inverse.optimization.abc.Abc;
 import utility.sfmt.Sfmt;
 
-// コールバック関数実体クラス
+/**
+ * <PRE>
+ *    目的関数のコールバック関数実体クラスです。
+ *    目的関数をここに定義して使用します。コールバックの意味合いが薄れてしまったので、
+ *    より適切に実装する必要があるのでそこは今後の課題です。
+ *    目的関数として、逆シミュレーション用評価指標のNEDOCS、EDWIN、EDWorkScoreを実装しています。
+ *    他は単目的最適化に使用しているスペック関数をできるだけ実装しています。
+ *    使用方法はvSetFunctionMode()で使用する目的関数を設定し、lfObjectiveFunction()で実際に目的関数を実行します。
+ * </PRE>
+ * @author kobayashi
+ *
+ */
 public class ObjectiveFunction implements ObjectiveFunctionInterface
 {
 

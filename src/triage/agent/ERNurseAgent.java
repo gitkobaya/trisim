@@ -3647,4 +3647,26 @@ public class ERNurseAgent extends Agent
 		initSimParam = initparam;
 
 	}
+
+	/**
+	 * <PRE>
+	 *   看護師エージェントが何階にいるか取得します。
+	 * </PRE>
+	 * @return 患者エージェントの現在いる階数
+	 */
+	public int iGetFloor()
+	{
+		return erTriageNode.iGetFloor();
+	}
+
+	/**
+	 * <PRE>
+	 *   看護師エージェントが何階にいるか設定します。
+	 * </PRE>
+	 * @param 現在いる階数
+	 */
+	public void vSetFloor( int iFloorData )
+	{
+		erTriageNode.vSetFloor( iFloorData );
+	}
 }

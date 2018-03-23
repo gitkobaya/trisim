@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import utility.csv.CCsv;
 import utility.initparam.InitSimParam;
+import utility.node.ERTriageNode;
 import utility.sfmt.Rand;
 import jp.ac.nihon_u.cit.su.furulab.fuse.Message;
 import jp.ac.nihon_u.cit.su.furulab.fuse.SimulationEngine;
@@ -100,6 +101,8 @@ public class ERClinicalEngineerAgent extends Agent
 	private int iFileWriteMode;							// 長時間シミュレーション用ファイル出力モード
 
 	private InitSimParam initParamClinicalEngineerAgent;// 初期設定ファイル操作用変数
+	
+	private ERTriageNode erTriageNode;					// 医療技師がいるノード
 
 	/**
 	 * <PRE>
@@ -1392,4 +1395,49 @@ public class ERClinicalEngineerAgent extends Agent
 		// TODO 自動生成されたメソッド・スタブ
 		initParamClinicalEngineerAgent = initparam;
 	}
+
+	/**
+	 * <PRE>
+	 *   医療技師エージェントが何階にいるか取得します。
+	 * </PRE>
+	 * @return 患者エージェントの現在いる階数
+	 */
+	public int iGetFloor()
+	{
+		return erTriageNode.iGetFloor();
+	}
+
+	/**
+	 * <PRE>
+	 *   医療技師エージェントが何階にいるか設定します。
+	 * </PRE>
+	 * @param 現在いる階数
+	 */
+	public void vSetFloor( int iFloorData )
+	{
+		erTriageNode.vSetFloor( iFloorData );
+	}
+
+	/**
+	 * <PRE>
+	 *    トリアージプロトコルの設定をします。
+	 * </PRE>
+	 * @param cCurNode トリアージプロトコル
+	 */
+	public void vSetTriageNode( ERTriageNode cCurNode )
+	{
+		erTriageNode = cCurNode;
+	}
+
+	/**
+	 * <PRE>
+	 *   トリアージプロトコルを取得します。
+	 * </PRE>
+	 * @return トリアージプロトコル
+	 */
+	public ERTriageNode erGetTriageNode()
+	{
+		return erTriageNode;
+	}
+
 }
